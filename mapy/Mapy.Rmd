@@ -1,0 +1,738 @@
+---
+title: "Mapy"
+output: html_document
+author: Tomasz Olczyk
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Biblioteki
+
+
+```{r}
+
+library(tidyverse)
+
+```
+
+
+
+
+## Dane Panteon
+
+
+```{r}
+
+# dane panteon trzeba zmienić
+
+id <- "15xCXZ-LzVs32KK6y-8liToTFuq82onPO"
+panteon <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) 
+
+
+
+```
+
+
+## Z użyciem map_data z ggplot2
+
+
+```{r}
+
+?map_data
+
+```
+
+
+```{r}
+
+france = map_data('world', region = 'France') 
+
+
+```
+
+```{r}
+
+ggplot(france, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(fill = 'white', colour = 'black')
+
+
+```
+
+
+
+
+Francja miejsca urodzenia znanych osób po 1945
+
+```{r}
+
+francja <- panteon %>%
+  filter(countryCode3 == "FRA",
+         birthyear > 1980)
+  
+  
+```
+
+
+
+```{r}
+
+ggplot(france, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(fill = 'white', colour = 'black') +
+  geom_point(data = francja, aes(x= LON, y = LAT, 
+                                 colour = gender,
+                                 size = AverageViews*10, 
+                                 group = name), alpha = 0.5) +
+  ggrepel::geom_text_repel(data = francja, aes(x= LON, 
+                                               y = LAT, 
+                                               label = name, 
+                                               group = name)) +
+  theme_void()
+  
+
+```
+
+
+```{r}
+
+
+world =  map_data('world') 
+
+ggplot(world, aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = 'white', colour = 'black')
+
+
+```
+
+
+
+
+
+```{r}
+
+
+
+fr <- ggplot(world, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(fill = 'white', colour = 'black') +
+  geom_point(data = francja, aes(x= LON, 
+                                 y = LAT, 
+                                 colour = gender, 
+                                 size = AverageViews/1000, 
+                                 group = name), 
+                                 alpha = 0.5) +
+  ggrepel::geom_text_repel(data = francja, aes(x= LON, 
+                                               y = LAT, 
+                                               label = name, 
+                                               group = name)) +
+  theme_void()
+  
+
+```
+
+
+
+```{r}
+library(plotly)
+```
+
+
+```{r}
+
+ggplotly(fr)
+
+```
+
+
+
+## Polska
+
+
+Chcemy narysować mapę z miejscami urodzenia osób ze zbioru Panteonurodzonych na terenie Polski po 1945.
+
+```{r}
+
+Polska <- panteon %>%
+  filter(countryCode3 == "POL",
+         birthyear > 1945)
+
+```
+
+
+```{r}
+
+polska <-  map_data("world", region = 'Poland') 
+
+```
+
+
+
+```{r}
+
+ggplot(polska, aes(x = long, 
+                   y = lat, 
+                   group = group)) + 
+  geom_polygon(fill = 'white', colour = 'black')
+
+```
+
+
+```{r}
+
+ggplot(polska, aes(x = long, 
+                   y = lat, 
+                   group = group)) + 
+  geom_polygon(fill = 'white', colour = 'black') +
+  geom_point(data = Polska, 
+             aes(x= LON, y = LAT, 
+                 colour = gender, 
+                 size = AverageViews*10, 
+                 group = name, alpha = 0.5)) +
+  ggrepel::geom_text_repel(data = Polska, aes(x= LON, y = LAT, label = name, group = name)) +
+  theme_void()
+
+```
+
+
+
+
+## Panteon ale cały świat:
+
+
+
+```{r}
+
+world =  map_data('world') 
+
+(świat_p <- ggplot(world, aes(x = long, y = lat, group = group)) + 
+    geom_polygon(fill = 'white', colour = 'black') +
+  geom_point(data = panteon %>% filter(birthyear < 1000),
+             aes(x= LON, 
+                 y = LAT, 
+                 colour = gender,
+                 size = AverageViews/10000, 
+                 group = name, 
+                 alpha = 0.1)) +
+  theme_void()
+)
+
+
+```
+
+
+Z wykorzystaniem plotly
+
+```{r}
+
+
+library(plotly)
+
+```
+
+
+```{r}
+
+ggplotly(świat_p)
+
+```
+
+Panteon próba łączenie ramek danych
+
+
+```{r}
+
+widoczność <- panteon %>%
+  mutate(region = toupper(countryName)) 
+  
+widoczność <- widoczność %>%
+  filter(countryCode3 != "unknown") %>%
+  group_by(region) %>%
+  summarise(widoczność = sum(AverageViews)) %>%
+  drop_na()
+
+```
+
+
+
+```{r}
+world <- world %>%
+  mutate(region = toupper(region))
+
+```
+
+```{r}
+
+świat <- world %>%
+  left_join(widoczność)
+
+```
+
+
+
+```{r}
+ggplot(świat, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(aes(fill = widoczność), colour = 'black') +
+  scale_fill_continuous(low = "lightblue", high = "skyblue4")
+```
+
+
+```{r}
+
+ggplot(świat, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(aes(fill = log(widoczność)),
+               colour = 'black') +
+  scale_fill_continuous(low = "white", high = "orange")
+
+```
+
+
+```{r}
+
+ggplot(świat, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(aes(fill = widoczność),
+               colour = 'black') +
+  scale_fill_continuous(low = "white", high = "orange")
+
+```
+
+
+
+
+
+```{r }
+
+widoczność$region <- str_replace_all(widoczność$region, "UNITED KINGDOM",  "UK")
+
+widoczność$region <- str_replace_all(widoczność$region, "UNITED STATES",  "USA")
+
+
+```
+
+
+```{r}
+world <- world %>%
+  mutate(region = toupper(region))
+```
+
+
+```{r}
+świat <- world %>%
+  left_join(widoczność)
+```
+
+
+
+```{r}
+
+(w <- ggplot(świat, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(aes(fill = widoczność), colour = 'black') +
+  scale_fill_gradient(low = "lightblue", high = "skyblue4")
+)
+
+```
+
+
+
+```{r eval}
+
+ggplotly(w) 
+
+```
+
+
+
+
+
+# Biblioteka sf
+
+
+```{r}
+
+
+#install.packages("sf")
+library(sf)
+
+```
+
+
+
+## Kształty województw na podstawie plików shp z użyciem funkcji st_read
+
+
+Uwaga: pliki shp należy ściągnać z https://gadm.org/download_country.html
+
+Dane geojson punkt niżej dostępne przez github
+
+
+#linki się nie zgadzają 
+
+```{r }
+
+województwa <- sf::st_read("/Users/golemxiv/Downloads/gadm41_POL_shp/gadm41_POL_1.shp")
+
+```
+
+
+
+
+```{r}
+
+
+glimpse(województwa)
+
+class(województwa)
+
+head(województwa)
+
+
+```
+
+
+
+```{r}
+
+
+województwa$NAME_1
+
+```
+
+
+
+```{r}
+
+
+
+ggplot(województwa) +
+  geom_sf()
+
+
+```
+
+
+
+# Dane typu geojson
+
+
+```{r}
+
+#install.packages("geojsonio")
+
+```
+
+
+```{r}
+library(geojsonio)
+
+```
+
+
+
+
+
+Bezpośrednio do formatu simple feature
+
+```{r}
+
+powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozytrium/main/gadm41_POL_2.json")
+
+```
+
+
+
+
+```{r}
+
+ggplot(powiaty) +
+  geom_sf()
+
+```
+
+
+```{r}
+
+województwa <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozytrium/main/gadm41_POL_1.json")
+
+```
+
+
+
+```{r}
+
+ggplot(województwa) +
+  geom_sf()
+
+```
+
+
+## Dane PKW na poziomie województw
+
+
+```{r}
+
+library(janitor)
+
+```
+
+
+
+Dane PKW z poziomu województw  via Github
+
+
+```{r}
+
+wybory23_woj  <- read_csv2("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozytrium/main/wyniki_gl_na_listy_po_wojewodztwach_proc_sejm_utf8.csv") %>% 
+  janitor::clean_names() 
+
+```
+
+
+
+```{r}
+
+glimpse(wybory23_woj)
+
+```
+
+
+Wybierzmy kilka kolumn do analizy
+
+
+
+```{r}
+
+wybory23_woj2 <- wybory23_woj %>%
+  select(wojewodztwo, 
+         frekwencja, 
+         komitet_wyborczy_prawo_i_sprawiedliwosc,  komitet_wyborczy_konfederacja_wolnosc_i_niepodleglosc, koalicyjny_komitet_wyborczy_koalicja_obywatelska_po_n_ipl_zieloni,  koalicyjny_komitet_wyborczy_trzecia_droga_polska_2050_szymona_holowni_polskie_stronnictwo_ludowe , 
+         komitet_wyborczy_nowa_lewica) %>%
+  rename(PiS = komitet_wyborczy_prawo_i_sprawiedliwosc,  
+         Konfederacja =  komitet_wyborczy_konfederacja_wolnosc_i_niepodleglosc,
+         KO = koalicyjny_komitet_wyborczy_koalicja_obywatelska_po_n_ipl_zieloni,  
+         TD = koalicyjny_komitet_wyborczy_trzecia_droga_polska_2050_szymona_holowni_polskie_stronnictwo_ludowe, 
+         Lewica = komitet_wyborczy_nowa_lewica) #zmieniamy nazwy funkcją rename
+
+```
+
+
+
+```{r}
+
+glimpse(wybory23_woj2)
+
+```
+
+
+```{r}
+
+województwa_s <- województwa %>% 
+  select(NAME_1, geometry) %>%
+  mutate(wojewodztwo = tolower(NAME_1))
+
+
+```
+
+
+```{r}
+
+
+glimpse(wybory23_woj2)
+```
+
+
+```{r}
+wybory_23_woj_s <- wybory23_woj2 %>% mutate_at(c(2,3,4,5,6,7), scale)
+```
+
+
+Łączenie ramki danych PKW z ramką z konturami województw
+
+```{r}
+wybory <- left_join(województwa_s, wybory23_woj2,
+                  by = "wojewodztwo")
+```
+
+
+
+```{r}
+wybory <- left_join(województwa_s, wybory_23_woj_s,
+                  by = "wojewodztwo")
+```
+
+
+?geom_sf()
+
+
+
+
+
+```{r}
+
+ggplot(wybory) + 
+  geom_sf(aes(fill = frekwencja)) + 
+  coord_sf()  
+
+```
+
+
+
+```{r}
+
+ggplot(wybory) + 
+  geom_sf(aes(fill = frekwencja)) + 
+  coord_sf()  +
+  theme_void() +
+  geom_sf_text(aes(label = NAME_1))
+               
+               
+```
+
+
+```{r}
+
+
+ggplot(wybory) + 
+  geom_sf(aes(fill = PiS)) + 
+  coord_sf()  +
+  theme_void() +
+  geom_sf_text(aes(label = NAME_1))
+               
+               
+```
+
+
+
+```{r}
+
+wybory_long <- wybory %>%
+  select(-frekwencja) %>%
+  pivot_longer(cols = c("PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "wyniki")
+
+
+```
+
+
+```{r}
+
+wybory_long <- wybory %>%
+  pivot_longer(cols = c("frekwencja",  "PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "wyniki")
+
+
+```
+
+```{r}
+
+ggplot(wybory_long) + 
+  geom_sf(aes(fill = value)) + 
+  coord_sf()  +
+  theme_void() +
+ scale_fill_gradient(low = "grey90", high = "black") +
+ facet_wrap(~wyniki)
+
+```
+
+
+## skalowanie
+
+
+```{r}
+wybory2 <- scale(wybory)
+```
+
+
+```{r}
+
+wybory_long <- wybory %>%
+  select(-frekwencja) %>%
+  pivot_longer(cols = c("PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "wyniki")
+
+
+```
+
+
+```{r}
+
+ggplot(wybory_long) + 
+  geom_sf(aes(fill = value)) + 
+  coord_sf()  +
+  theme_void() +
+ scale_fill_gradient(low = "grey90", high = "black") +
+ facet_wrap(~wyniki)
+
+```
+
+
+dodać skalę ze środkiem
+
+# Województwa i punkty z Panteon
+
+
+
+
+```{r}
+
+ggplot(województwa) + 
+  geom_sf() + 
+  coord_sf() 
+
+
+
+```
+
+
+```{r}
+
+ggplot(województwa) + 
+  geom_sf() + 
+  coord_sf() +
+geom_point(data = Polska, aes(x= LON, y = LAT, colour = gender, size = AverageViews*10, group = name), alpha = 0.5) +
+  ggrepel::geom_text_repel(data = Polska, aes(x= LON, y = LAT, label = name, group = name)) +
+  theme_void()
+
+```
+
+
+
+Starszy sposób trandformajci danych jako spatial polygon
+
+```{r eval = FALSE}
+
+spdf <- geojson_read("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozytrium/main/gadm41_POL_2.json",  what = "sp")
+```
+
+
+
+
+
+
+
+```{r}
+
+?geojson_read
+
+```
+
+
+```{r}
+
+library(broom)
+
+```
+
+
+``` {r  eval = FALSE}
+
+spdf_fortified <- tidy(spdf)
+
+
+````
+
+
+``` {r  eval = FALSE}
+
+
+
+ggplot(data = spdf_fortified) +
+  geom_polygon( aes( x = long, y = lat, group = group), fill="#69b3a2", color="white") +
+  theme_void() +
+  coord_map()
+```
