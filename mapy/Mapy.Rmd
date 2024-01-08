@@ -25,7 +25,7 @@ library(tidyverse)
 
 ```{r}
 
-# dane panteon trzeba zmienić
+
 
 id <- "15xCXZ-LzVs32KK6y-8liToTFuq82onPO"
 panteon <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) 
