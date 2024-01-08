@@ -1,0 +1,682 @@
+---
+title: "Wizualizacja czasu"
+output: html_document
+author: Tomasz Olczyk
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r include=FALSE}
+
+Sys.setlocale("LC_TIME","pl_PL.UTF-8")
+
+
+```
+
+## Timeline - oś czasu
+
+Według Dana Roama autora ksiażki "Narysuj swoje myśli" oś czasu jest modelem wizualnym ilustrującym odpowiedź na pytanie kiedy [@roam2010]. Najprościej zrobić timeline używając funkcji `geom_segment()` ggplota
+
+zaczniemy zatem od instalacji tidyverse
+
+```{r}
+
+library(tidyverse)
+
+```
+
+
+
+```{r}
+
+fantasy <- read_csv("fatasy.csv")
+
+```
+
+
+
+```{r}
+
+
+fantasy %>% filter(author == "Martin") %>% 
+  mutate(disloc = c(0.5, 1, -0.5, -1, 2, 1.5, 0.5)) %>%
+ggplot() +
+    geom_segment(aes(x = rok, y = disloc, xend = rok), yend = 0) + # data = data trzeba ustawić globalnie
+    geom_segment(aes(x = 1990,y = 0, xend = 2020,yend = 0),
+                 arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'closed')) +
+    geom_text(aes(x = rok,y = disloc,label = title), hjust = 1.0,vjust = 1.0,parse = FALSE, size  = 4) +
+    geom_point(aes(x = rok,
+                   y = disloc)) +
+    scale_x_continuous(breaks = c(1996, 1999, 2000,2005, 2011)) +
+    theme_minimal() +
+    theme(axis.title.x = element_blank(), #usuwa tytuł
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          text = element_text(size = 10))
+```
+
+
+```{r, fig.width = 20, fig.height= 5}
+fantasy %>% 
+ggplot() +
+    geom_segment(aes(x = rok, y = words,xend = rok, color = author),yend = 0) + # data = data trzeba ustawić globalnie
+    geom_segment(aes(x = 1990,y = 0,xend = 2020,yend = 0),arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'closed')) +
+    geom_text(aes(x = rok,y = words,label = title, fill = author ), hjust = 1.0,vjust = 1.0,parse = FALSE, size  = 4) +
+    geom_point(aes(x = rok,
+                   y = words,
+                   color = author)) +
+    theme_minimal() +
+    theme(axis.title.x = element_blank(), #usuwa tytuł
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          text = element_text(size = 10))
+```
+
+
+```{r fig.width = 20, fig.height= 5}
+
+fantasy %>% 
+  ggplot() +
+  geom_segment(aes(x = rok, y = words,xend = rok),yend = 0) + # data = data trzeba ustawić globalnie
+  geom_segment(aes(x = 1993,y = 0,xend = 2012,yend = 0),
+               arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'closed')) +
+  geom_text(aes(x = rok,y = words,label = title),   hjust = 0.5,vjust = - 0.5,parse = FALSE, size  = 4) +
+  geom_point(aes(x = rok,
+                 y = words)) +
+  scale_x_continuous(breaks = c(1994, 1995, 1996, 1997, 1999, 2000,2005, 2011)) +
+  scale_y_continuous(limits = c(0, 450000)) +
+  theme_bw() +
+  theme(axis.title.x = element_blank(), #usuwa tytuł
+       #axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        text = element_text(size = 15)) +
+  facet_wrap(~author, nrow =2)
+```
+
+
+
+
+
+
+
+## Gantt
+
+
+
+```{r}
+
+
+library(scales)
+library(lubridate)
+
+
+```
+
+
+
+
+## timeline z biblioteką timevis
+
+
+
+```{r}
+#install.packages("timevis")
+```
+
+
+```{r}
+
+library(timevis)
+
+```
+
+
+```{r}
+
+data <- data.frame(
+  id      = 1:4,
+  content = c("Item one", "Item two",
+              "Ranged item", "Item four"),
+  start   = c("2016-01-10", "2016-01-11",
+              "2016-01-20", "2016-02-14 15:00:00"),
+  end     = c(NA, NA, "2016-02-04", NA)
+)
+
+timevis(data)
+```
+
+
+```{r}
+?timevis
+```
+
+
+z danymi Panteon
+
+## Dane
+
+`
+
+## Dane
+
+```{r}
+
+id <- "15xCXZ-LzVs32KK6y-8liToTFuq82onPO"
+panteon <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) 
+
+```
+
+
+```{r}
+
+Polska1900 <- panteon %>%
+  filter(birthyear > 1900, countryCode3 == "POL") %>%
+  select(name, birthyear, AverageViews) %>%
+  mutate(start = lubridate::ymd(birthyear, truncated = 2L)) %>% #funkcja która zmienia liczbę czterocyfroą na datę, 1 stycznia danego roku
+  rename(content = name)
+  
+
+```
+
+
+```{r}
+timevis(Polska1900)
+```
+
+
+
+
+```{r}
+
+Polska1950 <- panteon %>%
+  filter(birthyear > 1950, countryCode3 == "POL") %>%
+  select(name, birthyear, AverageViews) %>%
+  mutate(start = lubridate::ymd(birthyear, truncated = 2L)) %>% #funkcja która zmienia liczbę czterocyfroą na datę, 1 stycznia danego roku
+  rename(content = name)
+
+```
+
+
+```{r}
+
+timevis(Polska1950)
+
+```
+
+
+
+## Biblioteka vistime
+
+
+```{r}
+
+#install.packages("vistime")
+
+```
+
+
+```{r}
+
+library(vistime)
+
+```
+
+
+```{r}
+
+?vistime()
+
+
+```
+
+``` {r}
+?gg_vistime
+
+```
+
+
+
+```{r}
+timeline_data <- data.frame(event = c("Event 1", "Event 2"),
+                            start = c("2020-06-06", "2020-10-01"), 
+                            end   = c("2020-10-01", "2020-12-31"),
+                            group = "My Events")
+                            
+gg_vistime(timeline_data)
+```
+
+
+
+
+```{r}
+
+timeline_data %>%
+  ggplot() +
+  geom_segment(aes(y = event, xend = end, x= start, yend = event)) +
+  theme_bw()
+
+```
+
+
+
+```{r}
+timeline_data %>%
+  mutate(start = as.Date(start),
+         end = as.Date(end)) %>%
+ ggplot() +
+  geom_segment(aes(y = event, xend = end, x= start, yend = event)) +
+  theme_bw()
+```
+
+
+```{r}
+
+timeline_data %>%
+  mutate(start = as.Date(start),
+         end = as.Date(end)) %>%
+  ggplot() +
+  geom_segment(aes(y = group, xend = end, x= start, yend = group, colour = event)) +
+  scale_x_date() +
+  theme_bw()
+
+
+
+```
+
+
+
+
+```{r}
+timeline_data <- data.frame(event = c("Event 1", "Event 2"),
+                            start = c("2020-06-06", "2020-10-01"), 
+                            end   = c("2020-10-01", "2020-12-31"),
+                            group = "My Events")
+                            
+gg_vistime(timeline_data)
+```
+
+
+
+
+## Kalendarz
+
+
+
+
+
+## Kalendarz z Oryxem
+
+
+```{r }
+
+oryx <- read.csv("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozytrium/main/oryx.csv")
+
+```
+
+
+```{r}
+glimpse(oryx)
+```
+
+
+
+```{r}
+oryx %>% 
+  mutate(date = as.Date(date)) %>%
+  complete(date = seq.Date(as.Date("2022-02-01"), as.Date("2023-12-31"), by="day")) %>% 
+  mutate(month = month(date, label = TRUE), 
+         wday = wday(date, label = TRUE),
+         day = day(date), 
+         week = isoweek(date)) -> df2 #operator przypisania moz działać także w drugą stron
+```
+
+
+Epiweek - tydzień zaczyna się od niedzieli:
+
+```{r}
+
+?epiweek
+
+```
+
+
+
+uwaga zmiana na isoweek psuje mi wykres
+
+```{r}
+oryx %>% 
+  mutate(date = as.Date(date)) %>%
+  filter(date < "2023-01-01") %>%
+  complete(date = seq.Date(as.Date("2022-02-01"), as.Date("2022-12-31"), by="day")) %>% 
+  mutate(month = month(date, label = TRUE), 
+         wday = wday(date, label = TRUE),
+         day = day(date), 
+         week = lubridate::isoweek(date)) -> df2 
+```
+
+
+Kolejność dni
+
+```{r}
+df2$wday <- factor(df2$wday, levels = c("pon", "wto", "śro", "czw", "ptk", "sob", "ndz"))
+```
+
+
+
+```{r}
+
+(x <- df2 %>% 
+  ggplot(aes(x = wday, y = week, text = paste('straty: ', change_3))) + 
+  geom_tile(aes(fill = change_3), color = "black", size = .5) +
+  geom_text(aes(label = day)) + 
+  labs(title = "Sprzęt utracony na Ukrainie przez Rosjan - dane Oryx", 
+       x = "", 
+       y = "") + 
+  scale_fill_continuous(low = "grey90", 
+                       high = "black", 
+                     name = "straty dzienne", 
+                     na.value = 'white') +
+  scale_x_discrete(position = "top") +
+  scale_y_continuous(trans = "reverse") + 
+  scale_color_manual(values = c("black", "grey")) + 
+  facet_wrap(~month, scales="free_y") +
+     theme_grey() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank())) +
+    guides(color = "none") 
+
+```
+
+
+```{r}
+
+library(plotly)
+
+```
+
+
+```{r}
+ggplotly(x, tooltip = "text")
+```
+
+
+## Kalendarz mapa-cieplna a'la github 
+
+dodam kolumnę latami
+
+```{r}
+oryx %>% 
+  mutate(date = as.Date(date)) %>%
+  #usunę filtrowani na roku
+  #filter(date < "2023-01-01") %>%
+  complete(date = seq.Date(as.Date("2022-01-01"), as.Date("2023-12-31"), by="day")) %>% 
+  mutate(year = year(date),
+         month = month(date, label = TRUE),
+         months = month(date, label = FALSE),
+         wday = wday(date, label = TRUE),
+         day = day(date), 
+         week = lubridate::isoweek(date)) -> df2 
+```
+
+
+
+```{r}
+
+df2$wday <- factor(df2$wday, levels = c("pon", "wto", "śro", "czw", "ptk", "sob", "ndz"))
+```
+
+
+```{r}
+ggplot(df2, aes(y = fct_rev(wday), x= week, fill = change_3)) +
+  geom_tile(width =7, height = 1, colour = "white") 
+  
+
+```
+
+
+```{r}
+
+ggplot(df2, aes(y = fct_rev(wday), 
+                x= week, 
+                fill = change_3)) +
+  geom_tile(colour = "white") +
+  scale_fill_gradient(low = "#BAE177", high ="#155219")
+  
+
+```
+
+
+```{r}
+
+ggplot(df2, aes(y = fct_rev(wday),
+                x= week, fill = change_3)) +
+  geom_tile(colour = "white") +
+  #dodaję skalę kolorów a'la github na podstawi kolorymetru i funkcji rgb
+  scale_fill_gradient(low = "#BAE177",
+                      high ="#155219") +
+  #poniższa funkcja sprawia że rysują się kwadraty a nie prostokąty
+  coord_equal() +
+  theme_minimal()
+  
+
+```
+
+
+
+```{r}
+
+ggplot(df2, aes(y = fct_rev(wday),
+                x= week, fill = change_3)) +
+  geom_tile(colour = "white") +
+  #dodaję skalę kolorów a'la github na podstawi kolorymetru i funkcji rgb
+  scale_fill_gradient(low = "#BAE177",
+                      high ="#155219") +
+  #poniższa funkcja sprawia że rysują się kwadraty a nie prostokąty
+  coord_equal() + 
+  theme_minimal() +
+  facet_wrap(~year, nrow =2)
+  
+
+```
+
+
+
+```{r}
+
+ggplot(df2, aes(y = fct_rev(wday),
+                x= week, fill = change_3)) +
+  geom_tile(colour = "white") +
+  #dodaję skalę kolorów a'la github na podstawi kolorymetru i funkcji rgb
+  scale_fill_gradient(low = "#BAE177",
+                      high ="#155219") +
+  #poniższa funkcja sprawia że rysują się kwadraty a nie prostokąty
+  coord_equal() + 
+  theme_minimal() +
+  facet_wrap(~year, nrow = 2)
+
+  
+```
+
+
+```{r}
+miesiące = as.data.frame(table(df2$month))
+```
+
+
+```{r}
+
+(y <- ggplot(df2, aes(y = fct_rev(wday),
+                x= week, fill = change_3)) +
+  geom_tile(colour = "white") +
+  #dodaję skalę kolorów a'la github na podstawi kolorymetru i funkcji rgb
+  scale_fill_gradient(low = "#BAE177",
+                      high ="#155219",
+                      na.value = "gray88") +
+  #poniższa funkcja sprawia że rysują się kwadraty a nie prostokąty
+  coord_equal() + 
+  scale_x_continuous(breaks = seq(from =2.5, to = 52, by = 4.333),
+                 labels = miesiące$Var1) +
+  theme_minimal() +
+  facet_wrap(~year, nrow = 2)
+)
+
+  
+```
+
+
+```{r}
+library(plotly)
+```
+
+
+```{r}
+
+ggplotly(y)
+```
+
+# Rakiety
+
+
+
+
+### fragment do poprawienia kwestia umieszczenia danych online
+
+
+Dane dotyczące ataków powietrznych na Ukrainę z Kaggle według opisu automatycznie ekstraktowane z komunikatów ukraińskich
+
+```{r}
+
+# zbiór missile_attacks
+ataki_rakietowe <- read_csv("/Users/golemxiv/Desktop/analizy\ R/missile_attacks_daily.csv")
+
+
+#zbiór missiles_and_uav 
+środki <- read_csv("/Users/golemxiv/Desktop/analizy\ R/missiles_and_uav.csv")
+
+```
+
+
+```{r}
+
+ataki_rakietowe %>% 
+  select(time_end, model,launched, destroyed) %>%
+  mutate(date = as.Date(time_end)) %>%
+  complete(date = seq.Date(as.Date("2022-01-01"), as.Date("2023-12-31"), by="day")) %>% 
+  mutate(year = year(date),
+         month = month(date, label = TRUE),
+         months = month(date, label = FALSE),
+         wday = wday(date, label = TRUE),
+         day = day(date), 
+         week = lubridate::isoweek(date))  -> df3 
+
+```
+
+
+
+```{r}
+df3 <- left_join(df3, środki)
+```
+
+```{r}
+df4 <- df3 %>%
+  filter(category == "cruise missile") %>%
+ group_by(date) %>%
+  summarise(wystrzelone = sum(launched)) %>%
+  ungroup()
+
+df3 <- left_join(df3, df4)
+```
+
+To będzie trzeba uporządkować może najpierw połączyć z typami pocisków a potem sklejać to dalj
+
+
+
+```{r}
+
+df5 <- df3 %>%
+  distinct(date, .keep_all = TRUE)
+
+```
+
+
+```{r}
+(y <- ggplot(df5, aes(y = fct_rev(wday),
+                x= week, fill = wystrzelone)) +
+  geom_tile(colour = "white") +
+  #dodaję skalę kolorów a'la github na podstawi kolorymetru i funkcji rgb
+  scale_fill_gradient(low = "#BAE177",
+                      high ="#155219",
+                      na.value = "gray88") +
+  #poniższa funkcja sprawia że rysują się kwadraty a nie prostokąty
+  coord_equal() + 
+  scale_x_continuous(breaks = seq(from =2.5, to = 52, by = 4.333),
+                 labels = miesiące$Var1) +
+  theme_minimal() +
+  facet_wrap(~year, nrow = 2)
+)
+
+  
+```
+
+Tylko cruise
+
+
+```{r}
+
+df4 %>%
+  complete(date = seq.Date(as.Date("2022-01-01"), as.Date("2023-12-31"), by="day")) %>% 
+  mutate(year = year(date),
+         month = month(date, label = TRUE),
+         months = month(date, label = FALSE),
+         wday = wday(date, label = TRUE),
+         day = day(date), 
+         week = lubridate::isoweek(date))  -> df6 
+
+```
+
+
+
+```{r}
+ ggplot(df6, aes(y = fct_rev(wday),
+                x= week, fill = wystrzelone)) +
+  geom_tile(colour = "white", 
+            linewidth = 1) +
+  #dodaję skalę kolorów a'la github na podstawi kolorymetru i funkcji rgb
+  scale_fill_gradient(low = "#BAE177",
+                      high ="#155219",
+                      na.value = "gray88") +
+  #poniższa funkcja sprawia że rysują się kwadraty a nie prostokąty
+  coord_equal() + 
+  scale_x_continuous(breaks = seq(from =1.5, to = 52, by = 4.333), labels = miesiące$Var1,
+                     position = "bottom") +
+  theme_minimal() +
+  facet_wrap(~year, nrow = 2) +
+   theme(panel.grid = element_blank(),
+         axis.title.y = element_blank(),
+         axis.title.x = element_blank(),
+         legend.position = "bottom",
+         legend.justification = "right") +
+   guides(fill = guide_legend(title.position = "left", 
+                              label.position = "bottom",
+                              keywidth = 1, 
+                              nrow = 1))
+
+
+  
+```
+
+
+Problem z przeliczaniem 365/7 w plotly.
+
+```{r}
+ggplotly(z)
+```
+
