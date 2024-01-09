@@ -9,6 +9,7 @@ bibliography: references.bib
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+poniższy kod działa na macu
 
 
 ```{r include=FALSE}
