@@ -106,11 +106,10 @@ ggplot(world, aes(x = long, y = lat, group = group)) +
 ```
 
 
-
+Francja
 
 
 ```{r}
-
 
 
 fr <- ggplot(world, aes(x = long, y = lat, group = group)) + 

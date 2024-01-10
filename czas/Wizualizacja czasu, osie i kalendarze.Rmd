@@ -1,6 +1,6 @@
 ---
 title: "Wizualizacja czasu"
-output: html_document
+output: pdf_document
 author: Tomasz Olczyk
 bibliography: references.bib
 ---
@@ -11,19 +11,18 @@ knitr::opts_chunk$set(echo = TRUE)
 
 poniższy kod działa na macu
 
-
 ```{r include=FALSE}
 
-Sys.setlocale("LC_TIME","pl_PL.UTF-8")
-
+#Sys.setlocale("LC_TIME","pl_PL.UTF-8")
 
 ```
 
-## Timeline - oś czasu
+## Timeline - oś czasu z wykorzystanie geom_segment
 
-Według Dana Roama autora ksiażki "Narysuj swoje myśli" oś czasu jest modelem wizualnym ilustrującym odpowiedź na pytanie kiedy [@roam2010]. Najprościej zrobić timeline używając funkcji `geom_segment()` ggplota
+Według Dana Roama autora ksiażki "Narysuj swoje myśli" oś czasu jest modelem wizualnym ilustrującym odpowiedź na pytanie "kiedy" [@roam2010]. Najprościej stworzyć *timeline* używając funkcji `geom_segment()` ggplota
 
-zaczniemy zatem od instalacji tidyverse
+
+### Biblioteki
 
 ```{r}
 
@@ -33,27 +32,57 @@ library(tidyverse)
 
 
 
+### Dane - Sapkowski i Maertin
+
+Użyjemy danych dotyczących dat publikacji i liczby słów w książkach z sag A. Sapkowskiego i G.R.R. Martina.
+
 ```{r}
 
-fantasy <- read_csv("fatasy.csv")
+fantasy <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/fantasy.csv")
+
+```
+
+
+```{r}
+
+head(fantasy)
+
 
 ```
 
 
 
+
+Poniższy wykres jest połączeniem wykresu [lizakowego](https://r-graph-gallery.com/lollipop-plot.html)
+(lollypop chart) z osią czasu. Lizaki - słupki a właściwie odcinki zakończone punktem - oznaczać będą daty kolejnych książek
+
+
 ```{r}
 
-
 fantasy %>% filter(author == "Martin") %>% 
+  # dodaje zmienną disloc, której użyję do mapowania wysokości lizaków
   mutate(disloc = c(0.5, 1, -0.5, -1, 2, 1.5, 0.5)) %>%
 ggplot() +
-    geom_segment(aes(x = rok, y = disloc, xend = rok), yend = 0) + # data = data trzeba ustawić globalnie
-    geom_segment(aes(x = 1990,y = 0, xend = 2020,yend = 0),
+    geom_segment(aes(x = rok, 
+                     y = disloc, 
+                     xend = rok), 
+                 yend = 0) + 
+  #rysuję oś czasu
+    geom_segment(aes(x = 1990,
+                     y = 0, 
+                     xend = 2020,
+                     yend = 0),
                  arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'closed')) +
-    geom_text(aes(x = rok,y = disloc,label = title), hjust = 1.0,vjust = 1.0,parse = FALSE, size  = 4) +
+    geom_text(aes(x = rok,
+                  y = disloc,
+                  label = title), 
+              hjust = 1.0,vjust = 1.0,
+              parse = FALSE, 
+              size  = 4) +
     geom_point(aes(x = rok,
                    y = disloc)) +
-    scale_x_continuous(breaks = c(1996, 1999, 2000,2005, 2011)) +
+  #kontroluje etykiety na skali ręcznie wybierając tylko lata publikacji książek
+    scale_x_continuous(breaks = c(1996, 1999, 2000, 2005, 2011)) +
     theme_minimal() +
     theme(axis.title.x = element_blank(), #usuwa tytuł
           axis.title.y = element_blank(),
@@ -62,7 +91,59 @@ ggplot() +
 ```
 
 
+Etykiety na skali można także wybrać na podstawie danych
+
+
+```{r}
+
+sapkowski <- fantasy %>% 
+  filter(author == "Sapkowski") %>% 
+  mutate(disloc = c(0.5, 1, -0.5, -1, 2)) #mniej punktów bo saga Sapkowskiego jest krótsza
+
+
+```
+
+
+
+```{r}
+ggplot(sapkowski) +
+    geom_segment(aes(x = rok, 
+                     y = disloc, 
+                     xend = rok), 
+                 yend = 0) + 
+  #rysuję oś czasu
+    geom_segment(aes(x = 1990,
+                     y = 0, 
+                     xend = 2003, #skracam oś czasu bo ostatnia książka jest z 1999
+                     yend = 0),
+                 arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'closed')) +
+    geom_text(aes(x = rok,
+                  y = disloc,
+                  label = title), 
+              hjust = 1.0,
+              vjust = 1.0,
+              parse = FALSE, 
+              size  = 4) +
+    geom_point(aes(x = rok,
+                   y = disloc)) +
+  #kontroluje etykiety na skali ręcznie wybierając tylko lata publikacji książek wykorzystując dane w ramce
+    scale_x_continuous(breaks = sapkowski$rok) +
+    theme_minimal() +
+    theme(axis.title.x = element_blank(), #usuwa tytuł
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          text = element_text(size = 10))
+
+```
+
+
+
+
+### Zadaniee
+
+
 ```{r, fig.width = 20, fig.height= 5}
+
 fantasy %>% 
 ggplot() +
     geom_segment(aes(x = rok, y = words,xend = rok, color = author),yend = 0) + # data = data trzeba ustawić globalnie
@@ -77,7 +158,6 @@ ggplot() +
           axis.text.y = element_blank(),
           text = element_text(size = 10))
 ```
-
 
 ```{r fig.width = 20, fig.height= 5}
 
@@ -99,16 +179,24 @@ fantasy %>%
   facet_wrap(~author, nrow =2)
 ```
 
+## wykres Gantta z wykorzystaniem geom_segment
+
+
+### Dane - rządy III RP
+
+
+
+```{r}
+
+premierzyIIIRP <- read_csv()
+
+```
 
 
 
 
 
-
-## Gantt
-
-
-
+ 
 ```{r}
 
 
@@ -118,24 +206,17 @@ library(lubridate)
 
 ```
 
-
-
-
 ## timeline z biblioteką timevis
-
-
 
 ```{r}
 #install.packages("timevis")
 ```
-
 
 ```{r}
 
 library(timevis)
 
 ```
-
 
 ```{r}
 
@@ -151,19 +232,19 @@ data <- data.frame(
 timevis(data)
 ```
 
-
 ```{r}
 ?timevis
 ```
-
 
 z danymi Panteon
 
 ## Dane
 
-`
+\`
 
 ## Dane
+
+
 
 ```{r}
 
@@ -172,17 +253,18 @@ panteon <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", 
 
 ```
 
-
 ```{r}
 
 Polska1900 <- panteon %>%
   filter(birthyear > 1900, countryCode3 == "POL") %>%
   select(name, birthyear, AverageViews) %>%
-  mutate(start = lubridate::ymd(birthyear, truncated = 2L)) %>% #funkcja która zmienia liczbę czterocyfroą na datę, 1 stycznia danego roku
+  mutate(start = lubridate::ymd(birthyear, 
+                                truncated = 2L)) %>% #funkcja z biblioteki  która zmienia liczbę czterocyfrową na datę w formacie rok(y) miesiąc (m) dzień (d) przyjmując  za dzień i miesiać 1 (pierwszy stycznia danego roku)
   rename(content = name)
   
 
 ```
+
 
 
 ```{r}
@@ -202,17 +284,13 @@ Polska1950 <- panteon %>%
 
 ```
 
-
 ```{r}
 
 timevis(Polska1950)
 
 ```
 
-
-
 ## Biblioteka vistime
-
 
 ```{r}
 
@@ -220,13 +298,11 @@ timevis(Polska1950)
 
 ```
 
-
 ```{r}
 
 library(vistime)
 
 ```
-
 
 ```{r}
 
@@ -235,12 +311,10 @@ library(vistime)
 
 ```
 
-``` {r}
+```{r}
 ?gg_vistime
 
 ```
-
-
 
 ```{r}
 timeline_data <- data.frame(event = c("Event 1", "Event 2"),
@@ -251,9 +325,6 @@ timeline_data <- data.frame(event = c("Event 1", "Event 2"),
 gg_vistime(timeline_data)
 ```
 
-
-
-
 ```{r}
 
 timeline_data %>%
@@ -263,8 +334,6 @@ timeline_data %>%
 
 ```
 
-
-
 ```{r}
 timeline_data %>%
   mutate(start = as.Date(start),
@@ -273,7 +342,6 @@ timeline_data %>%
   geom_segment(aes(y = event, xend = end, x= start, yend = event)) +
   theme_bw()
 ```
-
 
 ```{r}
 
@@ -289,9 +357,6 @@ timeline_data %>%
 
 ```
 
-
-
-
 ```{r}
 timeline_data <- data.frame(event = c("Event 1", "Event 2"),
                             start = c("2020-06-06", "2020-10-01"), 
@@ -301,17 +366,9 @@ timeline_data <- data.frame(event = c("Event 1", "Event 2"),
 gg_vistime(timeline_data)
 ```
 
-
-
-
-## Kalendarz
-
-
-
-
+## Kalendarz-mapacieplna z wykorzystaniem geom_tile i facet_wrap
 
 ## Kalendarz z Oryxem
-
 
 ```{r }
 
@@ -319,12 +376,9 @@ oryx <- read.csv("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozy
 
 ```
 
-
 ```{r}
 glimpse(oryx)
 ```
-
-
 
 ```{r}
 oryx %>% 
@@ -336,7 +390,6 @@ oryx %>%
          week = isoweek(date)) -> df2 #operator przypisania moz działać także w drugą stron
 ```
 
-
 Epiweek - tydzień zaczyna się od niedzieli:
 
 ```{r}
@@ -344,8 +397,6 @@ Epiweek - tydzień zaczyna się od niedzieli:
 ?epiweek
 
 ```
-
-
 
 uwaga zmiana na isoweek psuje mi wykres
 
@@ -360,14 +411,11 @@ oryx %>%
          week = lubridate::isoweek(date)) -> df2 
 ```
 
-
 Kolejność dni
 
 ```{r}
 df2$wday <- factor(df2$wday, levels = c("pon", "wto", "śro", "czw", "ptk", "sob", "ndz"))
 ```
-
-
 
 ```{r}
 
@@ -396,20 +444,17 @@ df2$wday <- factor(df2$wday, levels = c("pon", "wto", "śro", "czw", "ptk", "sob
 
 ```
 
-
 ```{r}
 
 library(plotly)
 
 ```
 
-
 ```{r}
 ggplotly(x, tooltip = "text")
 ```
 
-
-## Kalendarz mapa-cieplna a'la github 
+## Kalendarz mapa-cieplna a'la github
 
 dodam kolumnę latami
 
@@ -427,13 +472,10 @@ oryx %>%
          week = lubridate::isoweek(date)) -> df2 
 ```
 
-
-
 ```{r}
 
 df2$wday <- factor(df2$wday, levels = c("pon", "wto", "śro", "czw", "ptk", "sob", "ndz"))
 ```
-
 
 ```{r}
 ggplot(df2, aes(y = fct_rev(wday), x= week, fill = change_3)) +
@@ -441,7 +483,6 @@ ggplot(df2, aes(y = fct_rev(wday), x= week, fill = change_3)) +
   
 
 ```
-
 
 ```{r}
 
@@ -453,7 +494,6 @@ ggplot(df2, aes(y = fct_rev(wday),
   
 
 ```
-
 
 ```{r}
 
@@ -469,8 +509,6 @@ ggplot(df2, aes(y = fct_rev(wday),
   
 
 ```
-
-
 
 ```{r}
 
@@ -488,8 +526,6 @@ ggplot(df2, aes(y = fct_rev(wday),
 
 ```
 
-
-
 ```{r}
 
 ggplot(df2, aes(y = fct_rev(wday),
@@ -506,11 +542,9 @@ ggplot(df2, aes(y = fct_rev(wday),
   
 ```
 
-
 ```{r}
 miesiące = as.data.frame(table(df2$month))
 ```
-
 
 ```{r}
 
@@ -532,38 +566,32 @@ miesiące = as.data.frame(table(df2$month))
   
 ```
 
-
 ```{r}
 library(plotly)
 ```
-
 
 ```{r}
 
 ggplotly(y)
 ```
 
-# Rakiety
+## K
 
+Stworzymy kalendarz wzorowany na kalendarzu aktywności na [githubie](https://www.louisahsmith.com/posts/2018-09-25-github-style-calendar-heatmap/).
 
-
-
-### fragment do poprawienia kwestia umieszczenia danych online
-
-
-Dane dotyczące ataków powietrznych na Ukrainę z Kaggle według opisu automatycznie ekstraktowane z komunikatów ukraińskich
+Dane dotyczące ataków powietrznych na Ukrainę z [Kaggle](https://www.kaggle.com/datasets/piterfm/massive-missile-attacks-on-ukraine). Według opisu automatycznie ekstraktowane z komunikatów ukraińskich.
 
 ```{r}
 
-# zbiór missile_attacks
-ataki_rakietowe <- read_csv("/Users/golemxiv/Desktop/analizy\ R/missile_attacks_daily.csv")
+# zbiór missile_attacks z kaggle
+
+ataki_rakietowe <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/missile_attacks_daily.csv")
 
 
 #zbiór missiles_and_uav 
-środki <- read_csv("/Users/golemxiv/Desktop/analizy\ R/missiles_and_uav.csv")
+środki <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/missiles_and_uav.csv")
 
 ```
-
 
 ```{r}
 
@@ -580,7 +608,7 @@ ataki_rakietowe %>%
 
 ```
 
-
+Łączymy ramkę danych z ramką opisującą typy środków napadu powietrznego żeby wyselekcjonować ataki z użyciem wybranego typu:
 
 ```{r}
 df3 <- left_join(df3, środki)
@@ -598,15 +626,12 @@ df3 <- left_join(df3, df4)
 
 To będzie trzeba uporządkować może najpierw połączyć z typami pocisków a potem sklejać to dalj
 
-
-
 ```{r}
 
 df5 <- df3 %>%
   distinct(date, .keep_all = TRUE)
 
 ```
-
 
 ```{r}
 (y <- ggplot(df5, aes(y = fct_rev(wday),
@@ -629,7 +654,6 @@ df5 <- df3 %>%
 
 Tylko cruise
 
-
 ```{r}
 
 df4 %>%
@@ -642,8 +666,6 @@ df4 %>%
          week = lubridate::isoweek(date))  -> df6 
 
 ```
-
-
 
 ```{r}
  ggplot(df6, aes(y = fct_rev(wday),
@@ -674,10 +696,8 @@ df4 %>%
   
 ```
 
-
 Problem z przeliczaniem 365/7 w plotly.
 
 ```{r}
 ggplotly(z)
 ```
-
