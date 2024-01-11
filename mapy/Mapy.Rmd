@@ -538,10 +538,16 @@ glimpse(wybory23_woj2)
 ```
 
 
+Skalowanie daneych
+
 ```{r}
 wybory_23_woj_s <- wybory23_woj2 %>% mutate_at(c(2,3,4,5,6,7), scale)
 ```
 
+
+```{r}
+wybory_23_woj_2s <- wybory23_woj2 %>% mutate_at((2:7), scale)
+```
 
 Łączenie ramki danych PKW z ramką z konturami województw
 

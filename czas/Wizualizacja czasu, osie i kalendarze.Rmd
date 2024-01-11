@@ -32,9 +32,9 @@ library(tidyverse)
 
 
 
-### Dane - Sapkowski i Maertin
+### Dane - Sapkowski i Martin
 
-Użyjemy danych dotyczących dat publikacji i liczby słów w książkach z sag A. Sapkowskiego i G.R.R. Martina.
+Użyjemy danych dotyczących dat publikacji i liczby słów w książkach z sag A. Sapkowskiego i G.R.R. Martina. 
 
 ```{r}
 
@@ -77,7 +77,6 @@ ggplot() +
                   y = disloc,
                   label = title), 
               hjust = 1.0,vjust = 1.0,
-              parse = FALSE, 
               size  = 4) +
     geom_point(aes(x = rok,
                    y = disloc)) +
@@ -91,7 +90,7 @@ ggplot() +
 ```
 
 
-Etykiety na skali można także wybrać na podstawie danych
+Etykiety na skali można także wybrać na podstawie danych:
 
 
 ```{r}
@@ -122,7 +121,6 @@ ggplot(sapkowski) +
                   label = title), 
               hjust = 1.0,
               vjust = 1.0,
-              parse = FALSE, 
               size  = 4) +
     geom_point(aes(x = rok,
                    y = disloc)) +
@@ -139,7 +137,9 @@ ggplot(sapkowski) +
 
 
 
-### Zadaniee
+### Zadanie
+
+
 
 
 ```{r, fig.width = 20, fig.height= 5}
@@ -147,13 +147,23 @@ ggplot(sapkowski) +
 fantasy %>% 
 ggplot() +
     geom_segment(aes(x = rok, y = words,xend = rok, color = author),yend = 0) + # data = data trzeba ustawić globalnie
-    geom_segment(aes(x = 1990,y = 0,xend = 2020,yend = 0),arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'closed')) +
-    geom_text(aes(x = rok,y = words,label = title, fill = author ), hjust = 1.0,vjust = 1.0,parse = FALSE, size  = 4) +
+    geom_segment(aes(x = 1990,
+                     y = 0,
+                     xend = 2020,
+                     yend = 0), 
+                 arrow = arrow(length = unit(x = 0.2,
+                                             units = 'cm'),
+                               type = 'closed')) +
+    geom_text(aes(x = rok,y = words,
+                  label = title),
+              hjust = 1.0,
+              vjust = 1.0,
+              size  = 4) +
     geom_point(aes(x = rok,
                    y = words,
                    color = author)) +
     theme_minimal() +
-    theme(axis.title.x = element_blank(), #usuwa tytuł
+    theme(axis.title.x = element_blank(), # element_blank() usuwa dany element motywu
           axis.title.y = element_blank(),
           axis.text.y = element_blank(),
           text = element_text(size = 10))
@@ -166,7 +176,7 @@ fantasy %>%
   geom_segment(aes(x = rok, y = words,xend = rok),yend = 0) + # data = data trzeba ustawić globalnie
   geom_segment(aes(x = 1993,y = 0,xend = 2012,yend = 0),
                arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'closed')) +
-  geom_text(aes(x = rok,y = words,label = title),   hjust = 0.5,vjust = - 0.5,parse = FALSE, size  = 4) +
+  geom_text(aes(x = rok,y = words,label = title),   hjust = 0.5,vjust = - 0.5, size  = 4) +
   geom_point(aes(x = rok,
                  y = words)) +
   scale_x_continuous(breaks = c(1994, 1995, 1996, 1997, 1999, 2000,2005, 2011)) +
@@ -179,20 +189,242 @@ fantasy %>%
   facet_wrap(~author, nrow =2)
 ```
 
-## wykres Gantta z wykorzystaniem geom_segment
+## Wykres Gantta z wykorzystaniem geom_segment
 
 
-### Dane - rządy III RP
+```{r}
+timeline_data <- data.frame(event = c("Event 1", "Event 2"),
+                            start = c("2020-06-06", "2020-10-01"), 
+                            end   = c("2020-10-01", "2020-12-31"),
+                            group = "My Events")
+                            
+gg_vistime(timeline_data)
+```
 
 
 
 ```{r}
 
-premierzyIIIRP <- read_csv()
+timeline_data %>%
+  ggplot() +
+  geom_segment(aes(y = event, 
+                   xend = end, 
+                   x= start,
+                   yend = event)) +
+  theme_bw()
 
 ```
 
 
+Zaminiem napisy na daty funkcja as.Date:
+
+```{r}
+timeline_data %>%
+  mutate(start = as.Date(start),
+         end = as.Date(end)) %>%
+ ggplot() +
+  geom_segment(aes(y = event, xend = end, x= start, yend = event)) +
+  theme_bw()
+```
+
+```{r}
+
+timeline_data %>%
+  mutate(start = as.Date(start),
+         end = as.Date(end)) %>%
+  ggplot() +
+  geom_segment(aes(y = group, xend = end, x= start, yend = group, colour = event)) +
+  scale_x_date() +
+  theme_bw()
+
+
+
+```
+
+
+```{r}
+library(vistime)
+```
+
+```{r}
+timeline_data <- data.frame(event = c("Event 1", "Event 2"),
+                            start = c("2020-06-06", "2020-10-01"), 
+                            end   = c("2020-10-01", "2020-12-31"),
+                            group = "My Events")
+```
+
+
+```{r}
+gg_vistime(timeline_data)
+```
+
+
+### Dane - rządy III RP
+
+
+Dane dotyczące długości trwania poszczególnych rządów w IIIRP za wikipedią:
+
+```{r}
+
+premierzyIIIRP <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/premierzyIIIRP.csv")
+
+```
+
+
+```{r}
+View(premierzyIIIRP)
+```
+
+
+Dla uniknięcia problemów z rysowaniem linii można uzupełnić końcową komórkę w zmiennej end datą systemową:
+
+
+```{r}
+
+premierzyIIIRP[22,7] <- lubridate::ymd(Sys.Date())
+
+```
+
+
+### z wykorzystanim geom_segment
+
+```{r}
+
+ggplot(premierzyIIIRP) +
+  geom_segment(aes(y = stronnictwo, 
+                   xend = end, 
+                   x= start,
+                   yend = stronnictwo, 
+                   colour = stronnictwo)) +
+  scale_x_date() +
+  theme_bw()
+
+```
+
+
+
+Uporządkujmy wykorzystując funkcję reorder:
+
+
+```{r}
+
+ggplot(premierzyIIIRP) +
+  geom_segment(aes(y = reorder(stronnictwo, start), 
+                   xend = end, 
+                   x= start,
+                   yend = stronnictwo, 
+                   colour = stronnictwo)) +
+  scale_x_date() +
+  theme_bw()
+
+```
+
+
+```{r}
+gg_vistime(premierzyIIIRP,
+           col.event = "nazwisko",
+           col.group = "stronnictwo")
+```
+
+
+```{r}
+
+ggplot(premierzyIIIRP) +
+  geom_segment(aes(y = reorder(stronnictwo, start), 
+                   xend = end, 
+                   x= start,
+                   yend = stronnictwo, 
+                   colour = stronnictwo)) +
+  scale_x_date(breaks = (premierzyIIIRP$end), 
+               date_labels = "%Y") +
+  theme_bw() +
+  guides(colour = "none")
+
+```
+
+
+```{r}
+
+kadencje <- unique(year(premierzyIIIRP$start))
+
+```
+
+
+```{r}
+
+kadencje <- lubridate::ymd(kadencje, 
+                                truncated = 2L)
+
+```
+
+
+
+
+```{r}
+
+plotly::ggplotly(ggplot(premierzyIIIRP) +
+  geom_segment(aes(y = reorder(stronnictwo, start), 
+                   xend = end, 
+                   x= start,
+                   yend = stronnictwo, 
+                   colour = stronnictwo)) +
+  scale_x_date(breaks = kadencje, 
+               date_labels = "%Y") +
+  theme_bw() +
+    guides(colour = "none") # guides = "none" nie działa z plotly
+)
+
+```
+
+
+```{r}
+
+z <- ggplot(premierzyIIIRP) +
+  geom_segment(aes(y = reorder(stronnictwo, start), 
+                   xend = end, 
+                   x= start,
+                   yend = stronnictwo, 
+                   colour = stronnictwo,
+                   text = paste("",nazwisko,
+                  "<br>",stronnictwo,
+                  "<br>objęcie urzędu:",start,
+                  "<br>złożenie urzędu:",end))) +
+  scale_x_date(breaks = kadencje, 
+               date_labels = "%Y") +
+  theme_bw()
+
+  
+
+```
+
+
+
+```{r}
+
+plotly::ggplotly(z, tooltip = "text")
+
+```
+
+text = paste("", name,
+                  "<br>rok urodzenia: ", birthyear,
+                  "<br>zawód: ", occupation,
+                  "<br>obszar działalności: ", domain)
+text = paste("", name,
+                  "<br>rok urodzenia: ", birthyear,
+                  "<br>zawód: ", occupation,
+                  "<br>obszar działalności: ", domain)
+## próba z timevis
+
+
+```{r}
+
+premierzyIIIRP %>%
+  rename(content = nazwisko) %>%
+  rename(group = stronnictwo) %>% #argument groups i soubgroups do sprawdzenia
+timevis()
+
+
+```
 
 
 
@@ -268,6 +500,9 @@ Polska1900 <- panteon %>%
 
 
 ```{r}
+
+premierzyIIIRP %>%
+  rename(content = nazwisko)
 timevis(Polska1900)
 ```
 
@@ -316,55 +551,6 @@ library(vistime)
 
 ```
 
-```{r}
-timeline_data <- data.frame(event = c("Event 1", "Event 2"),
-                            start = c("2020-06-06", "2020-10-01"), 
-                            end   = c("2020-10-01", "2020-12-31"),
-                            group = "My Events")
-                            
-gg_vistime(timeline_data)
-```
-
-```{r}
-
-timeline_data %>%
-  ggplot() +
-  geom_segment(aes(y = event, xend = end, x= start, yend = event)) +
-  theme_bw()
-
-```
-
-```{r}
-timeline_data %>%
-  mutate(start = as.Date(start),
-         end = as.Date(end)) %>%
- ggplot() +
-  geom_segment(aes(y = event, xend = end, x= start, yend = event)) +
-  theme_bw()
-```
-
-```{r}
-
-timeline_data %>%
-  mutate(start = as.Date(start),
-         end = as.Date(end)) %>%
-  ggplot() +
-  geom_segment(aes(y = group, xend = end, x= start, yend = group, colour = event)) +
-  scale_x_date() +
-  theme_bw()
-
-
-
-```
-
-```{r}
-timeline_data <- data.frame(event = c("Event 1", "Event 2"),
-                            start = c("2020-06-06", "2020-10-01"), 
-                            end   = c("2020-10-01", "2020-12-31"),
-                            group = "My Events")
-                            
-gg_vistime(timeline_data)
-```
 
 ## Kalendarz-mapacieplna z wykorzystaniem geom_tile i facet_wrap
 
