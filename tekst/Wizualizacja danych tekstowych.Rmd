@@ -1,0 +1,300 @@
+---
+title: "Wizualizacja danych tekstowych"
+author: "Tomasz Olczyk"
+output:
+  html_document:
+    self_contained: false
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+
+library(tidyverse)
+
+```
+
+
+## Chmury słów
+
+### Chmura słow w wordcloud2
+
+Jedną z ciekawszych bibliotek do tworzenia chmur słów jest wordlcoud2 
+
+```{r wordcloud2.}
+install.packages("wordcloud2")
+
+```
+
+```{eval = false}
+library(wordcloud2)
+```
+
+Wordcloud2 ma dwie ciekawe funkcje: wordcloud2 i letterCloud
+
+```{r}
+wordcloud2::wordcloud2()
+```
+
+
+Wordcloud2 działa w ten sposób:
+
+```{r chmura1}
+wordcloud2(data = demoFreq)
+```
+
+```{r parametry1}
+print(?wordcloud2)
+```
+
+Dane wejściowe powinny mieć format ramki danych z dwoma kolumnami/zmiennymi: word (słowa) i freq (frekwencje występowania słów). Dane takie można wygenerować analizując tekst ilościowo z pomocą pakietów takich jak tm czy quanteda.
+
+
+
+## Dane 
+
+Użyjemy zbioru pasków z TVP Info. Dane via github z tego [repozytorium](https://github.com/Aleshkev/paski-tvp/blob/master/readme.md)
+
+```{r}
+paski <-read.delim(file =url("https://raw.githubusercontent.com/Aleshkev/paski-tvp/master/paski.txt"), header = FALSE, quote = "") 
+ #parametr quote dodałem ze względu na to, że w pliku są słowa w cudzysłowie, bez tego parametru baza nie łąduje się w całosći
+# header = FALSE oznacza że funkcja nie traktuje pierwszego wiersza jak nagłówwka
+
+```
+
+
+Przygotujemy tabelę frekwencji słów. Do tego przyda nam się biblioteka tidytext:
+
+
+```{r}
+
+library(tidytext)
+
+```
+
+
+
+```{r}
+text_df <- tibble(text = paski$V1)
+
+#zmiana na wektor znaków
+
+```
+
+Tokenizujemy zbiór używają funkcji unnest_tokens:
+
+```{r}
+tokeny <- text_df %>%
+  unnest_tokens(word, text,  token = "words")
+```
+
+
+W ilościowej analizie tekstu i wizualizacji przydatne jest używanie stoplist: list słów często powtarzajcych się w danym języku, które dobrze jest odsiać z tekstu. Do tego celu przydać się na może biblioteka stopwords. 
+
+
+```{r}
+#install.packages("stopwords")
+library(stopwords)
+```
+
+
+
+
+```{r}
+
+text_df_1 <- text_df %>% 
+  unnest_tokens(word, text) %>% 
+  anti_join(get_stopwords(language = "pl", source = "stopwords-iso"))
+#anti_join jest złączeniem filturjącym
+```
+
+
+
+```{r}
+text_frek <-
+  as_tibble(text_df_1) %>% 
+  group_by(word) %>%
+  summarise(freq = n()) %>%
+  distinct(word, .keep_all = TRUE) 
+```
+
+```{r}
+wordcloud2(data = text_frek %>% filter(freq>100))
+```
+
+
+```{r}
+library(ggwordcloud)
+```
+
+
+
+
+```{r}
+ggplot(data = text_frek %>% filter(freq>100)) +
+  geom_text_wordcloud(aes(label = word, size = freq), shape = "square", rm_outside = FALSE, grid_size = 1, eccentricity = .65)
+```
+
+
+
+###
+
+```{r}
+
+text_ngram <- text_df %>% unnest_tokens(ngrams, text, "ngrams", n = 2) 
+```
+
+
+```{r}
+text_frek_n <-
+  as.tibble(text_ngram) %>% 
+  group_by(ngrams) %>%
+  summarise(freq = n()) %>%
+  distinct(ngrams, .keep_all = TRUE) %>%
+  drop_na()
+```
+
+```{r}
+wordcloud2(data = text_frek_n %>% filter(freq>20))
+```
+
+```{r}
+
+text_ngram <- text_df %>% unnest_tokens(ngrams, text, "ngrams", n = 3) 
+```
+
+
+```{r}
+text_frek_n <-
+  as.tibble(text_ngram) %>% 
+  group_by(ngrams) %>%
+  summarise(freq = n()) %>%
+  distinct(ngrams, .keep_all = TRUE) %>%
+  drop_na()
+```
+
+```{r}
+wordcloud2(data = text_frek_n %>% filter(freq>20))
+```
+
+## Drzewa słów
+
+Pakiet korzysta z narzędzi google
+
+Biblioteka googleVis oferuje możliwość wykorzystania wykresów google do tworzenia interaktywnych wykresów w html (otwierają się w przeglądarce) można je umieścić także w dokumencie markdown jeśli odpowiednio skonstruuje się nagłówek yaml:
+
+```{r, eval= FALSE}
+#output:
+ # html_document:
+  #  self_contained: false
+```
+
+i ustawi
+
+```{r}
+#install.packages("googleVis")
+```
+
+Ładuję bibliotekę googleVis.
+
+```{r}
+library(googleVis)
+```
+
+Biblioteka Google Vis zasadniczo kreauje wizualizacje w przeglądarce ale mozan ją użyć takze w markdownie wykorzystując poniższą licznię kodu
+
+```{r}
+# set googleVis plot option to display chart in RMarkdown 
+op <- options(gvis.plot.tag='chart') 
+```
+
+
+Można wykorzystać następująco: najpierw mieć ramkę danych która jest produktem KWIC, czyli listę fraz z wyszykiwanym słowem w kontekście. Np po lematyzacji spacyrem. Poblem do rozwiązania jak to zwizualizować wewątrz raportu markdown czy też prezentacji za pomocą tego zrobionej.
+
+```{r results='asis', include = TRUE}
+
+wt1 <- gvisWordTree(Cats, textvar = "Phrase")
+
+plot(wt1)
+
+```
+
+Implicit and explicit Word Trees There are two ways to create word trees: implicitly (default) and explicitly. The choice is specified with the wordtree.format option.
+
+'implicit': The word tree will take a set of phrases, in any order, and construct the tree according to the frequency of the words and sub-phrases. 'explicit': We tell the word tree what connects to what, how big to make each sub-phrase, and what colours to use
+
+TEn fragment kodu jest istotny żeby cokolwiek pojawiło się w raporcie results='asis', include = TRUE
+
+Zapisywanie
+
+I was looking into saving html files produced with googleVis as png myself and stumbled upon this thread here. I was able to solve my problem using webshot2::webshot().
+
+i.e. you create an html file with googleVis and then use webshot2::webshot() to produce a png.
+
+dat \<- data.frame(From=c(rep("A",3), rep("B", 3)), To=c(rep(c("X", "Y", "Z"),2)), Weight=c(5,7,6,2,9,4))
+
+sk1 \<- googleVis::gvisSankey(dat, from="From", to="To", weight="Weight")
+
+cat(sk1$html$chart, file = "Sankey.html")
+
+webshot2::webshot(url = "Sankey.html", file = "Sankey.png", vheight = 400, vwidth = 430, zoom = 5)
+
+### Drzewo na bazie pasków z TVP
+
+Użyjemy bazy danych pasków z TVP info. Bazę znalazłem na githubie i nie mogę w żaden sposób gwarantować jej rzetelnosci i reprezentatywności, potraktujmy zatem poniższe ćwiczenie  raczej jako zabawę niż głęboką analizę naukową.
+
+
+
+Użyjemy tidyverse żeby posortowć
+
+```{r}
+library(tidyverse)
+```
+
+Wyselekcjonujemy tusk
+
+```{r}
+kaczyński <- paski %>%
+  filter(grepl("KACZYŃSKI", paski$V1))
+```
+
+```{r results='asis', include = TRUE}
+wt2 <- gvisWordTree(kaczyński, textvar = "V1")
+
+plot(wt2)
+
+```
+
+## Ngramy
+
+Pytanie czy n-gramy mają jakąś swoją formę wizualizacji
+
+```{r}
+#install.packages("ngram")
+library(ngram)
+```
+
+ngramuje
+
+```{r}
+#ng <- ngram(opozycja$V1, n=2)
+```
+
+Bład który się pojawia przy stawieniu n na 3 wynika z tego że są paski z tylko dwmoa słowami potrzebujemy tablixyfraz
+
+```{r}
+#ng2 <- get.phrasetable(ng)
+```
+
+```{r gvisMergeExample, results='asis', echo=FALSE}
+Geo <- gvisGeoChart(Exports, locationvar='Country', colorvar='Profit', 
+                    options=list(height=300, width=350)) 
+Tbl <- gvisTable(Exports, options=list(height=300, width=200))
+plot(gvisMerge(Geo, Tbl, horizontal=TRUE))
+```
+
+## Bibliografia
