@@ -761,7 +761,7 @@ library(plotly)
 ggplotly(y)
 ```
 
-## K
+
 
 Stworzymy kalendarz wzorowany na kalendarzu aktywności na [githubie](https://www.louisahsmith.com/posts/2018-09-25-github-style-calendar-heatmap/).
 
