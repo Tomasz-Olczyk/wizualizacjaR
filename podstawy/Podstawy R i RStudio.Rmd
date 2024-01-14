@@ -11,37 +11,9 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Najważniejsze punkty do omówienia
 
-### Autoprezentacja
 
-### Ankieta
-
-Wyniki i komentarze
-
-Ankieta a dalszy plan tego kursu
-
-### R - podstawowe informacje
-
-ramki danych
-
-typy danych
-
-biblioteki
-
-funkcje
-
-pomoc i dokumentacja funkcji
-
-komentarze
-
-operator przypisania
-
-tworzenie wektorów
-
-tworzenie ramek danych
-
-### RStudio podstawoe informacje
+## RStudio podstawwoe informacje
 
 Panele
 
@@ -55,13 +27,16 @@ Konsola
 
 # Instalacja pakietów
 
+Pakiet R jest kolekcją funkcji, danych i dokumentacji, która rozszerza
+możliwości bazowego R
+
 ```{r}
 
 #install.packages("tidyverse")
 
 ```
 
-## Wczytywanie bibliotek
+## Wczytywanie pakieteów(bibliotek)
 
 ```{r}
 
@@ -75,6 +50,53 @@ install.packages("gapminder")
 library(gapminder)
 ```
 
+
+# Obiekty i funkcje
+
+Nazwy obiektów muszą rozpocznyć si od litry i mogą zawierać tylko litery, cyfry znak _ oraz . .
+
+
+```{r}
+
+class(1)
+
+```
+
+
+
+```{r}
+
+class("1")
+
+```
+
+
+```{r}
+
+two <- 2
+
+Two <- 2.2
+
+
+
+```
+
+
+```{r}
+
+logiczne <- two == Two
+
+logiczne
+
+```
+
+
+```{r}
+
+class(logiczne)
+
+```
+
 Obiekt i operator przypisania. Zapisuje obiekt "data", zawierający dane
 gapminder
 
@@ -85,7 +107,9 @@ data <- (gapminder)
 ```
 
 ```{r}
+
 data("gapminder")
+
 ```
 
 ## Wgląd w dane w ramce
@@ -157,7 +181,45 @@ typeof(sondaż)
 
 ```
 
+
+Indeksowanie
+
+
+
+```{r}
+
+wektor <- 3:103
+
+```
+
+```{r}
+
+co_drugi <- seq(from = 1, to = length(LETTERS), by  = 2)
+
+LETTERS[co_drugi]
+
+
+```
+
+
+
+```{r}
+
+wektor[0]
+
+```
+
+```{r}
+
+wektor[1]
+
+```
+
+
 wektor logiczny
+
+
+
 
 ## Ramki danych
 
@@ -205,215 +267,392 @@ ramka_danych_2 <- data.frame(partie, sondaż_2)
 Jak połączyć wektory nierównych długości w ramkę danych:
 [link](https://www.geeksforgeeks.org/create-dataframe-of-unequal-length-in-r/)
 
-Kilka podstawowych pytań na które trzeba będzie odpowiedzieć
+## Wczytywanie danych
 
-Co będzie na kursie
 
-Czego nie będzie na kursie
-
-Co to jest R
-
-Co R robi czego nie robi?
-
-Co to jest R studio co robi czego nie robi
-
-Jak to zainstalować i jak działa
-
-przetestuj na swoim komputerze z windowsem
-
-narysuj pierwszy wykres
-
-ściągnij dane
-
-funkcje dane, wektory, ładowanie danych, działanie tego na podstawie
-jakichś danych, na początek bez markdowna?
-
-stroma krzywa uczenia się
-
-### Dlaczego R
-
-Uważamy, że R jest świetnym językiem na początku przygody z analizą
-danych, ponieważ jego środowisko zostało opracowane od podstaw z myślą o
-wsparciu tego obszaru nauki. R jest nie tylko językiem programowania,
-ale jest także interaktywnym środowiskiem dla analizy danych. W celu
-zapewnienia wsparcia dla interakcji R jest znacznie bardziej elastyczny
-niż wiele podobnych języków.
-
-### Podstawowe procesy
-
-#### Importowanie danych
-
-Najpierw musimy zaimportować swoje dane do środowiska R. Zwykle polega
-to na pobraniu danych przechowywanych w pliku, bazie danych lub w API
-sieci Web i wczytaniu ich do ramki danych R.
-
-#### Czyszczenie danych
-
-"Czyszczenie danych polega na zapisaniu ich w spójnej postaci, która
-dopasowuje semantykę zbioru danych do sposobu jego przechowywania."
-(Wickham i Grolemund, 2020, p. 9). "W skrócie: jeśli dane są czyste,
-każda kolumna jest zmienną, a każdy wiersz jest obserwacją." ([Wickham i
-Grolemund, 2020, p. 9](zotero://select/library/items/RAAXI5PJ))
-([pdf](zotero://open-pdf/library/items/EW237DGR?page=9&annotation=FVH4SKBI))
-
-#### Przekształacanie danych
-
-"Przekształcenia obejmują: zawężanie zbioru danych do interesujących nas
-informacji (na przykład do wszystkich ludzi w jednym mieście lub
-wszystkich danych z poprzedniego roku), tworzenie nowych zmiennych
-będących funkcjami istniejących zmiennych (na przykład obliczanie
-przyspieszenia na podstawie szybkości i czasu) oraz obliczanie zestawu
-statystyk sumarycznych (na przykład liczności lub średnich)." ([Wickham
-i Grolemund, 2020, p. 10](zotero://select/library/items/RAAXI5PJ))
-([pdf](zotero://open-pdf/library/items/EW237DGR?page=10&annotation=6CNCTBQA))
-"Czyszczenie i przekształcanie danych określamy wspólną nazwą wrangling
-(z ang. mozolić się z czymś), ponieważ uzyskanie danych w formacie
-wygodnym do pracy często przypomina prawdziwą walkę!" ([Wickham i
-Grolemund, 2020, p. 10](zotero://select/library/items/RAAXI5PJ))
-([pdf](zotero://open-pdf/library/items/EW237DGR?page=10&annotation=4QCLISXU))
-
-#### Organizacja kursy
-
-Rozpoczynanie od pobierania i przetwarzania danych nie jest optymalne,
-ponieważ 80% czasu zajmują rutynowe i nudne czynności, a pozostałe 20%
-czasu spędza się na dziwnych i frustrujących zadaniach. Jest to zły
-sposób na naukę nowego zagadnienia! Zamiast tego zaczniemy od
-wizualizacji i przekształceń danych, które zostały już zaimportowane i
-oczyszczone. Dzięki temu, gdy zdobędziesz własne dane i zabierzesz się
-za ich wczytywanie i oczyszczanie, będziesz nadal zmotywowany, wiedząc,
-że wysiłek się opłaci.
-
-#### Pakiety
-
-"Pakiet R jest kolekcją funkcji, danych i dokumentacji, która rozszerza
-możliwości bazowego R." ([Wickham i Grolemund, 2020, p.
-14](zotero://select/library/items/RAAXI5PJ))
-([pdf](zotero://open-pdf/library/items/EW237DGR?page=14&annotation=48V6DFZW))
-
-'#\# R Markdown
-
-```{r cars}
-summary(cars)
+```{r}
+?read.delim
 ```
+
+```{r}
+?read.table
+```
+
+
+```{r}
+
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+
+```
+
+## Zapisywanie danych
+
+## Indeksowanie C.D.
+
+```{r}
+
+pięć_kolumn <- panteon[1:5]
+
+```
+
+
+
+```{r}
+
+sześć_wierszy <- panteon[1:6,]
+
+```
+
+
+```{r}
+
+sześć_wierszy_pięciu_kolumn <- panteon[1:6, 1:5]
+sześć_wierszy_pięciu_kolumn
+```
+
+
+
+```{r}
+
+
+panteon$gender
+
+```
+
+
+Indeksowanie wektora
+
+```{r}
+
+panteon$countryName[1:6]
+
+
+```
+
+
+
+```{r}
+
+piąta_kolumna <- panteon[,5]
+
+
+```
+
+
+Czwarty element z piątej kolumny
+
+```{r}
+
+piąta_kolumna[4]
+
+```
+
+Zakres
+
+
+```{r}
+
+range(panteon$HPI)
+
+```
+
+
+Średnia
+
+```{r}
+
+mean(panteon$HPI)
+
+```
+
+
+summary
+
+```{r}
+
+summary(panteon$domain)
+
+```
+
+
+```{r}
+
+class(panteon$domain)
+
+```
+
+
+```{r}
+
+table(panteon$gender)
+
+```
+
+
+## Przykłady wykresów  w bazowym R
+
+```{r}
+
+hist(panteon$HPI)
+
+```
+
+
+
+```{r}
+
+boxplot(panteon$HPI)
+
+
+```
+
+
+```{r}
+
+boxplot(HPI~gender, data = panteon)
+
+```
+
+
+
+```{r}
+
+domeny <- table(panteon$domain)
+
+barplot(domeny, 
+        horiz = TRUE,
+        las =1)
+
+```
+
+```{r}
+
+?barplot
+
+```
+
+
+```{r}
+
+domeny_gender <- table(panteon$gender,
+                       panteon$domain)
+
+barplot(domeny_gender,
+        las = 1, # orientacja etykiet osi
+        beside = TRUE, #słupki obok siebie
+        horiz = TRUE)
+
+legend("topright", 
+       c("mężczyzna", "kobieta"),
+       fill = c("grey", "black"))
+```
+
+
+
+```{r}
+
+par(mar=c(3,12,3,3)) # marginesy w kolejności par(mar = c(bottom, left, top, right))
+#czyli dół, lewy, góra, rawy
+
+barplot(domeny_gender,
+        las = 1, 
+        beside = TRUE,
+        horiz = TRUE)
+
+legend("topright", 
+       c("mężczyzna", "kobieta"),
+       fill = c("lightgrey", "gray39"))
+```
+
+
+```{r}
+
+par(mar=c(5,12,3,3)) # marginesy w kolejności par(mar = c(bottom, left, top, right))
+#czyli dół, lewy, góra, prawy
+
+barplot(domeny_gender,
+        las = 1, 
+        beside = TRUE,
+        horiz = TRUE,
+        xlab = "liczba biografii",
+        main = "Biografie w zbiorze Panteon 1.0 według dziedziny działalności i płci")
+
+legend("topright", 
+       c("mężczyzna", "kobieta"),
+       fill = c("lightgrey", "gray39"))
+dev.off()
+```
+
+
+
+```{r}
+
+
+range(panteon$L_star)
+
+```
+
+
+```{r}
+
+hist(panteon$L_star)
+
+
+```
+
+
+mozaikowy
+
+
+```{r}
+?mosaicplot
+```
+
+
+```{r}
+
+mosaicplot(~domain+gender, data = panteon)
+
+```
+
+
+```{r}
+
+mosaicplot(~domain+gender, 
+           data = panteon,
+           border = "white",
+           col = c("grey40", "grey70"))
+
+
+```
+
+
+
+```{r}
+
+
+
+mosaicplot(~domain + gender, 
+           data = panteon,
+           color = TRUE)
+
+
+```
+
+kolejność
+
+
+```{r}
+
+
+(domeny_ko <- as.data.frame(table(panteon$domain)))
+
+
+```
+
+
+
+```{r}
+
+panteon$domain <- factor(panteon$domain, levels = c("INSTITUTIONS", 
+                                                    "ARTS", 
+                                                    "SPORTS", 
+                                                    "SCIENCE & TECHNOLOGY",
+                                                    "HUMANITIES", 
+                                                    "PUBLIC FIGURE", 
+                                                    "BUSINESS & LAW", 
+                                                    "EXPLORATION"))
+
+```
+
+
+```{r}
+
+panteon$domain <- factor(panteon$domain, levels = domeny_ko$Var1)
+                           
+```
+
+
+
+
+```{r}
+
+mosaicplot(~domain + gender, 
+           data = panteon,
+           color = TRUE,
+           las =2)
+
+
+```
+
+
+
+```{r}
+
+
+mosaicplot(~continentName + gender, 
+           data = panteon,
+           color = TRUE)
+
+
+```
+
+
+## Pomoc
+
+```{r}
+
+?help()
+
+```
+
+
+```{r}
+
+help(help)
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
 
 ## Katalog roboczy
 
-Pytanie czy to jest w ogóle istotne dla nas?
+Zasadniczo lepiej operować używając rproj w RStudio niż katalogu roboczego.
 
-```{r eval=FALSE, include=FALSE}
-# informacja o katalogu roboczym
+Informacja o katalogu roboczym:
+
+```{r}
+
 getwd()
-#ustawianie katalogu robocze
-setwd() # argumentem jest ścieżka dostępu do katalogu roboczego w cudzysłowie
+
 ```
 
-##pomoc
+Ustawianie katalogu roboczego
 
-?getwd
+```{r}
 
-# ustawianie katalogu roboczego
 
-setwd("/Users/golemxiv/Desktop/analizy r")
+setwd() # argumentem jest ścieżka dostępu do katalogu roboczego w cudzysłowie
 
-# wczytywane danych danych
 
-panteon \<- read.csv("panteon.csv", header = TRUE) ?read.csv2() polfem3
-\<- panteon %>% filter(gender == "Female" & countryCode3 == "POL")
-#struktura danych
+```
 
-str(panteon) #ramka danych str(panteon) #wektor
 
-panteon$gender gender #podsumowania wektorów summary(panteon$occupation)
 
-płeć \<- summary(panteon\$gender)
+## Skrypty
 
-#zapisanie podsumowania do pliku#####\# write.csv(płeć, "płeć.csv")
 
-# 
+Skróty: ctrl enter - uruchamia zaznaczony fragment kodu
+ctrl shift enter - uruchamia cały skrypt
 
-płeć2 \<- read.csv("płeć.csv", header = TRUE)
+## Pliki R Markdown
 
-str(płeć2) #tworzenie wektor nazw
-
-kolumny \<- c("płeć", "liczba") liczby \<- c(300, 400) ramka \<-
-data.frame(kolumny, liczby) #zmiana nazw kolum, tworzenie wektora nazw
-str(ramka2)
-
-ramka2 \<- as.data.frame(ramka2) ramka2 \<- summary(panteon\$gender)
-kolumny \<- c("kobiety", "mężczyźni") colnames(ramka2) \<- kolumny
-colnames(płeć2) \<- kolumny str(płeć2) str(polfem3) \# tworzenie wektora
-liczb liczebności \<- c(1495, 9846) \# tworzenie wektora nazw gender2
-\<- c("kobieta", "mężczyzna")
-
-# tworzenie ramki danych
-
-płeć3 \<-data.frame(gender2, liczebności)
-
-############################################################ 
-
-###pakiety install.packages("dplyr")
-
-#instalowanie pakietów library(dplyr)
-
-############################################################ 
-
-# Przekształcanie i sortowanie danych z użyciem pakietu dplyr
-
-# filtrowanie i ramki danych przy użyciu funkcji "filter"
-
-fem \<- panteon %>% filter(panteon\$gender == "Female") mal \<- panteon
-%>% filter(gender == "Male")
-
-panteon %>% filter(gender == "Female" & countryCode3 == "POL")
-
-polfem \<- panteon %>% filter(gender == "Female" & countryCode3 ==
-"POL")
-
-polfem %>% select(birthyear)
-
-rokurodzenia \<-
-
-polfem %>% select(birthyear)
-
-#################### 
-
-# statystyki opisowe
-
-install.packages("pastecs") library(pastecs) ?stat.desc
-stat.desc(panteon$TotalPageViews) stat.desc(mal$TotalPageViews)
-options(scipen = 999) ####################\# install.packages("ineq")
-library(ineq) ?gini Gini(panteon\$TotalPageViews) ?gini
-
-# obiekty i funkcje
-
-class(1)
-
-class("1")
-
-two \<- 2
-
-Two \<- 2.2
-
-two == Two
-
-# funkcje
-
-solve_for_c \<- function(a, b){ sqrt(a\^2 + b\^2) } \# konstruowanie
-funkcji zwykły nawias z argumentami a potem w klamerkach co funkcja robi
-z argumentami
-
-solve_for_c(2,2)
-
-solve_for_d \<- function(a, b){ sqrt(a\^2 + b\^2) if (!is.numeric(a)) {
-stop('"a" must be numeric', 'You have provided an object of class: ',
-class(a)[1]) } } \# funkcja defensywna ale nie działą jak powinna
-sprawdzić dlaczego być może systemowy komunikat błędy przerywa działanie
-wcześniej solve_for_d("d", 5)
-
-# biblioteki
-
-install.packages("tidyverse") library(tidyverse)
-
-install.packages("here") library(here)
-
-here("panteon.csv")
+Poświęcimy im oddzielne zajęćia
