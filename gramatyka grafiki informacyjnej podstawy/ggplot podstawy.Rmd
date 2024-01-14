@@ -1,0 +1,369 @@
+---
+title: "Podstawy ggplot"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Ggplot2
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+######################
+# filozofia ggplot2
+######################
+
+install.packages("tidyverse")
+library(tidyverse)
+
+
+# przywołąywanie funkcji lub zbioru danych z konkretj biblioteki
+ggplot2::mpg
+
+?mpg # uruchamianie dokumentacji na temat funkcji lub zbioru danych
+
+# warstwy wykresu
+
+
+# funkcja ggplot() generuje układ współrzędnych, pierwszym argumentem jest zbiór danych na podstawie którego tworzymy wykres
+
+?ggplot()
+
+
+ggplot(data = mpg)
+
+do wykresu dodajemy co najmniej jedną warstwę  - funkcję geometryczną np. geom_point
+
+wszystkie funkcje geometryczne przyjmują argument mapping, definiuje on sposób mapowania zmiennych ze zbioru danych
+
+argument mapping zawsze wystepuje z funkcją aes()
+
+
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy))
+
+
+
+# zadanie stwórzmy wykres punktowy zależności między zmiennymi
+# hwy i cyl
+
+
+
+# można zmapować więcej zmiennych używając innych estetyk, np. koloru lub kształtu albo rozmiaru, przroczystości, 
+
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy, alpha = class))
+
+
+?mpg
+?geom_point
+
+# zadanie zmapujmy wybraną zmienną na estetykę shape
+
+
+
+# jak zwykle trzeba rozumieć zmienne inaczej wychodzą nonsensy jak poniżej
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, size = class))
+
+
+
+# dlaczego ten wykres nie ma sensu?
+
+
+# size oczekuje uporządkowanej zmiennej a zmienna  class jest nieuporządkowana
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy,  alpha = class))
+
+
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+
+# jak zadziała poniższy kod?
+
+
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, alpha = 0.3), color = "blue")
+
+# dlaczego tak wyszło?
+
+
+
+# jak powinien wyglądać kod żeby punkty były niebieskie?
+
+
+## zadanie ##
+# zmieńmy w poniższym wykresie kółka na  lekko transparentne trójkąty
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+
+
+
+
+# różne poziomy determinowania estetyk mają różne konsekwencje
+
+ggplot(data = mpg,  mapping = aes(x = displ, y = hwy)) + 
+  geom_point() +
+  geom_smooth()
+
+
+ggplot() + 
+  geom_point(data = mpg,  mapping = aes(x = displ, y = hwy)) +
+  geom_smooth()
+
+
+
+# obiekty graficzne geom_
+
+ggplot(data = faithful) +
+  geom_histogram(aes(x = eruptions))
+
+
+
+# estetyki dla każdego obiektu geometycznego zapisane są w dokumentacji
+
+?geom_point
+
+?geom_histogram
+
+
+
+# warstwy
+# kolejność dodawania obiektów graficznych ma znaczenie
+
+
+ggplot(faithful, 
+       aes(x= eruptions, y = waiting)) +
+  geom_density2d() +
+  geom_point()
+
+# zmieńmy kolejność najpierw geom point a potem geom_density2d()
+# co się zmieniło?
+
+ggplot(faithful, 
+       aes(x= eruptions, y = waiting)) +
+  geom_point() +
+  geom_density2d()
+
+
+# skale
+
+# kolor
+?scale_color
+
+
+?scale_color_brewer()
+
+RColorBrewer::display.brewer.all()
+
+ggplot(data = mpg) + 
+  geom_point( mapping = aes(x = displ, y = hwy, color = class)) +
+  scale_color_brewer(palette ="Set3") # zmienia z domyślnego koloru na wybraną skalę lun paletę 
+
+# osie
+
+
+?scale_x_continuous()
+
+
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, color = class)) +
+  scale_color_brewer(palette ="BrBG") +
+  scale_x_continuous(breaks = (c(2, 5.5, 7))) # ustalamy własne przedziały tworząc wektor liczb funkcją c()
+
+
+# zadanie - zastosujmy scale_x_discrete do danych mpg
+
+?scale_x_discrete()
+
+
+# panele - facets pozwalają uniknąć overplotting a także lepiej dostrzec pewne zależności w danych
+
+#porównajmy poniższy wykres:
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, colour = class))
+  
+
+
+
+#z poniższym wykresem:
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_wrap(~ class)
+
+?facet_wrap()  # mapuje jedną zmienną na panele
+
+# mapowanie iinterakcjidwóch zmiennych na panele funkcją facet_grid()
+
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, 
+                           y = hwy))  +
+  facet_grid(cyl ~ class)  
+ 
+# etykiety
+
+# etykiety dodajemy funkcją labs
+
+labs(title = "") # dodaje tytuł
+
+labs(subtitle = "")  # dodaje podtytuł
+
+
+labs(caption = "")  # dodaje kom
+
+labs(x = "", y = "", colour = "")  # zastepuje tytuły osi i w legendzie
+
+
+# dodajmy tytuł i podpis pod wykresem
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  labs(title = "Wydajność na autostradzie a pojemność",
+       caption = "źródło: dane mpg",
+       x = "pojemność", 
+       y = "wydajność na autostradzie",
+       colour = "klasa")
+  
+# zapisywanie
+
+
+ggsave("my-plot.pdf") # > zapisue 6 x 3.71 cali
+
+
+?ggsave # charakterystki wykresu w pliku docelowym i miejsce zapisania wykresu można ustalić
+
+getwd() # zwraca aktualny katalog roboczy (working directory)
+
+setwd() # determinuje aktualny katalog roboczy (working directory)
+
+# themes  - layouty
+# ggplot zawiera  wiele własnych layutów istnieją także pakiety zawierające dodatkowe layouty jak ggthemes
+
+install.packages("ggthemes")
+library(ggthemes)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  labs(title = "Wydajność na autostradzie a pojemność",
+       caption = "źródło: dane mpg",
+       x = "pojemność", 
+       y = "wydajność na autostradzie",
+       colour = "klasa") + # theme jest kolejną warstwą którą dodajemy plusem
+       theme_economist()
+       
+       
+       ggplot(data = gapminder, mapping = (aes(x= gdpPercap, y = lifeExp))) + #podstawowa funkcja
+  geom_smooth() + # dodaje linię
+  geom_point() # dodaje punkt
+
+
+
+ggplot(gapminder, aes(x= gdpPercap, y = lifeExp, size= pop, color = continent)) + #dodaje estetyki kolor i rozmiar
+  geom_smooth() + #pojawia się błąd bo estetyka size znalazła się w globalnym mapowaniu i jest odziedziczona przez geometrię geom_smooth
+  geom_point() 
+
+ggplot(gapminder, aes(x= gdpPercap, 
+                      y = lifeExp)) +
+  geom_smooth(aes(color = continent)) +
+  geom_point(aes(size= pop)) #błąd nie pojawia się bo przenieśliśmy estetykę size do geom_point
+
+ggplot(gapminder, aes(x= gdpPercap, 
+                      y = lifeExp)) +
+  geom_smooth() +
+  geom_point() +
+  facet_wrap(~continent) #tworzymy wykres small multiples
+
+
+
+
+### Narysujemy wykres warstwa po warstwie
+
+#### Dane i estetyki
+
+```{r}
+ggplot(data = gapminder, mapping = (aes(x= gdpPercap, y = lifeExp))) +
+  geom_point()
+
+```
+
+
+### Geometrie
+
+```{r}
+
+ggplot(gapminder, aes(x= gdpPercap, 
+                      y = lifeExp)) +
+  geom_smooth() +
+  geom_point() +
+  facet_wrap(~continent)
+```
+
+
+
+
+
+#### Etykiety
+
+funkcja labs
+
+```{r}
+
+```
+
+
+
+
+
+#### Panele
+
+facet_wrap()
+
+facet_grid()
+
+```{r}
+
+```
+
+
+####
+
+
+#### Zapisywanie wykresów
+
+
+Zapisywanie point and click
+
+katalog roboczy funkcje getwd() i setwd()
+
+
+funkcja ggsave()
+
