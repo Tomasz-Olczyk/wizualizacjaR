@@ -1,69 +1,16 @@
 ---
 title: "Podstawy R i RStudio"
+author: "Tomasz Olczyk"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
-
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-#program oczekuje kodu
-
-#funkcja ściaga biblioteki
-install.packages("tidyverse")
-library(tidyverse)
-install.packages("gapminder")
-library(gapminder)
-
-# zapisujemy obiekt data, zawierajacy dane gapminder
-data <- (gapminder)
-
-#wyświetla strukturę danych
-str(data)
-
-#wyświetla 6 pierwszych wierszy
-head(data)
-
-#wyświetla ostatnich sześć wierszy
-tail(data)
-
-#tworzy wektor znaków
-partie <- c("KO", "PiS", "Lewica", "Konfederacja", "TD")
-
-#tworzy wektor liczb
-sondaż <- c(29, 35, 10, 10, 10)
-
-#tworzy matrycę z dwóch wektorów
-matryca <- cbind(partie, sondaż)
-
-#tworzy ramkę danych z dwóch wektorów
-ramka_danych <- data.frame(partie, sondaż)
-
-
-
-ggplot(data = gapminder, mapping = (aes(x= gdpPercap, y = lifeExp))) + #podstawowa funkcja
-  geom_smooth() + # dodaje linię
-  geom_point() # dodaje punkt
-
-
-
-ggplot(gapminder, aes(x= gdpPercap, y = lifeExp, size= pop, color = continent)) + #dodaje estetyki kolor i rozmiar
-  geom_smooth() + #pojawia się błąd bo estetyka size znalazła się w globalnym mapowaniu i jest odziedziczona przez geometrię geom_smooth
-  geom_point() 
-
-ggplot(gapminder, aes(x= gdpPercap, 
-                      y = lifeExp)) +
-  geom_smooth(aes(color = continent)) +
-  geom_point(aes(size= pop)) #błąd nie pojawia się bo przenieśliśmy estetykę size do geom_point
-
-ggplot(gapminder, aes(x= gdpPercap, 
-                      y = lifeExp)) +
-  geom_smooth() +
-  geom_point() +
-  facet_wrap(~continent) #tworzymy wykres small multiples
 ## Najważniejsze punkty do omówienia
 
 ### Autoprezentacja
@@ -106,94 +53,163 @@ RMarkdown
 
 Konsola
 
-
-### Biblioteki - tidy verse
-
-Będziemy potrzebować biblioteki, a właściwie zbioru bibliotek tidyverse. 
-
-
-```{r biblioteki}
-
-```
-
-### Biblioteki c.d. gapminder
-
-Hans Rossling, Gapminder.org.
+# Instalacja pakietów
 
 ```{r}
 
-```
-
-
-### Narysujemy wykres warstwa po warstwie
-
-#### Dane i estetyki
-
-```{r}
-ggplot(data = gapminder, mapping = (aes(x= gdpPercap, y = lifeExp))) +
-  geom_point()
+#install.packages("tidyverse")
 
 ```
 
-
-### Geometrie
+## Wczytywanie bibliotek
 
 ```{r}
 
-ggplot(gapminder, aes(x= gdpPercap, 
-                      y = lifeExp)) +
-  geom_smooth() +
-  geom_point() +
-  facet_wrap(~continent)
+library(tidyverse)
+
 ```
-
-
-Błąd :
-
-
-#### Etykiety
-
-funkcja labs
 
 ```{r}
 
+install.packages("gapminder")
+library(gapminder)
 ```
 
-
-
-
-
-#### Panele
-
-facet_wrap()
-
-facet_grid()
+Obiekt i operator przypisania. Zapisuje obiekt "data", zawierający dane
+gapminder
 
 ```{r}
 
+data <- (gapminder)
+
 ```
 
+```{r}
+data("gapminder")
+```
 
-####
+## Wgląd w dane w ramce
 
+```{r}
 
-#### Zapisywanie wykresów
+str(data)
 
+```
 
-zaipsywanie point and click
+Wyświetla 6 pierwszych wierszy
 
-katalog roboczy funkcje getwd() i setwd()
+```{r}
 
+head(data)
 
-funkcja ggsave()
+```
 
-#komentarze do usunięcia
+Wyświetla ostatnich sześć wierszy
+
+```{r}
+
+tail(data)
+
+```
+
+Funkcja glimpse z pakietu dplyr. Podwójny nazwa funkcji poprzedzona
+dwukropkiem i nazwą biblioteki informuje ustala z której biblioteki ma
+być zastosowana funkcja o danej nazwie. Przydatne, gdy jest wiele
+funkcji o tych samych nazwach z różnych bibliotek,
+
+```{r}
+
+dplyr::glimpse(data)
+
+```
+
+## Wektory
+
+Tworzenie wektorów
+
+```{r}
+
+partie <- c("KO", "PiS", "Lewica", "Konfederacja", "TD")
+partie
+
+```
+
+Wektor napisów
+
+```{r}
+typeof(partie)
+```
+
+```{r}
+class(partie)
+```
+
+Wektor liczb
+
+```{r}
+sondaż <- c(29, 35, 10, 10, 10)
+
+```
+
+```{r}
+
+typeof(sondaż)
+
+```
+
+wektor logiczny
+
+## Ramki danych
+
+Matryca z dwóch wektorów
+
+```{r}
+
+matryca <- cbind(partie, sondaż)
+matryca
+```
+
+```{r}
+
+sondaż_2 <-  c(12, 23, 11)
+
+```
+
+```{r}
+
+glimpse(matryca)
+
+```
+
+```{r}
+matryca <- cbind(partie, sondaż_2)
+matryca
+```
+
+```{r}
+
+ramka_danych <- data.frame(partie, sondaż)
+
+```
+
+```{r}
+glimpse(ramka_danych)
+```
+
+```{r}
+
+ramka_danych_2 <- data.frame(partie, sondaż_2)
+
+```
+
+Jak połączyć wektory nierównych długości w ramkę danych:
+[link](https://www.geeksforgeeks.org/create-dataframe-of-unequal-length-in-r/)
+
 Kilka podstawowych pytań na które trzeba będzie odpowiedzieć
 
 Co będzie na kursie
 
 Czego nie będzie na kursie
-
 
 Co to jest R
 
@@ -205,61 +221,82 @@ Jak to zainstalować i jak działa
 
 przetestuj na swoim komputerze z windowsem
 
-narysuj pierwszy wykres 
+narysuj pierwszy wykres
 
 ściągnij dane
 
-funkcje dane, wektory, ładowanie danych, działanie tego na podstawie jakichś danych, na początek bez markdowna?
+funkcje dane, wektory, ładowanie danych, działanie tego na podstawie
+jakichś danych, na początek bez markdowna?
 
 stroma krzywa uczenia się
 
-
 ### Dlaczego R
 
-Uważamy, że R jest świetnym językiem na początku przygody z analizą danych, ponieważ jego środowisko zostało opracowane od podstaw z myślą o wsparciu tego obszaru nauki. R jest nie tylko językiem programowania, ale jest także interaktywnym środowiskiem dla analizy danych. W celu zapewnienia wsparcia dla interakcji R jest znacznie bardziej elastyczny niż wiele podobnych języków.
+Uważamy, że R jest świetnym językiem na początku przygody z analizą
+danych, ponieważ jego środowisko zostało opracowane od podstaw z myślą o
+wsparciu tego obszaru nauki. R jest nie tylko językiem programowania,
+ale jest także interaktywnym środowiskiem dla analizy danych. W celu
+zapewnienia wsparcia dla interakcji R jest znacznie bardziej elastyczny
+niż wiele podobnych języków.
 
 ### Podstawowe procesy
 
-#### Importowanie danych 
+#### Importowanie danych
 
-Najpierw musimy zaimportować swoje dane do środowiska R. Zwykle polega to na pobraniu danych przechowywanych w pliku, bazie danych lub w API sieci Web i wczytaniu ich do ramki danych R.
+Najpierw musimy zaimportować swoje dane do środowiska R. Zwykle polega
+to na pobraniu danych przechowywanych w pliku, bazie danych lub w API
+sieci Web i wczytaniu ich do ramki danych R.
 
 #### Czyszczenie danych
-“Czyszczenie danych polega na zapisaniu ich w spójnej postaci, która dopasowuje semantykę zbioru danych do sposobu jego przechowywania.” (Wickham i Grolemund, 2020, p. 9).  “W skrócie: jeśli dane są czyste, każda kolumna jest zmienną, a każdy wiersz jest obserwacją.” ([Wickham i Grolemund, 2020, p. 9](zotero://select/library/items/RAAXI5PJ)) ([pdf](zotero://open-pdf/library/items/EW237DGR?page=9&annotation=FVH4SKBI))
 
-#### Przekształacanie danych 
-“Przekształcenia obejmują: zawężanie zbioru danych do interesujących nas informacji (na przykład do wszystkich ludzi w jednym mieście lub wszystkich danych z poprzedniego roku), tworzenie nowych zmiennych będących funkcjami istniejących zmiennych (na przykład obliczanie przyspieszenia na podstawie szybkości i czasu) oraz obliczanie zestawu statystyk sumarycznych (na przykład liczności lub średnich).” ([Wickham i Grolemund, 2020, p. 10](zotero://select/library/items/RAAXI5PJ)) ([pdf](zotero://open-pdf/library/items/EW237DGR?page=10&annotation=6CNCTBQA))
-“Czyszczenie i przekształcanie danych określamy wspólną nazwą wrangling (z ang. mozolić się z czymś), ponieważ uzyskanie danych w formacie wygodnym do pracy często przypomina prawdziwą walkę!” ([Wickham i Grolemund, 2020, p. 10](zotero://select/library/items/RAAXI5PJ)) ([pdf](zotero://open-pdf/library/items/EW237DGR?page=10&annotation=4QCLISXU))
+"Czyszczenie danych polega na zapisaniu ich w spójnej postaci, która
+dopasowuje semantykę zbioru danych do sposobu jego przechowywania."
+(Wickham i Grolemund, 2020, p. 9). "W skrócie: jeśli dane są czyste,
+każda kolumna jest zmienną, a każdy wiersz jest obserwacją." ([Wickham i
+Grolemund, 2020, p. 9](zotero://select/library/items/RAAXI5PJ))
+([pdf](zotero://open-pdf/library/items/EW237DGR?page=9&annotation=FVH4SKBI))
+
+#### Przekształacanie danych
+
+"Przekształcenia obejmują: zawężanie zbioru danych do interesujących nas
+informacji (na przykład do wszystkich ludzi w jednym mieście lub
+wszystkich danych z poprzedniego roku), tworzenie nowych zmiennych
+będących funkcjami istniejących zmiennych (na przykład obliczanie
+przyspieszenia na podstawie szybkości i czasu) oraz obliczanie zestawu
+statystyk sumarycznych (na przykład liczności lub średnich)." ([Wickham
+i Grolemund, 2020, p. 10](zotero://select/library/items/RAAXI5PJ))
+([pdf](zotero://open-pdf/library/items/EW237DGR?page=10&annotation=6CNCTBQA))
+"Czyszczenie i przekształcanie danych określamy wspólną nazwą wrangling
+(z ang. mozolić się z czymś), ponieważ uzyskanie danych w formacie
+wygodnym do pracy często przypomina prawdziwą walkę!" ([Wickham i
+Grolemund, 2020, p. 10](zotero://select/library/items/RAAXI5PJ))
+([pdf](zotero://open-pdf/library/items/EW237DGR?page=10&annotation=4QCLISXU))
 
 #### Organizacja kursy
 
-Rozpoczynanie od pobierania i przetwarzania danych nie jest optymalne, ponieważ 80% czasu zajmują rutynowe i nudne czynności, a pozostałe 20% czasu spędza się na dziwnych i frustrujących zadaniach. Jest to zły sposób na naukę nowego zagadnienia! Zamiast tego zaczniemy od wizualizacji i przekształceń danych, które zostały już zaimportowane i oczyszczone. Dzięki temu, gdy zdobędziesz własne dane i zabierzesz się za ich wczytywanie i oczyszczanie, będziesz nadal zmotywowany, wiedząc, że wysiłek się opłaci.
-
+Rozpoczynanie od pobierania i przetwarzania danych nie jest optymalne,
+ponieważ 80% czasu zajmują rutynowe i nudne czynności, a pozostałe 20%
+czasu spędza się na dziwnych i frustrujących zadaniach. Jest to zły
+sposób na naukę nowego zagadnienia! Zamiast tego zaczniemy od
+wizualizacji i przekształceń danych, które zostały już zaimportowane i
+oczyszczone. Dzięki temu, gdy zdobędziesz własne dane i zabierzesz się
+za ich wczytywanie i oczyszczanie, będziesz nadal zmotywowany, wiedząc,
+że wysiłek się opłaci.
 
 #### Pakiety
 
-“Pakiet R jest kolekcją funkcji, danych i dokumentacji, która rozszerza możliwości bazowego R.” ([Wickham i Grolemund, 2020, p. 14](zotero://select/library/items/RAAXI5PJ)) ([pdf](zotero://open-pdf/library/items/EW237DGR?page=14&annotation=48V6DFZW))
+"Pakiet R jest kolekcją funkcji, danych i dokumentacji, która rozszerza
+możliwości bazowego R." ([Wickham i Grolemund, 2020, p.
+14](zotero://select/library/items/RAAXI5PJ))
+([pdf](zotero://open-pdf/library/items/EW237DGR?page=14&annotation=48V6DFZW))
 
-
-## R Markdown
-
-
+'#\# R Markdown
 
 ```{r cars}
 summary(cars)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-
-
-### Katalog roboczy
+## Katalog roboczy
 
 Pytanie czy to jest w ogóle istotne dla nas?
 
@@ -270,108 +307,82 @@ getwd()
 setwd() # argumentem jest ścieżka dostępu do katalogu roboczego w cudzysłowie
 ```
 
-
-
-#pomoc
+##pomoc
 
 ?getwd
 
 # ustawianie katalogu roboczego
+
 setwd("/Users/golemxiv/Desktop/analizy r")
 
-#wprowadzanie danych
-panteon <- read.csv("panteon.csv", header = TRUE)
-?read.csv2()
-polfem3 <- panteon %>% filter(gender == "Female" & countryCode3 == "POL")
+# wczytywane danych danych
+
+panteon \<- read.csv("panteon.csv", header = TRUE) ?read.csv2() polfem3
+\<- panteon %>% filter(gender == "Female" & countryCode3 == "POL")
 #struktura danych
 
-str(panteon)
-#ramka danych
-str(panteon)
-#wektor
+str(panteon) #ramka danych str(panteon) #wektor
 
-panteon$gender
-gender
-#podsumowania wektorów
-summary(panteon$occupation)
+panteon$gender gender #podsumowania wektorów summary(panteon$occupation)
 
-płeć <- summary(panteon$gender)
+płeć \<- summary(panteon\$gender)
 
-#zapisanie podsumowania do pliku######
-write.csv(płeć, "płeć.csv")
+#zapisanie podsumowania do pliku#####\# write.csv(płeć, "płeć.csv")
 
-#
-płeć2 <- read.csv("płeć.csv", header = TRUE)
+# 
 
-str(płeć2)
-#tworzenie wektor nazw
+płeć2 \<- read.csv("płeć.csv", header = TRUE)
 
-kolumny <- c("płeć", "liczba")
-liczby <- c(300, 400)
-ramka <- data.frame(kolumny, liczby)
-#zmiana nazw kolum, tworzenie wektora nazw
+str(płeć2) #tworzenie wektor nazw
+
+kolumny \<- c("płeć", "liczba") liczby \<- c(300, 400) ramka \<-
+data.frame(kolumny, liczby) #zmiana nazw kolum, tworzenie wektora nazw
 str(ramka2)
 
-ramka2 <- as.data.frame(ramka2)
-ramka2 <- summary(panteon$gender)
-kolumny <- c("kobiety", "mężczyźni")
-colnames(ramka2) <- kolumny
-colnames(płeć2) <- kolumny
-str(płeć2)
-str(polfem3)
-# tworzenie wektora liczb
-liczebności <- c(1495, 9846)
-# tworzenie wektora nazw
-gender2 <- c("kobieta", "mężczyzna")
+ramka2 \<- as.data.frame(ramka2) ramka2 \<- summary(panteon\$gender)
+kolumny \<- c("kobiety", "mężczyźni") colnames(ramka2) \<- kolumny
+colnames(płeć2) \<- kolumny str(płeć2) str(polfem3) \# tworzenie wektora
+liczb liczebności \<- c(1495, 9846) \# tworzenie wektora nazw gender2
+\<- c("kobieta", "mężczyzna")
 
 # tworzenie ramki danych
-płeć3 <-data.frame(gender2, liczebności)
 
-############################################################
-###pakiety
-install.packages("dplyr")
+płeć3 \<-data.frame(gender2, liczebności)
 
-#instalowanie pakietów
-library(dplyr)
+############################################################ 
 
-############################################################
+###pakiety install.packages("dplyr")
+
+#instalowanie pakietów library(dplyr)
+
+############################################################ 
+
 # Przekształcanie i sortowanie danych z użyciem pakietu dplyr
 
 # filtrowanie i ramki danych przy użyciu funkcji "filter"
 
-fem <- panteon %>% filter(panteon$gender == "Female")
-mal <- panteon %>% filter(gender == "Male")
-
+fem \<- panteon %>% filter(panteon\$gender == "Female") mal \<- panteon
+%>% filter(gender == "Male")
 
 panteon %>% filter(gender == "Female" & countryCode3 == "POL")
 
-
-polfem <- panteon %>% filter(gender == "Female" & countryCode3 == "POL")
-
-polfem %>% select(birthyear)
-
-rokurodzenia <-
+polfem \<- panteon %>% filter(gender == "Female" & countryCode3 ==
+"POL")
 
 polfem %>% select(birthyear)
 
-####################
+rokurodzenia \<-
+
+polfem %>% select(birthyear)
+
+#################### 
+
 # statystyki opisowe
-install.packages("pastecs")
-library(pastecs)
-?stat.desc
-stat.desc(panteon$TotalPageViews)
-stat.desc(mal$TotalPageViews)
-options(scipen = 999)
-#####################
-install.packages("ineq")
-library(ineq)
-?gini
-Gini(panteon$TotalPageViews)
-?gini
 
-
-
-
+install.packages("pastecs") library(pastecs) ?stat.desc
+stat.desc(panteon$TotalPageViews) stat.desc(mal$TotalPageViews)
+options(scipen = 999) ####################\# install.packages("ineq")
+library(ineq) ?gini Gini(panteon\$TotalPageViews) ?gini
 
 # obiekty i funkcje
 
@@ -379,43 +390,30 @@ class(1)
 
 class("1")
 
-two <- 2
+two \<- 2
 
-Two <- 2.2
+Two \<- 2.2
 
 two == Two
 
 # funkcje
 
-solve_for_c <- function(a, b){ 
-  sqrt(a^2 + b^2) 
-} # konstruowanie funkcji zwykły nawias z argumentami a potem w klamerkach co funkcja robi z argumentami
+solve_for_c \<- function(a, b){ sqrt(a\^2 + b\^2) } \# konstruowanie
+funkcji zwykły nawias z argumentami a potem w klamerkach co funkcja robi
+z argumentami
 
 solve_for_c(2,2)
 
-
-solve_for_d <- function(a, b){ 
-  sqrt(a^2 + b^2) 
-  if (!is.numeric(a)) { 
-    stop('"a" must be numeric',
-         'You have provided an object of class: ',
-           class(a)[1]) 
-    } 
-  } # funkcja defensywna ale nie działą jak powinna sprawdzić dlaczego być może systemowy komunikat błędy przerywa działanie wcześniej
-solve_for_d("d", 5)
+solve_for_d \<- function(a, b){ sqrt(a\^2 + b\^2) if (!is.numeric(a)) {
+stop('"a" must be numeric', 'You have provided an object of class: ',
+class(a)[1]) } } \# funkcja defensywna ale nie działą jak powinna
+sprawdzić dlaczego być może systemowy komunikat błędy przerywa działanie
+wcześniej solve_for_d("d", 5)
 
 # biblioteki
 
-install.packages("tidyverse")
-library(tidyverse)
+install.packages("tidyverse") library(tidyverse)
 
-install.packages("here")
-library(here)
+install.packages("here") library(here)
 
 here("panteon.csv")
-
-
-# biblioteki użuwyane w tej ksiażce
-
-install.packages(c("tidyverse", "here", "readxl", "haven", "janitor", "stargazer", "forcats", "skimr","corr", "amerika", "purrr", "arm", "faraway", "MASS", "OOmisc", "pROC", "lmtest", "car", "rstatix", "plotly", "broom", "patchwork", "performance", "see") )
-
