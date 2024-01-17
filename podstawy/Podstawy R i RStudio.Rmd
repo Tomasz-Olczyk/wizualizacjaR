@@ -16,13 +16,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ## RStudio podstawwoe informacje
 
 Panele
-
 Pliki
-
 Skrypty
-
 RMarkdown
-
 Konsola
 
 # Instalacja pakietów
@@ -30,13 +26,18 @@ Konsola
 Pakiet R jest kolekcją funkcji, danych i dokumentacji, która rozszerza
 możliwości bazowego R
 
+Poniższy segment jest nazywany code chunk. Pliki R markdown składają się z nagłówka, segmentów tekstu i specjalnie oznaczonych segmentów kodu. Skrypty składają się z kodu i komantarzy poprzedzonych #.
+
 ```{r}
 
-#install.packages("tidyverse")
+#install.packages("tidyverse") # hash przed kodem sprawia, że znaki po nim są traktowane jak komentarz, kod tnie będzie wykonany
 
 ```
 
 ## Wczytywanie pakieteów(bibliotek)
+
+
+Biblioteki dobrze jest wczytywać na początku analizy
 
 ```{r}
 
@@ -44,16 +45,17 @@ library(tidyverse)
 
 ```
 
+
 ```{r}
 
-install.packages("gapminder")
+#install.packages("gapminder")
 library(gapminder)
 ```
 
 
 # Obiekty i funkcje
 
-Nazwy obiektów muszą rozpocznyć si od litry i mogą zawierać tylko litery, cyfry znak _ oraz . .
+Nazwy obiektów muszą rozpocznać się od litery i mogą zawierać tylko litery, cyfry znak _ oraz . .
 
 
 ```{r}
@@ -73,10 +75,9 @@ class("1")
 
 ```{r}
 
-two <- 2
+two <- 2 # strzałka jest operatorem przypisania
 
 Two <- 2.2
-
 
 
 ```
@@ -93,9 +94,11 @@ logiczne
 
 ```{r}
 
-class(logiczne)
+nierówna_się <- two != Two
 
+nierówna_się 
 ```
+
 
 Obiekt i operator przypisania. Zapisuje obiekt "data", zawierający dane
 gapminder
@@ -128,6 +131,15 @@ head(data)
 
 ```
 
+Wyświetla ramkę danych w lewym panelu
+
+```{r}
+
+View(data)
+
+```
+
+
 Wyświetla ostatnich sześć wierszy
 
 ```{r}
@@ -136,8 +148,8 @@ tail(data)
 
 ```
 
-Funkcja glimpse z pakietu dplyr. Podwójny nazwa funkcji poprzedzona
-dwukropkiem i nazwą biblioteki informuje ustala z której biblioteki ma
+Funkcja glimpse z pakietu dplyr. Nazwa funkcji poprzedzona
+dwukropkiem i nazwą biblioteki informuje/ustala, z której biblioteki ma
 być zastosowana funkcja o danej nazwie. Przydatne, gdy jest wiele
 funkcji o tych samych nazwach z różnych bibliotek,
 
@@ -148,6 +160,7 @@ dplyr::glimpse(data)
 ```
 
 ## Wektory
+
 
 Tworzenie wektorów
 
@@ -192,16 +205,6 @@ wektor <- 3:103
 
 ```
 
-```{r}
-
-co_drugi <- seq(from = 1, to = length(LETTERS), by  = 2)
-
-LETTERS[co_drugi]
-
-
-```
-
-
 
 ```{r}
 
@@ -214,6 +217,25 @@ wektor[0]
 wektor[1]
 
 ```
+
+
+
+```{r}
+LETTERS
+```
+
+
+```{r}
+
+co_drugi <- seq(from = 1, to = length(LETTERS), by  = 2)
+
+LETTERS[co_drugi]
+
+
+```
+
+
+
 
 
 wektor logiczny
@@ -255,12 +277,14 @@ ramka_danych <- data.frame(partie, sondaż)
 ```
 
 ```{r}
+
 glimpse(ramka_danych)
+
 ```
 
 ```{r}
 
-ramka_danych_2 <- data.frame(partie, sondaż_2)
+#ramka_danych_2 <- data.frame(partie, sondaż_2)
 
 ```
 
@@ -279,6 +303,153 @@ Jak połączyć wektory nierównych długości w ramkę danych:
 ```
 
 
+```{r eval = FALSE}
+
+read.table(file, 
+           header = FALSE, 
+           sep = "", 
+           quote = "\"'",
+           dec = ".", numerals = c("allow.loss", "warn.loss", "no.loss"),
+           row.names, col.names, as.is = !stringsAsFactors,
+           na.strings = "NA", colClasses = NA, nrows = -1,
+           skip = 0, check.names = TRUE, fill = !blank.lines.skip,
+           strip.white = FALSE, blank.lines.skip = TRUE,
+           comment.char = "#",
+           allowEscapes = FALSE, flush = FALSE,
+           stringsAsFactors = FALSE,
+           fileEncoding = "", encoding = "unknown", text, skipNul = FALSE)
+
+```
+
+```{r}
+?read.csv()
+
+```
+
+
+
+```{r eval = FALSE}
+
+read.csv(file, header = TRUE, sep = ",", quote = "\"",
+         dec = ".", fill = TRUE, comment.char = "", ...)
+
+read.csv2(file, header = TRUE, sep = ";", quote = "\"",
+          dec = ",", fill = TRUE, comment.char = "", ...)
+
+read.delim(file, header = TRUE, sep = "\t", quote = "\"",
+           dec = ".", fill = TRUE, comment.char = "", ...)
+
+read.delim2(file, header = TRUE, sep = "\t", quote = "\"",
+            dec = ",", fill = TRUE, comment.char = "", ...)
+
+```
+
+
+```{r}
+?readr::read_delim
+```
+
+
+
+```{r, eval = FALSE}
+
+read_delim(
+  file,
+  delim = NULL,
+  quote = "\"",
+  escape_backslash = FALSE,
+  escape_double = TRUE,
+  col_names = TRUE,
+  col_types = NULL,
+  col_select = NULL,
+  id = NULL,
+  locale = default_locale(),
+  na = c("", "NA"),
+  quoted_na = TRUE,
+  comment = "",
+  trim_ws = FALSE,
+  skip = 0,
+  n_max = Inf,
+  guess_max = min(1000, n_max),
+  name_repair = "unique",
+  num_threads = readr_threads(),
+  progress = show_progress(),
+  show_col_types = should_show_types(),
+  skip_empty_rows = TRUE,
+  lazy = should_read_lazy()
+)
+
+read_csv(
+  file,
+  col_names = TRUE,
+  col_types = NULL,
+  col_select = NULL,
+  id = NULL,
+  locale = default_locale(),
+  na = c("", "NA"),
+  quoted_na = TRUE,
+  quote = "\"",
+  comment = "",
+  trim_ws = TRUE,
+  skip = 0,
+  n_max = Inf,
+  guess_max = min(1000, n_max),
+  name_repair = "unique",
+  num_threads = readr_threads(),
+  progress = show_progress(),
+  show_col_types = should_show_types(),
+  skip_empty_rows = TRUE,
+  lazy = should_read_lazy()
+)
+
+read_csv2(
+  file,
+  col_names = TRUE,
+  col_types = NULL,
+  col_select = NULL,
+  id = NULL,
+  locale = default_locale(),
+  na = c("", "NA"),
+  quoted_na = TRUE,
+  quote = "\"",
+  comment = "",
+  trim_ws = TRUE,
+  skip = 0,
+  n_max = Inf,
+  guess_max = min(1000, n_max),
+  progress = show_progress(),
+  name_repair = "unique",
+  num_threads = readr_threads(),
+  show_col_types = should_show_types(),
+  skip_empty_rows = TRUE,
+  lazy = should_read_lazy()
+)
+
+read_tsv(
+  file,
+  col_names = TRUE,
+  col_types = NULL,
+  col_select = NULL,
+  id = NULL,
+  locale = default_locale(),
+  na = c("", "NA"),
+  quoted_na = TRUE,
+  quote = "\"",
+  comment = "",
+  trim_ws = TRUE,
+  skip = 0,
+  n_max = Inf,
+  guess_max = min(1000, n_max),
+  progress = show_progress(),
+  name_repair = "unique",
+  num_threads = readr_threads(),
+  show_col_types = should_show_types(),
+  skip_empty_rows = TRUE,
+  lazy = should_read_lazy()
+)
+```
+
+
 ```{r}
 
 panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
@@ -286,6 +457,31 @@ panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 ```
 
 ## Zapisywanie danych
+
+
+analogicznie funkcjami write*
+
+```{r}
+?write.table
+```
+
+
+```{r eval = FALSE}
+
+write.table(x, file = "", append = FALSE, quote = TRUE, sep = " ",
+            eol = "\n", na = "NA", dec = ".", row.names = TRUE,
+            col.names = TRUE, qmethod = c("escape", "double"),
+            fileEncoding = "")
+
+```
+
+## Inne typy plików wejściowych
+
+
+```{r}
+
+```
+
 
 ## Indeksowanie C.D.
 
@@ -307,6 +503,7 @@ sześć_wierszy <- panteon[1:6,]
 ```{r}
 
 sześć_wierszy_pięciu_kolumn <- panteon[1:6, 1:5]
+
 sześć_wierszy_pięciu_kolumn
 ```
 
@@ -391,6 +588,9 @@ table(panteon$gender)
 
 ## Przykłady wykresów  w bazowym R
 
+
+histogram
+
 ```{r}
 
 hist(panteon$HPI)
@@ -398,6 +598,7 @@ hist(panteon$HPI)
 ```
 
 
+wykres pudełkowy
 
 ```{r}
 
@@ -407,6 +608,8 @@ boxplot(panteon$HPI)
 ```
 
 
+wykres pudełkowy według kategorii
+
 ```{r}
 
 boxplot(HPI~gender, data = panteon)
@@ -414,10 +617,20 @@ boxplot(HPI~gender, data = panteon)
 ```
 
 
+Wykres słupkowy.
 
+1. zliczenie funkcją table
 ```{r}
 
-domeny <- table(panteon$domain)
+(domeny <- table(panteon$domain))
+
+
+```
+
+
+2. wykres  słupkowy
+
+```{r}
 
 barplot(domeny, 
         horiz = TRUE,
@@ -431,6 +644,8 @@ barplot(domeny,
 
 ```
 
+
+elemnty dodatkowe
 
 ```{r}
 
@@ -448,11 +663,12 @@ legend("topright",
 ```
 
 
+marginesy
 
 ```{r}
 
 par(mar=c(3,12,3,3)) # marginesy w kolejności par(mar = c(bottom, left, top, right))
-#czyli dół, lewy, góra, rawy
+#czyli dół, lewy, góra, prawy
 
 barplot(domeny_gender,
         las = 1, 
@@ -462,6 +678,7 @@ barplot(domeny_gender,
 legend("topright", 
        c("mężczyzna", "kobieta"),
        fill = c("lightgrey", "gray39"))
+
 ```
 
 
@@ -480,28 +697,23 @@ barplot(domeny_gender,
 legend("topright", 
        c("mężczyzna", "kobieta"),
        fill = c("lightgrey", "gray39"))
+
+
+```
+
+
+```{r}
 dev.off()
 ```
 
 
-
 ```{r}
-
-
-range(panteon$L_star)
-
+?dev.off()
 ```
 
 
-```{r}
 
-hist(panteon$L_star)
-
-
-```
-
-
-mozaikowy
+wykres mozaikowy
 
 
 ```{r}
@@ -550,7 +762,7 @@ kolejność
 
 ```
 
-
+Zmienne typu factor i ustalanie ich porządku funkcją faktor
 
 ```{r}
 
@@ -597,6 +809,76 @@ mosaicplot(~continentName + gender,
 
 ```
 
+wykres gęstości
+
+```{r}
+
+plot(density(panteon$HPI))
+
+```
+
+
+
+```{r}
+
+mężczyźni <- filter(panteon, gender == "Male")  
+kobiety <- filter(panteon, gender == "Female")
+
+```
+
+
+
+
+```{r}
+plot(density(mężczyźni$HPI))
+ 
+ par(new = TRUE)
+ plot(density(kobiety$HPI), 
+     add = TRUE,
+     col = "red")
+```
+
+
+
+Usuniemy nakładające się elementy
+
+```{r}
+?par()
+```
+
+
+```{r}
+plot(density(mężczyźni$HPI))
+
+par(new = TRUE)
+plot(density(kobiety$HPI),
+     col = "red",
+     xlab = "",
+     main = "",
+     xaxt = "n",
+     yaxt = "n")
+```
+
+
+ecdf - dystrybuanta empiryczna
+
+Jaki procent obserwacji przyjmuje wartość mniejszą niż x
+
+```{r}
+
+plot(ecdf(panteon$AverageViews))
+
+```
+
+
+```{r}
+
+
+plot(ecdf(panteon$HPI))
+
+```
+
+
 
 ## Pomoc
 
@@ -614,12 +896,6 @@ help(help)
 ```
 
 
-```{r}
-```
-
-
-```{r}
-```
 
 
 
@@ -650,9 +926,12 @@ setwd() # argumentem jest ścieżka dostępu do katalogu roboczego w cudzysłowi
 ## Skrypty
 
 
-Skróty: ctrl enter - uruchamia zaznaczony fragment kodu
+## Skróty: 
+ctrl enter - uruchamia zaznaczony fragment kodu
 ctrl shift enter - uruchamia cały skrypt
 
 ## Pliki R Markdown
 
-Poświęcimy im oddzielne zajęćia
+
+
+Poświęcimy im oddzielne zajęcia
