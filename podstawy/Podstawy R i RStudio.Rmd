@@ -26,11 +26,11 @@ Konsola
 Pakiet R jest kolekcją funkcji, danych i dokumentacji, która rozszerza
 możliwości bazowego R
 
-Poniższy segment jest nazywany code chunk. Pliki R markdown składają się z nagłówka, segmentów tekstu i specjalnie oznaczonych segmentów kodu. Skrypty składają się z kodu i komantarzy poprzedzonych #.
+Poniższy segment jest nazywany code chunk. Pliki R markdown składają się z nagłówka, segmentów tekstu i specjalnie oznaczonych segmentów kodu. Skrypty składają się z kodu i komentarzy poprzedzonych #.
 
 ```{r}
 
-#install.packages("tidyverse") # hash przed kodem sprawia, że znaki po nim są traktowane jak komentarz, kod tnie będzie wykonany
+install.packages("tidyverse") # hash przed kodem sprawia, że znaki po nim są traktowane jak komentarz, kod tnie będzie wykonany
 
 ```
 
@@ -48,7 +48,7 @@ library(tidyverse)
 
 ```{r}
 
-#install.packages("gapminder")
+install.packages("gapminder")
 library(gapminder)
 ```
 
@@ -78,7 +78,6 @@ class("1")
 two <- 2 # strzałka jest operatorem przypisania
 
 Two <- 2.2
-
 
 ```
 
@@ -166,8 +165,8 @@ Tworzenie wektorów
 
 ```{r}
 
-partie <- c("KO", "PiS", "Lewica", "Konfederacja", "TD")
-partie
+partie2 <- c("KO", "PiS", "Lewica", "Konfederacja", "TD", 34)
+partie2
 
 ```
 
@@ -221,7 +220,9 @@ wektor[1]
 
 
 ```{r}
+
 LETTERS
+
 ```
 
 
@@ -233,13 +234,6 @@ LETTERS[co_drugi]
 
 
 ```
-
-
-
-
-
-wektor logiczny
-
 
 
 
@@ -478,8 +472,56 @@ write.table(x, file = "", append = FALSE, quote = TRUE, sep = " ",
 ## Inne typy plików wejściowych
 
 
-```{r}
+Do wczytywania plików excela można wykorzystać bibliotekę readxl
 
+```{r}
+#install.packages("readxl")
+library(readxl)
+```
+
+Biblioteka ta ma kilka funkcji wczytujących pliki excelowskie np read_excel która sama ustala czy plik ma rozszerzenie xls czy xlsx ale także funkcj read_xls, i read_xlsx, których możemy użyć jeśli  znamy rozszenie
+
+```{r eval = FALSE}
+read_excel(
+  path,
+  sheet = NULL,
+  range = NULL,
+  col_names = TRUE,
+  col_types = NULL,
+  na = "",
+  trim_ws = TRUE,
+  skip = 0,
+  n_max = Inf,
+  guess_max = min(1000, n_max),
+  progress = readxl_progress(),
+  .name_repair = "unique"
+)
+```
+
+
+```{r}
+piketty <- read_excel(
+  "/Users/golemxiv/Downloads/Piketty2014FiguresTables/Chapter14TablesFigures.xlsx",
+  sheet = "TS14.1", #wybieramy arkusz z pliku
+  skip = 3 # usuwamy trzy pierwsze wiersze
+  )
+```
+
+
+
+```{r}
+str(piketty)
+```
+
+
+```{r}
+dplyr::glimpse(piketty)
+
+
+```
+
+```{r}
+piketty$...1 <- as.numeric(piketty$...1)
 ```
 
 
@@ -558,7 +600,7 @@ range(panteon$HPI)
 
 ```{r}
 
-mean(panteon$HPI)
+mean(HPI)
 
 ```
 
@@ -617,9 +659,12 @@ boxplot(HPI~gender, data = panteon)
 ```
 
 
+## Zadanie: boxplot HPI według kontynentów
+
 Wykres słupkowy.
 
 1. zliczenie funkcją table
+
 ```{r}
 
 (domeny <- table(panteon$domain))
@@ -702,6 +747,8 @@ legend("topright",
 ```
 
 
+## Zadanie barplot według płci i kontynentów
+
 ```{r}
 dev.off()
 ```
@@ -713,7 +760,7 @@ dev.off()
 
 
 
-wykres mozaikowy
+Wykres mozaikowy
 
 
 ```{r}
@@ -860,6 +907,7 @@ plot(density(kobiety$HPI),
 ```
 
 
+
 ecdf - dystrybuanta empiryczna
 
 Jaki procent obserwacji przyjmuje wartość mniejszą niż x
@@ -891,7 +939,7 @@ plot(ecdf(panteon$HPI))
 
 ```{r}
 
-help(help)
+help(ggplot)
 
 ```
 
@@ -927,6 +975,7 @@ setwd() # argumentem jest ścieżka dostępu do katalogu roboczego w cudzysłowi
 
 
 ## Skróty: 
+
 ctrl enter - uruchamia zaznaczony fragment kodu
 ctrl shift enter - uruchamia cały skrypt
 

@@ -47,8 +47,10 @@ wszystkie funkcje geometryczne przyjmują argument mapping, definiuje on sposób
 argument mapping zawsze wystepuje z funkcją aes()
 
 ```{r}
+
 ggplot(mpg) +
   geom_point(aes(x = displ, y = hwy))
+
 ```
 
 
@@ -163,6 +165,7 @@ ggplot(faithful,
 
 
 
+
 ```{r}
 ggplot() + 
   geom_point(data = mpg,  mapping = aes(x = displ, y = hwy)) +
@@ -173,15 +176,42 @@ ggplot() +
 ```{r}
 
 
-ggplot(faithful, 
+ggplot(faithful,
        aes(x= eruptions, y = waiting)) +
   geom_point() +
   geom_density2d()
+
 ```
 
 
 
 
+```{r}
+
+ggplot(faithful) +
+  geom_point(aes(x= eruptions, y = waiting)) +
+  geom_density2d()
+
+```
+
+
+```{r}
+
+ggplot() +
+  geom_point(faithful, 
+             mapping = aes(x = eruptions, y = waiting)) 
+
+```
+
+
+
+```{r}
+
+ggplot() +
+  geom_point(data = faithful, aes(x = eruptions, y = waiting))  +
+  geom_density2d()
+
+```
 
 ## obiekty graficzne geom_
 
@@ -267,13 +297,22 @@ ggplot( map_data("world", region = 'Poland'), aes(long, lat, group = group)) + g
 
 ```{r}
 
-ggplot( map_data("world", region = 'Russia'), aes(long, lat, group = group)) + geom_polygon(fill = "white", color = "black")
+ggplot( map_data("world", region = 'Russia'), 
+        aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", 
+               color = "black")
 
 ```
 
 
 ```{r}
-ggplot(map_data("world", region = 'Russia'), aes(long, lat, group = group)) + geom_polygon(fill = "white", color = "black") +
+ggplot(map_data("world",
+                region = 'Russia'), 
+       aes(long, 
+           lat, 
+           group = group)) +
+  geom_polygon(fill = "white",
+               color = "black") +
   coord_quickmap()
 ```
 
@@ -359,7 +398,7 @@ facet_wrap()  # mapuje jedną zmienną na panele
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, 
                            y = hwy))  +
-  facet_grid(cyl ~ class){r}
+  facet_grid(cyl ~ class)
 
 ```
 
