@@ -36,6 +36,7 @@ uruchamianie dokumentacji na temat funkcji lub zbioru danych
 Funkcja generuje układ współrzędnych, pierwszym argumentem jest zbiór danych na podstawie którego tworzymy wykres:
 
 ```{r}
+
 ggplot(data = mpg)
 
 ```

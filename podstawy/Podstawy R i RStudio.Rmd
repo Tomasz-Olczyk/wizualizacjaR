@@ -48,7 +48,7 @@ library(tidyverse)
 
 ```{r}
 
-install.packages("gapminder")
+#install.packages("gapminder")
 library(gapminder)
 ```
 
@@ -165,7 +165,7 @@ Tworzenie wektorów
 
 ```{r}
 
-partie2 <- c("KO", "PiS", "Lewica", "Konfederacja", "TD", 34)
+partie <- c("KO", "PiS", "Lewica", "Konfederacja", "TD")
 partie2
 
 ```
@@ -260,8 +260,8 @@ glimpse(matryca)
 ```
 
 ```{r}
-matryca <- cbind(partie, sondaż_2)
-matryca
+#matryca <- cbind(partie, sondaż_2)
+#matryca
 ```
 
 ```{r}
@@ -508,6 +508,16 @@ piketty <- read_excel(
 ```
 
 
+```{r}
+
+podatki <- read_excel(
+  "podstawy/Chapter14TablesFigures.xlsx",
+  sheet = "TS14.1", #wybieramy arkusz z pliku
+  skip = 3 # usuwamy trzy pierwsze wiersze
+  )
+
+```
+
 
 ```{r}
 str(piketty)
@@ -582,7 +592,7 @@ Czwarty element z piątej kolumny
 
 ```{r}
 
-piąta_kolumna[4]
+piąta_kolumna[4,]
 
 ```
 
@@ -671,8 +681,6 @@ Wykres słupkowy.
 
 
 ```
-
-
 2. wykres  słupkowy
 
 ```{r}
@@ -739,7 +747,7 @@ barplot(domeny_gender,
         xlab = "liczba biografii",
         main = "Biografie w zbiorze Panteon 1.0 według dziedziny działalności i płci")
 
-legend("topright", 
+legend("topright",
        c("mężczyzna", "kobieta"),
        fill = c("lightgrey", "gray39"))
 
@@ -752,7 +760,7 @@ legend("topright",
 ```{r}
 dev.off()
 ```
-
+barplot(sort(data$num, decreasing = TRUE))
 
 ```{r}
 ?dev.off()
@@ -776,6 +784,7 @@ mosaicplot(~domain+gender, data = panteon)
 
 
 ```{r}
+par(mar=c(3,3,3,3))
 
 mosaicplot(~domain+gender, 
            data = panteon,
@@ -839,7 +848,7 @@ panteon$domain <- factor(panteon$domain, levels = domeny_ko$Var1)
 mosaicplot(~domain + gender, 
            data = panteon,
            color = TRUE,
-           las =2)
+           las = 3)
 
 
 ```
@@ -881,7 +890,6 @@ plot(density(mężczyźni$HPI))
  
  par(new = TRUE)
  plot(density(kobiety$HPI), 
-     add = TRUE,
      col = "red")
 ```
 
