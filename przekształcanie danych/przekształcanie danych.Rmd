@@ -1,0 +1,670 @@
+---
+title: "Przekształcanie danych"
+output: html_document
+author: "Tomasz Olczyk"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Biblioteki
+
+```{r}
+library(tidyverse)
+```
+
+
+## Dane
+
+
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+```
+
+
+# Wybór kolumn(zmiennych) - select
+
+
+Select wyodorębnia przydatny podzbiór danych, korzystając z operacji opartych na nazwach zmiennych inaczej  mówiąc selekcjonuje kolumny
+
+
+
+
+```{r}
+glimpse(panteon)
+```
+
+
+```{r}
+
+
+kolumny <- panteon %>%
+  select(name, 
+         countryCode3, 
+         birthyear)
+
+```
+
+
+## Inne przydatne funkcje selekcjonujące dla kolumn
+
+
+??starts_with() #zaczyna się od ciągu znaków
+ends_with() # kończy się na ciągu znaków
+contains() ##zawiera
+matches() ##zawiera
+
+## minus stawiamy przed zmienną która ma zostać usunięta z ramki danych 
+
+```{r}
+mtcars_bez_kolumn_zaczynających_się_od_d <-select(mtcars, -starts_with("d"))
+```
+
+
+```{r}
+
+names(mtcars_bez_kolumn_zaczynających_się_od_d) #funkcja names() zwraca nazwy kolumn(zmiennych) w ramce danych
+
+```
+
+## funkcje pomocnicze funkcji select
+
+
+starts_with("abc") # wybiera nazwy rozpoczynające się od „abc”
+
+ends_with("xyz") # wybiera nazwy kończące się na „xyz”
+
+contains("ijk") # wybiera nazwy zawierające „ijk”.
+
+matches("(.)\\1") # wybiera zmienne pasujące do wyrażenia regularnego
+
+subset_mtcars <- select(mtcars, matches("pg|gea")) 
+
+names(subset_mtcars)
+
+num_range("x", 1:3) #  pasuje do x1, x2 i x3
+
+
+
+## rename
+
+selekcjonując kolumny możemy od razu zmienić ich nazwy
+
+
+```{r}
+wzrost_waga <- select(starwars, wzrost = height, waga = mass)
+```
+
+
+rename()  zachowuje wszystkie zmienne, które nie zostały podane jawnie
+
+```{r}
+
+starwars_pl <- rename(starwars,  
+                      wzrost = height,
+                      waga = mass) # drugi argument jest nową nazwą kolumny/zmiennej
+
+```
+
+## Filter - podzbiory obserwacji
+
+Funkcja filter  umożliwia tworzenie podzbioru obserwacji na podstawie ich wartości
+
+
+Wybieramy wszystkie postacie z Gwiezdnych Wojen o wzroście powyżej 200 cm
+
+```{r}
+
+
+View(starwars)
+
+```
+
+
+```{r}
+glimpse(starwars)
+```
+
+
+
+```{r}
+
+dwumetrowcy_GW <- filter(starwars, height > 200) 
+
+```
+
+
+Zadanie Odfiltrujmy postacie o wzroście powyżej 200 cm i wadze poniżej średniej
+
+```{r}
+
+range(starwars$mass, na.rm = TRUE)
+
+```
+
+
+```{r}
+
+mean(starwars$mass, na.rm = TRUE)
+
+```
+
+
+
+Funkcje z pakietu dplyr nigdy nie modyfikują danych wejściowych dlatego 
+trzeba je zapisać do nowej ramki danych
+
+
+```{r}
+fem <- filter(panteon, gender == "Female") 
+
+```
+
+
+### zadanie stwórzmy ramkę danych kobiet z Polski ze zbioru Panteon - użyjmy zmiennej countryCode3
+
+
+
+## filtrowanie wierszy na podstawie ciągów znaków
+
+
+## jak wyszukać te postacie z gwiezdnych wojen, które mają częściowo zieloną skórę?
+
+
+```{r}
+
+?grepl
+
+
+```
+
+
+```{r}
+
+?str_detect()
+
+
+```
+
+
+```{r}
+
+Green_and_grepl <-  filter(starwars, grepl("green", 
+                                     skin_color))
+```
+
+
+
+```{r}
+
+?stringr::str_detect()
+
+```
+
+
+```{r}
+
+Green_and_stringr <-  filter(starwars, 
+                             str_detect(skin_color, "green"))
+```
+
+
+```{r}
+
+?contains
+?str_detect
+
+```
+
+
+## zadanie Marie
+
+
+```{r}
+marie <- filter(panteon, str_detect(name, "Mari"))
+```
+
+bez mężczyzn
+
+
+```{r}
+marie_kob <- filter(panteon, 
+                    str_detect(name, "Mari") & gender != "Male")
+```
+
+
+
+
+
+
+
+
+# funkcja group_by i funkcja count
+
+
+```{r}
+
+kraje_marie <- marie %>% 
+  group_by(countryName) %>% 
+  count()
+
+```
+
+
+  
+
+
+## użycie operatora %in%
+
+
+x  %in% y - zostanie wybrany każdy wiersz, w którym x jest jedną z wartości w y
+ 
+```{r}
+
+urodzeni_w_roku_wojny <- filter(panteon, birthyear %in% c(1914, 1918, 1939, 1945))
+
+```
+ 
+
+
+## Wartości brakujące
+
+
+```{r}
+
+?is.na()
+
+```
+
+
+
+```{r}
+
+is.na(starwars)
+
+```
+
+
+
+
+
+## Odfiltrowywaanie wartości brakujących
+
+
+
+```{r}
+
+waga_GW_bez_brakujacych  <- filter(starwars, 
+                                   !is.na(mass))
+```
+
+
+```{r}
+
+wzrost_GW_bez_brakujących <- filter(starwars, 
+                                   !is.na(height))
+
+```
+
+
+
+
+```{r}
+
+?drop_na()
+
+
+```
+
+```{r}
+starwars_drop_na <- drop_na(starwars)
+```
+
+
+
+```{r}
+?na.omit
+```
+
+
+
+```{r}
+
+starwars_na.omit <- na.omit(starwars)
+
+```
+
+
+na.omit, i drop_na Usuwają z ramki danych wszystkie obserwacje zawierające wartości brakujące.
+
+
+```{r}
+
+GW_drop_na <- starwars %>%
+  drop_na()
+
+```
+
+
+
+```{r}
+
+GW_na.omit <- na.omit(starwars)
+
+```
+
+
+## funkcja between jako część filtrowania 
+
+
+```{r}
+
+?between() # dla wektora liczb
+
+```
+
+
+
+```{r}
+
+boomerzy <-   filter(panteon, between(birthyear, 1945, 1960))
+
+```
+
+
+
+
+## arrange 
+
+
+```{r}
+
+arrange(starwars, height) # 
+
+```
+
+
+```{r}
+
+arrange(starwars, desc(height))
+
+```
+
+```{r}
+
+wg_masy <- arrange(starwars, mass)
+
+```
+
+```{r}
+
+wg_wzrostu <-  arrange(starwars, height)
+
+```
+
+
+
+## potoki
+
+
+```{r}
+
+kobiety_po1900 <- panteon %>% 
+  filter(gender == "Female" & birthyear >= 1900) 
+
+```
+
+
+```{r}
+panteon %>% 
+  filter(gender == "Female" & birthyear >= 1900 & countryCode3 == "POL") %>%
+  ggplot() +
+  geom_col(aes(x = reorder(name, AverageViews), y = AverageViews)) +
+  coord_flip() +
+  labs(title = "Średnia liczba wyświetleń kobiet z Polski w zbiorze Panteon 1.0") +
+  xlab("") +
+  ylab("wyświetlenia")
+```
+
+
+
+
+
+## Podsumowanie - summarise() summarize() - podsumowania 
+
+funkcja zwija ramkę danych do jednego wiersza
+
+
+## group_by
+
+summarize najczęściej w towarzystwie group_by, która pozwala porównywać grupy inaczej mówiąc tworzyć zgrupowane podsumowania
+
+Np. gdybyśmy chcieli zsumować sławy  ze zbioru panteon 1.0 według kontynentów
+
+```{r}
+
+panteon %>% 
+  group_by(continentName) %>%
+  summarise(sławni = n()) 
+
+```
+
+Możemy grupować na wielu zmiennych 
+
+```{r}
+
+panteon %>% 
+  group_by(continentName, gender) %>%
+  summarise(sławni = n()) 
+
+```
+
+
+
+
+
+```{r}
+panteon %>% 
+  group_by(continentName, gender) %>%
+  summarise(sławni = n()) %>%
+  ggplot() +
+  geom_col(aes(x = gender, 
+               y = sławni,
+               fill = gender)) +
+  facet_wrap(~continentName)
+```
+
+Summarie może dotyczyć wielu typów podsumowań np. średnich
+
+```{r}
+
+panteon %>%
+  group_by(domain, continentName) %>%
+  summarise(średnie = mean(AverageViews)) %>%
+  ggplot() +
+  geom_col(aes(x = domain, 
+               y = średnie)) +
+  coord_flip() +
+  facet_wrap(~continentName)
+
+```
+
+
+```{r}
+
+ggplot(panteon) +
+  geom_boxplot(aes(x = domain, y = AverageViews)) +
+  scale_y_log10() +
+  coord_flip() +
+  facet_wrap(~continentName)
+
+```
+
+
+
+
+## mutate() - nowe zmienne
+
+dodawanie nowych kolumn, powstałych w wyniku wykonania funkcji na już istniejących kolumnach
+
+operacje różnego typu
+zawsze  dodaje nowe kolumny na końcu
+
+
+
+
+
+
+
+## rangowania
+
+```{r}
+
+masa_rangowanie <- starwars %>%
+  mutate(rangi = min_rank(mass))
+
+```
+
+
+```{r}
+
+masa_rangowanie_procent  <- starwars %>%
+  mutate(rangi = percent_rank(mass))
+
+```
+
+
+
+```{r}
+
+numer_wiersza <- starwars %>%
+  mutate(numer_wiersza = row_number(mass))
+
+```
+
+
+
+
+## sample - pobieranie próby
+
+
+```{r}
+
+?sample_n()
+
+```
+
+
+```{r}
+
+?slice_sample()
+
+```
+
+
+
+```{r}
+
+GW_random_ten <- starwars %>%
+  slice_sample(n= 10)
+
+
+```
+
+
+
+```{r}
+
+tail_5_GW_masa <- starwars %>%
+  slice_min(n = 5, mass)
+
+```
+
+
+
+## Złączenia
+
+stwórzmy dwie ramki danych
+
+```{r}
+
+x <- slice_max(starwars, n= 7, height) %>%
+  select(name, height)
+
+```
+
+
+```{r}
+
+y <- starwars %>%
+  filter(!is.na(mass)) %>%
+  slice_max(n= 7, height) %>%
+  select(name, height)
+
+```
+
+
+
+```{r}
+
+```
+
+
+```{r}
+
+złączona <-  inner_join(x, y)
+
+```
+
+
+## typy złączeń
+
+
+inner_join(x,y) dopasowuje te pary obserwacji, których klucze są jednakowe
+
+left_join(x, y) zachowuje wszystkie obserwacje z tabeli x
+
+right_join(x, y) # zachowuje wszystkie obserwacje z tabeli y
+
+right_join(y, x) # zachowuje wszystkie obserwacje z tabeli y
+
+full_join(x,y) # zachowuje wszystkie obserwacje z obu tabel
+
+
+
+# złączenie filtrujące
+
+
+semi_join(x, y) # zachowuje wszystkie obserwacje w tabeli x, dla których istnieje dopasowanie w tabeli y
+
+anti_join(x, y) # opuszcza wszystkie obserwacje w tabeli x, dla których istnieje dopasowanie w tabeli y
+
+
+
+top_dest <- flights %>% count(dest, sort = TRUE) %>% head(10)
+
+flights %>% filter(dest %in% top_dest$dest)
+
+flights %>% semi_join(top_dest)
+
+
+# operacje na zbiorach
+
+intersect() # Zwraca tylko obserwacje znajdujące się zarówno w x, jak i w y.
+
+
+union() # Zwraca unikatowe obserwacje z x i y.
+
+
+setdiff(x, y) # Zwraca obserwacje znajdujące się w x, ale nie w y.
+
+
+
+
+
+
+
+

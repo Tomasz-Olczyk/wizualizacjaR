@@ -539,7 +539,7 @@ piketty$...1 <- as.numeric(piketty$...1)
 
 ```{r}
 
-pięć_kolumn <- panteon[1:5]
+pięć_kolumn <- panteon[,1:5]
 
 ```
 
@@ -547,7 +547,7 @@ pięć_kolumn <- panteon[1:5]
 
 ```{r}
 
-sześć_wierszy <- panteon[1:6,]
+sześć_wierszy <- panteon[2,2]
 
 ```
 
