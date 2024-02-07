@@ -440,6 +440,19 @@ ggsave("my-plot.pdf") # > zapisue 6 x 3.71 cali
 
 ?ggsave # charakterystki wykresu w pliku docelowym i miejsce zapisania wykresu można ustalić
 
+```{r}
+ggsave("rys 1.pdf", 
+       plot = wykres, 
+       device=cairo_pdf,
+       width = 6,
+       height=6,
+       dpi = 300,
+       units = "in",  
+       path = "/Users/golemxiv/Desktop/wykresy R")
+```
+
+
+
 getwd() # zwraca aktualny katalog roboczy (working directory)
 
 setwd() # determinuje aktualny katalog roboczy (working directory)
