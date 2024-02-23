@@ -1,0 +1,790 @@
+---
+title: "komunikowanie danych"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+# legendy, guide i skale
+
+```{r}
+ToothGrowth$dose <- as.factor(ToothGrowth$dose)
+
+p <- ggplot(ToothGrowth, aes(x=dose, y=len, fill=dose)) +
+  geom_boxplot()
+```
+
+
+```{r}
+p + theme(legend.position="bottom")
+```
+
+
+Usiwanie legendy 
+
+```{r}
+p + theme(legend.position="none")
+```
+
+## zmiana kolejności etykiet w legendzie z użyciem faktorów
+
+Zmiana poprzez zmianę kolejności faktorów
+
+## funkcja levels
+```{r}
+levels(iris$Species)
+```
+
+
+odwrócenie funkcją levels = rev()
+
+```{r}
+iris$Species <- factor(iris$Species, levels = rev(levels(iris$Species)))
+
+```
+
+specyfikaccja ręczna
+
+```{r}
+iris$Species <- factor(iris$Species, levels = c("virginica", "versicolor", "setosa"))
+```
+
+wykres
+
+```{r}
+(p1 <- ggplot(iris, aes(x = Species, y = Sepal.Length)) +
+  geom_boxplot(aes(color = Species)) +
+  scale_color_manual(values = c("#E7B800", "#2E9FDF", "#FC4E07")))
+```
+
+
+
+## zmiana kolejności etykiet w legendzie z użyciem guides
+
+
+Żeby zmienić kolejność w legendzie trzeba dodać guides() i guide_legend()  do geom_point(). W
+
+```{r}
+p1 +
+  guides(color = guide_legend(reverse = TRUE)) # 
+```
+
+
+```{r}
+
+ggplot(iris, aes(x = Species, y = Sepal.Length)) +
+  geom_boxplot(aes(color = Species)) +
+  scale_color_manual(values = c("#E7B800", "#2E9FDF", "#FC4E07"), guide = guide_legend(reverse=TRUE))
+
+```
+
+
+
+```{r}
+
+ggplot(iris, aes(x = Species, y = Sepal.Length)) +
+  geom_boxplot(aes(color = Species)) +
+  scale_color_manual(values = c("#E7B800", "#2E9FDF", "#FC4E07")) +
+  guides(color = guide_legend(reverse=TRUE))
+
+```
+
+
+
+```{r}
+
+
+ggplot(iris, aes(x = Species, y = Sepal.Length)) +
+  geom_boxplot(aes(color = Species)) +
+  scale_color_manual(values = c("#E7B800", "#2E9FDF", "#FC4E07")) +
+  guides(color = guide_legend(reverse=TRUE))
+
+```
+
+
+## usuwanie legendy przy pomocy guide
+
+```{r}
+# usuwa leendę kształu
+p + scale_shape 
+# usuwa legendę rozmiaru
+p + scale_size(guide="none") 
+
+```
+
+
+```{r}
+
+# usuwa legendę koloru wypełnienia
+
+p + scale_fill_manual(values=c('#999999','#E69F00','#56B4E9'), 
+                       guide = "none") #
+```
+
+## inne zmiene np keywidth czy label 
+
+
+``` {r, eval = FALSE}
+
+ p + guides(guides(fill = guide_legend(reverse = TRUE, 
+                                    title.position = "top", 
+                                    label.position = "bottom",
+                                    keywidth = 1,
+                                    nrow = 1))) 
+                                    
+```
+
+
+# skale
+
+```{r}
+
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+
+```
+
+
+
+```{r}
+
+panteon %>%
+  ggplot() +
+  geom_boxplot(aes(x = gender, y = AverageViews))
+
+
+```
+
+
+Można doknowywać przekształceeń za pomocą skali 
+
+```{r}
+panteon %>%
+  ggplot() +
+  geom_boxplot(aes(x = gender, y = AverageViews)) +
+  scale_y_log10()
+
+
+```
+
+
+Poniższy kod wyłącza notację naukową
+```{r}
+
+options(scipen =999)
+
+```
+
+
+Można ręcznie ustalać liczbę znaczników na skali
+
+```{r}
+
+panteon %>%
+  ggplot() +
+  geom_boxplot(aes(x = gender, y = AverageViews)) +
+  scale_y_log10(breaks = c(0, 100000, 1000000), labels = c("", "100 tys.", "1 mln")) +
+  scale_x_discrete(labels = c("kobiety", "mężczyźni")) +
+  labs(y = "średnia wyświetleń",
+       x = "",
+       title = "Biografie kobiet są średnio częściej wyświetlane niż biografie mężczyzn",
+       subtitle = "Rozkład średniej wyświetleń biografii postaci z Panteon 1.0")
+
+
+```
+
+
+```{r}
+
+w1 <- panteon %>%
+  ggplot() +
+  geom_boxplot(aes(x = gender, y = AverageViews)) +
+  scale_y_log10(breaks = c(0, 100000, 1000000), labels = c("", "100 tys.", "1 mln")) +
+  scale_x_discrete(labels = c("kobiety", "mężczyźni")) +
+  labs(y = "średnia wyświetleń",
+       x = "",
+       title = "Biografie kobiet są średnio częściej wyświetlane niż biografie mężczyzn",
+       subtitle = "Rozkład średniej wyświetleń biografii postaci z Panteon 1.0")
+
+
+```
+
+
+
+
+# adnotacje geom_text i geom_label
+
+```{r}
+
+ggplot(mpg, aes(x = hwy, y = cty)) +
+  geom_point() +
+  geom_text(aes(label = manufacturer))
+
+
+```
+
+
+
+```{r}
+
+panteon %>%
+  filter(countryCode3 == "POL" & gender == "Female") %>%
+  ggplot(aes(x = L_star, y = HPI)) +
+  geom_point(aes(size = AverageViews)) +
+  geom_text(aes(label = name), hjust = 0)
+
+
+```
+
+Zastosowanie funkcji z biblioteki ggrepel
+
+```{r}
+
+#install.packags("ggrepel")
+library(ggrepel)
+
+```
+
+
+```{r}
+
+
+panteon %>%
+  filter(countryCode3 == "POL" & gender == "Female") %>%
+  ggplot(aes(x = L_star, y = HPI)) +
+  geom_point(aes(size = AverageViews)) +
+  geom_text_repel(aes(label = name))
+
+```
+
+## adnotacja funkcja annotate
+
+
+```{r}
+
+panteon %>%
+  filter(countryCode3 == "POL" & gender == "Female") %>%
+  ggplot(aes(x = L_star, y = HPI)) +
+  geom_point(aes(size = AverageViews)) +
+  geom_text_repel(aes(label = name)) +
+  annotate(geom = "text", 
+           x=8, 
+           y=30, 
+           label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II")
+
+
+```
+
+```{r}
+
+panteon %>%
+  filter(countryCode3 == "POL" & gender == "Female") %>%
+  ggplot(aes(x = L_star, y = HPI)) +
+  geom_point(aes(size = AverageViews)) +
+  geom_text_repel(aes(label = name)) +
+  annotate(geom = "text", x=8, y=30, label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II",) +
+  
+  annotate(geom = "rect", xmin = 7.5, xmax = 11, ymin = 27, ymax = 29, fill = "red", alpha = 0.2)
+
+
+```
+
+
+Filtrowanie danych wewnątrz geometrii
+
+```{r}
+
+polki <- panteon %>%
+  filter(countryCode3 == "POL" & gender == "Female")
+
+```
+
+```{r}
+
+ggplot(polki, aes(x = L_star, y = HPI)) +
+  geom_point(aes(size = AverageViews)) +
+  geom_text_repel(data = polki %>% filter(AverageViews > mean(polki$AverageViews)), aes(label = name), nudge_y = 1.5) +
+  annotate(geom = "text", x=8, y=30, label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II",) +
+  
+  annotate(geom = "rect", xmin = 7.5, xmax = 11, ymin = 27, ymax = 29, fill = "red", alpha = 0.2) +
+  guides(size = "none")
+```
+
+
+# linie
+
+
+```{r}
+
+panteon %>%
+  filter(countryCode3 == "POL" & gender == "Female") %>%
+  ggplot(aes(x = L_star, y = HPI)) +
+  geom_point(aes(size = AverageViews)) +
+  geom_text_repel(aes(label = name)) +
+  geom_vline(xintercept = mean(panteon$L_star)) +
+  geom_hline(yintercept = mean(panteon$HPI))
+
+```
+
+Linia ze strzałką
+
+
+
+```{r}
+
+panteon %>%
+  filter(countryCode3 == "POL" & gender == "Female") %>%
+  ggplot(aes(x = L_star, y = HPI)) +
+  geom_point(aes(size = AverageViews)) +
+  geom_text_repel(aes(label = name)) +
+  annotate(geom = "text", 
+           x=8, 
+           y=30, 
+           label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II") +
+  geom_segment(aes(x = 8, xend = 9.4 , 
+                   y= 29,
+                   yend = 27.9),
+    arrow = arrow(length = unit(0.1,"cm"))) +
+  geom_curve(aes(x = 8, xend = 9.4 , 
+                   y= 29,
+                   yend = 27.9),
+    arrow = arrow(length = unit(0.1,"cm")))
+
+```
+
+
+# Kolory
+
+## Sposoby operowania kolorami w R
+
+-   rgb
+-   kody
+-   numery
+-   nazwy
+-   biblioteki i palety
+-  gradienty
+-  skale ręczne
+
+
+więcej na ten temat na ciekawej stronie [R Graph Gallery](https://r-graph-gallery.com/ggplot2-color.html)
+
+
+### RGB i kody
+
+-   kolorymetr i rgb
+
+```{r message=TRUE}
+?rgb()
+```
+
+```{r}
+
+kolor1 <- rgb(144, 26, 40, maxColorValue = 255) # domyślnie jest na skali intensywności 0-1
+
+kolor2 <- rgb(200, 131, 84, maxColorValue = 255)
+  
+print(kolor1)
+print(kolor2)
+
+```
+
+```{r}
+
+ggplot(mtcars, aes(x=drat)) +
+  geom_density(color= kolor2,
+               fill=kolor1, 
+               linewidth=2 ) 
+
+
+```
+
+### bezpośrednie podawanie kolorów
+
+```{r}
+
+
+ggplot(mtcars, aes(x=drat)) + 
+  geom_density( color = "#C88354", 
+                fill="#901A28", 
+                linewidth=2 )
+
+
+```
+
+
+### funkcja rgb jako wartość argumentu mapującego kolor
+
+```{r}
+ggplot(mtcars, aes(x=drat)) + 
+  geom_density(color=(rgb(200, 131, 84, 
+                          maxColorValue = 255)), 
+               fill= (rgb(63, 74, 84, 
+                          maxColorValue = 255)), linewidth=2)
+```
+
+
+## Nazwy kolorów
+
+
+```{r}
+
+r_color <- colors()
+head(r_color, 20)
+
+```
+
+
+- niektóre nazwy kolorów
+- kod na stronie [R Graph Gallery]()
+
+
+
+```{r, fig.dim= c(8, 8)}
+
+
+plot(0, 0, type = "n", xlim = c(0, 1), ylim = c(0, 1), axes = FALSE, xlab = "", ylab = "")
+# Settings
+line <- 25
+col <- 5
+
+# Add color background
+rect(  
+  rep((0:(col - 1)/col),line) ,  
+  sort(rep((0:(line - 1)/line),col),decreasing=T),   
+  rep((1:col/col),line) , 
+  sort(rep((1:line/line),col),decreasing=T),  
+  border = "white" , 
+  col=colors()[seq(1,line*col)])
+
+# Color names
+text(  
+  rep((0:(col - 1)/col),line)+0.1 ,  
+  sort(rep((0:(line - 1)/line),col),decreasing=T)+0.015 , 
+  colors()[seq(1,line*col)]  , 
+  cex=0.6)
+
+```
+
+### Wpisywanie nazw kolorów bezpośrednio
+
+```{r}
+
+ggplot(mtcars, aes(x=drat)) + 
+  geom_density(color= "darkorange1", 
+               fill= "darkslategray",
+               linewidth=2 )
+
+```
+
+```{r}
+
+ggplot(mtcars, aes(x=drat)) + 
+  geom_density(color= "darkorange1", 
+               fill= "darkslategray",
+               linewidth=2 ) +
+  theme(axis.text.y = element_text(angle = 45))
+
+```
+
+
+
+### Numery kolorów
+
+```{r}
+
+kolor3  = colors()[143] 
+
+```
+
+
+### Niektóre kolory według numerów
+
+```{r, numery-kolorów}
+
+
+
+#numery kolorów
+
+par(mar=c(0,0,0,0))
+plot(0, 0, type = "n", xlim = c(0, 1), ylim = c(0, 1), axes = FALSE, xlab = "", ylab = "")
+
+# parametry
+line <- 31
+col <- 21
+
+# Rectangles
+rect( rep((0:(col - 1)/col),line) ,  sort(rep((0:(line - 1)/line),col),decreasing=T) , rep((1:col/col),line) , sort(rep((1:line/line),col),decreasing=T),  
+      border = "light gray" , col=colors()[seq(1,651)])
+
+# Text
+text( rep((0:(col - 1)/col),line)+0.02 ,  sort(rep((0:(line - 1)/line),col),decreasing=T)+0.01 , seq(1,651)  , cex=0.5)
+
+
+```
+
+```{r}
+ggplot(mtcars, aes(x=drat)) + 
+  geom_density(color= colors()[53],
+               fill= colors()[593],
+               linewidth=2 )
+
+```   
+
+
+## Rcolorbrewer
+
+```{r}
+
+#install.packages("RColorBrewer")
+library(RColorBrewer) 
+
+
+```
+
+
+
+### Show all the colour schemes available
+
+```{r}
+dev.off()
+```
+
+
+```{r fig.dim= c(12, 12)}
+
+par(mfrow=c(1,1))
+display.brewer.all()
+
+```
+
+
+
+### Palety RColorBrewer przyjazne dla osób z zaburzeniami postrrzegania kolorów
+
+```{r fig.dim= c(12, 12)}
+
+display.brewer.all(colorblindFriendly = TRUE)
+
+```
+
+
+
+## Scale Viridis
+
+
+
+```{r}
+#install.packages("viridis")
+library(viridis)
+
+```
+
+
+```{r eval = FALSE}
+
+scale_fill_viridis(discrete = TRUE)
+
+```
+
+
+
+
+
+### Przykłady
+
+Użyjemy danych ze zbioru ToothGrowth
+
+```{r}
+glimpse(ToothGrowth)
+```
+
+
+```{r}
+ToothGrowth$dose <- as.factor(ToothGrowth$dose)
+mtcars$cyl <- as.factor(mtcars$cyl)
+
+#boxplot
+bp <- ggplot(ToothGrowth, aes(x=dose, y=len))
+
+# scatter plot
+
+sp <- ggplot(mtcars, aes(x=wt, y=mpg))
+```
+
+
+```{r}
+bp + geom_boxplot(fill = "steelblue", color = "red")
+
+```
+
+### box plot
+
+```{r}
+sp + geom_point(color = 'darkblue')
+```
+
+```{r}
+
+bp <- bp + geom_boxplot(aes(fill = dose)) 
+
+```
+
+```{r}
+sp <- sp + geom_point(aes(color = cyl))
+
+```
+
+
+
+## Hue
+
+Jasność (lighteness) (l) i  chroma (c, intensity of color) domyślnych kolorów  (hue)  kolory można modyfikować scale_hue 
+
+```{r}
+bp + scale_fill_hue(l=40, c=35) 
+
+```
+
+```{r}
+# Scatter plot
+
+sp + scale_color_hue(l=40, c=35) 
+```
+
+
+## scale manual
+
+
+```{r}
+bp + scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9"))
+
+```
+
+
+
+```{r}
+sp + scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9"))
+```
+
+
+
+## RcolorBrewer
+
+```{r}
+sp + scale_color_brewer(palette="Dark2")
+
+```
+
+
+## palety z filmów Wesa Andersona
+```{r}
+
+#install.packages("wesanderson") 
+
+library(wesanderson)
+
+```
+
+```{r}
+bp + scale_fill_manual(values=wes_palette(n=3, name="GrandBudapest1"))
+```
+
+
+
+
+```{r}
+sp+scale_color_manual(values=wes_palette(n=3, name="GrandBudapest1"))
+
+```
+
+## gradienty
+
+ciągłe skale kolorów
+
+-  scale_color_gradient(), scale_fill_gradient() sekwencyjne gradienty między dwoma kolorami
+
+- scale_color_gradient2(), scale_fill_gradient2() dywergentne gradienty 
+
+scale_color_gradientn(), scale_fill_gradientn() gradienty między n kolorami
+
+## przykłady 
+
+```{r}
+sp2 <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  geom_point(aes(color = qsec)) 
+
+
+sp2 
+# Change the low and high colors
+```
+
+
+```{r}
+# sekwencyjna
+sp2+scale_color_gradient(low="blue", high="red")
+```
+
+
+```{r}
+# Ddywergentna
+mid <- mean(mtcars$qsec) 
+sp2 + scale_color_gradient2(midpoint = mid, low = "blue", 
+                            mid = "white", 
+                            high = "red", 
+                            space = "Lab" )
+```
+
+ ## gradeinty n-kolorów
+ 
+```{r}
+sp3 <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  geom_point(aes(color = mpg)) 
+
+sp3
+```
+
+
+
+# Theme
+
+Za pmoocą funkcji theme_set możemy ustalić parametry wyglądu motywu dla wszystkich kolejnych wykresów
+
+```{r}
+
+theme_set(theme_bw())
+
+```
+
+ 
+ 
+```{r}
+sp3 + theme(legend.position = "bottom")
+```
+
+
+```{r}
+w1 +
+  theme(plot.title = element_text(size = rel(0.9)),
+        plot.subtitle = element_text(size = rel(0.4)))
+
+```
+
+
+```{r}
+
+w1 +
+  theme(plot.title = element_text(size = rel(0.9),
+                                  family = "Times",
+                                  face = "bold.italic",
+                                  colour = "salmon"),
+        plot.subtitle = element_text(size = rel(0.4)))
+
+
+```
+
+ 
