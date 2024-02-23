@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
-## RStudio podstawwoe informacje
+## RStudio podstawwowe informacje
 
 Panele
 Pliki
@@ -30,11 +30,13 @@ Poniższy segment jest nazywany code chunk. Pliki R markdown składają się z n
 
 ```{r}
 
-install.packages("tidyverse") # hash przed kodem sprawia, że znaki po nim są traktowane jak komentarz, kod tnie będzie wykonany
+#install.packages("tidyverse") 
+
+# hash przed kodem sprawia, że znaki po nim są traktowane jak komentarz, kod nie będzie wykonany
 
 ```
 
-## Wczytywanie pakieteów(bibliotek)
+## Wczytywanie pakietów (bibliotek)
 
 
 Biblioteki dobrze jest wczytywać na początku analizy
@@ -166,7 +168,9 @@ Tworzenie wektorów
 ```{r}
 
 partie <- c("KO", "PiS", "Lewica", "Konfederacja", "TD")
-partie2
+
+
+partie
 
 ```
 
@@ -177,12 +181,15 @@ typeof(partie)
 ```
 
 ```{r}
+
 class(partie)
+
 ```
 
 Wektor liczb
 
 ```{r}
+
 sondaż <- c(29, 35, 10, 10, 10)
 
 ```
@@ -479,7 +486,7 @@ Do wczytywania plików excela można wykorzystać bibliotekę readxl
 library(readxl)
 ```
 
-Biblioteka ta ma kilka funkcji wczytujących pliki excelowskie np read_excel która sama ustala czy plik ma rozszerzenie xls czy xlsx ale także funkcj read_xls, i read_xlsx, których możemy użyć jeśli  znamy rozszenie
+Biblioteka ta ma kilka funkcji wczytujących pliki excelowskie np read_excel która sama ustala czy plik ma rozszerzenie xls czy xlsx ale także funkcje read_xls, i read_xlsx, których możemy użyć jeśli  znamy rozszenie
 
 ```{r eval = FALSE}
 read_excel(
@@ -499,19 +506,12 @@ read_excel(
 ```
 
 
-```{r}
-piketty <- read_excel(
-  "/Users/golemxiv/Downloads/Piketty2014FiguresTables/Chapter14TablesFigures.xlsx",
-  sheet = "TS14.1", #wybieramy arkusz z pliku
-  skip = 3 # usuwamy trzy pierwsze wiersze
-  )
-```
 
 
 ```{r}
 
 podatki <- read_excel(
-  "podstawy/Chapter14TablesFigures.xlsx",
+  "podstawy/Chapter14TablesFigures.xlsx", #uwaga musimy być we właściwym katalogu roboczym, żeby ta linia kodu zadziałała
   sheet = "TS14.1", #wybieramy arkusz z pliku
   skip = 3 # usuwamy trzy pierwsze wiersze
   )
@@ -520,18 +520,21 @@ podatki <- read_excel(
 
 
 ```{r}
-str(piketty)
+
+str(podatki)
+
 ```
 
 
 ```{r}
-dplyr::glimpse(piketty)
+
+dplyr::glimpse(podatki)
 
 
 ```
 
 ```{r}
-piketty$...1 <- as.numeric(piketty$...1)
+podatki$...1 <- as.numeric(podatki$...1)
 ```
 
 

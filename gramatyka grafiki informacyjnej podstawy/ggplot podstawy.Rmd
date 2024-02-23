@@ -16,7 +16,7 @@ library(tidyverse)
 
 
 
-Przywołąywanie funkcji lub zbioru danych z konkretj biblioteki opratorem ::
+Przywoływanie funkcji lub zbioru danych z konkretnej biblioteki opratorem ::
 
 ```{r}
 ggplot2::mpg
@@ -31,7 +31,7 @@ uruchamianie dokumentacji na temat funkcji lub zbioru danych
 ```
 
 
-# funkcja ggplot()  warstwy wykresu
+## Funkcja ggplot()  warstwy wykresu
 
 Funkcja generuje układ współrzędnych, pierwszym argumentem jest zbiór danych na podstawie którego tworzymy wykres:
 
@@ -43,43 +43,60 @@ ggplot(data = mpg)
 
 Żeby powstał prawdziwy wykres dodajemy co najmniej jedną warstwę  - funkcję geometryczną np. geom_point
 
-wszystkie funkcje geometryczne przyjmują argument mapping, definiuje on sposób mapowania zmiennych ze zbioru danych
+Wszystkie funkcje geometryczne przyjmują argument mapping, definiuje on sposób mapowania zmiennych ze zbioru danych
 
-argument mapping zawsze wystepuje z funkcją aes()
+Argument mapping zawsze wystepuje z funkcją aes().
+
+
+```{r, eval = FALSE}
+
+ggplot(mpg) +
+  geom_point()
+
+```
 
 ```{r}
 
+ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_point() +
+  geom_smooth()
+
+```
+
+
+Kolejność warstw ma znaczenie
+
+```{r}
+
+ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_smooth() +
+geom_point()
+  
+
+```
+
+
+
+#### zadanie - stwórzmy, opierająć się na danych mpgwykres punktowy zależności między zmiennymi hwy i cyl
+
+
+
+Można zmapować więcej zmiennych używając innych estetyk, np. koloru lub kształtu albo rozmiaru, przroczystości, 
+
+```{r}
 ggplot(mpg) +
-  geom_point(aes(x = displ, y = hwy))
+  geom_point(aes(x = cty, 
+                 y = hwy, 
+                 alpha = class,
+                 color = class,
+                 size = class))
 
 ```
 
 
 
 
-
-
-
-
-
-
-# zadanie stwórzmy wykres punktowy zależności między zmiennymi
-# hwy i cyl
-
-
-
-# można zmapować więcej zmiennych używając innych estetyk, np. koloru lub kształtu albo rozmiaru, przroczystości, 
-
-```{r}
-ggplot(mpg) +
-  geom_point(aes(x = displ, y = hwy, alpha = class))
-
-```
-
-
-
-
-# zadanie zmapujmy wybraną zmienną na estetykę shape
+#### zadanie -  zmapujmy wybraną zmienną na estetykę shape
 
 
 
@@ -91,7 +108,7 @@ ggplot(data = mpg) +
 ```
 
 
-size oczekuje uporządkowanej zmiennej kategorycznej (factor) a zmienna  class jest nieuporządkowana
+Size oczekuje uporządkowanej zmiennej kategorycznej (factor) a zmienna  class jest nieuporządkowana
 
 
 ```{r}
@@ -137,7 +154,7 @@ ggplot(data = mpg) +
 
 
 
-# zmieńmy w poniższym wykresie kółka na  lekko transparentne trójkąty
+#### zadanie - zmieńmy w poniższym wykresie kółka na  lekko transparentne trójkąty
 
 
 
@@ -153,13 +170,6 @@ ggplot(data = mpg,  mapping = aes(x = displ, y = hwy)) +
 ```
 
 
-```{r}
-ggplot(faithful, 
-       aes(x= eruptions, y = waiting)) +
-  geom_density2d() +
-  geom_point()
-```
-
 
 
 
@@ -170,47 +180,8 @@ ggplot() +
 ```
 
 
-```{r}
 
-
-ggplot(faithful,
-       aes(x= eruptions, y = waiting)) +
-  geom_point() +
-  geom_density2d()
-
-```
-
-
-
-
-```{r}
-
-ggplot(faithful) +
-  geom_point(aes(x= eruptions, y = waiting)) +
-  geom_density2d()
-
-```
-
-
-```{r}
-
-ggplot() +
-  geom_point(faithful, 
-             mapping = aes(x = eruptions, y = waiting)) 
-
-```
-
-
-
-```{r}
-
-ggplot() +
-  geom_point(data = faithful, aes(x = eruptions, y = waiting))  +
-  geom_density2d()
-
-```
-
-## obiekty graficzne geom_
+## Obiekty graficzne geom_
 
 ```{r}
 
@@ -253,7 +224,7 @@ stroke
 ?geom_histogram
 
 
-## współrzędne
+## Współrzędne
 
 
 ```{r}
@@ -267,29 +238,27 @@ bar <- ggplot(data = diamonds) +
 
 
 ```{r}
+
 bar
+
 ```
 
 
 ```{r}
+
 bar + coord_flip() 
+
 ```
 
 
 ```{r}
+
 bar + coord_polar()
-```
-
-
-```{r}
-ggplot( map_data("world", region = 'Poland'), aes(long, lat, group = group)) + geom_polygon(fill = "white", color = "black")
 
 ```
 
 
-```{r}
-ggplot( map_data("world", region = 'Poland'), aes(long, lat, group = group)) + geom_polygon(fill = "white", color = "black") + coord_quickmap()
-```
+## współrzędne w kontekscie map
 
 
 ```{r}
@@ -303,6 +272,7 @@ ggplot( map_data("world", region = 'Russia'),
 
 
 ```{r}
+
 ggplot(map_data("world",
                 region = 'Russia'), 
        aes(long, 
@@ -311,13 +281,14 @@ ggplot(map_data("world",
   geom_polygon(fill = "white",
                color = "black") +
   coord_quickmap()
+
 ```
 
 ## skale
 
 ### kolor
 
-kolorom poświęcimy więcej miejsca w przyszłości
+Lolorom poświęcimy więcej miejsca w przyszłości, w tym momencie tylko kilka przykładów
 
 scale_color
 scale_color_brewer()
@@ -329,6 +300,7 @@ RColorBrewer::display.brewer.all()
 ggplot(data = mpg) + 
   geom_point( mapping = aes(x = displ, y = hwy, color = class)) +
   scale_color_brewer(palette ="Set3") # zmienia z domyślnego koloru na wybraną skalę  paletę 
+
 ```
 
 
@@ -337,9 +309,6 @@ ggplot(data = mpg) +
 
 ?scale_x_continuous()
 
-```{r}
-
-```
 
 ```{r}
 
@@ -347,20 +316,21 @@ ggplot(mpg) +
   geom_point(aes(x = displ, y = hwy, color = class)) +
   scale_color_brewer(palette ="BrBG") +
   scale_x_continuous(breaks = (c(2, 5.5, 7))) # ustalamy własne przedziały tworząc wektor liczb funkcją c()
+
 ```
 
 
 
 
 
-# zadanie - zastosujmy scale_x_discrete do danych mpg
+#### zadanie - zastosujmy scale_x_discrete do danych mpg
 
 ?scale_x_discrete()
 
 
 ## panele - facets 
 
-pozwalają uniknąć overplotting a także lepiej dostrzec pewne zależności w danych
+Pozwalają uniknąć overplotting a także lepiej dostrzec pewne zależności w danych
 
 porównajmy:
 
@@ -387,7 +357,7 @@ facet_wrap()  mapuje jedną zmienną na panele
 
 
 
-## mapowanie interakcjidwóch zmiennych na panele funkcją facet_grid()
+## mapowanie interakcji dwóch zmiennych na panele funkcją facet_grid()
 
 
 ```{r}
@@ -409,13 +379,12 @@ labs(title = "") # dodaje tytuł
 
 labs(subtitle = "")  # dodaje podtytuł
 
-
 labs(caption = "")  # dodaje kom
 
 labs(x = "", y = "", colour = "")  # zastepuje tytuły osi i w legendzie
 
 
-dodajmy tytuł i podpis pod wykresem
+Dodajmy tytuł i podpis pod wykresem:
 
 ```{r}
 
@@ -440,15 +409,16 @@ ggsave("my-plot.pdf") # > zapisue 6 x 3.71 cali
 
 ?ggsave # charakterystki wykresu w pliku docelowym i miejsce zapisania wykresu można ustalić
 
-```{r}
+```{r, eval = FALSE}
+
 ggsave("rys 1.pdf", 
        plot = wykres, 
-       device=cairo_pdf,
+       device=cairo_pdf, #cairo_pdf jest jednym z urządzeń (device) zapisujących wykres do właściwego formatu, zapewnia właściwe wyświetlenie polskich znaków
        width = 6,
        height=6,
        dpi = 300,
        units = "in",  
-       path = "/Users/golemxiv/Desktop/wykresy R")
+       #path = ) # tu podajemy ścieżkę do folderu gdzie ma zostać zapisany plik
 ```
 
 
@@ -458,7 +428,8 @@ getwd() # zwraca aktualny katalog roboczy (working directory)
 setwd() # determinuje aktualny katalog roboczy (working directory)
 
 ## themes  - layouty
-ggplot zawiera  wiele własnych layutów istnieją także pakiety zawierające dodatkowe layouty jak ggthemes
+
+ggplot zawiera  wiele własnych szablonów istnieją także pakiety zawierające dodatkowe layouty jak ggthemes
 
 ```{r}
 
@@ -469,6 +440,7 @@ library(ggthemes)
 
 
 ```{r}
+
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy)) +
   labs(title = "Wydajność na autostradzie a pojemność",
@@ -477,6 +449,7 @@ ggplot(data = mpg) +
        y = "wydajność na autostradzie",
        colour = "klasa") + # theme jest kolejną warstwą którą dodajemy plusem
        theme_economist()
+
 ```
 
 
