@@ -431,6 +431,18 @@ panteon %>%
 
 
 
+```{r}
+
+
+panteon %>% 
+  filter(gender == "Female" & birthyear >= 1900 & countryCode3 == "POL") %>%
+  ggplot() +
+  geom_col(aes(x = reorder(name, AverageViews), y = AverageViews)) +
+  coord_flip() +
+  labs(title = "Średnia liczba wyświetleń kobiet z Polski w zbiorze Panteon 1.0") +
+  xlab("") +
+  ylab("wyświetlenia") 
+```
 
 
 ## Podsumowanie - summarise() summarize() - podsumowania 
@@ -496,9 +508,8 @@ panteon %>%
 ```{r}
 
 ggplot(panteon) +
-  geom_boxplot(aes(x = domain, y = AverageViews)) +
+  geom_boxplot(aes(x = gender, y = AverageViews, fill = gender)) +
   scale_y_log10() +
-  coord_flip() +
   facet_wrap(~continentName)
 
 ```
@@ -528,6 +539,17 @@ masa_rangowanie <- starwars %>%
 
 ```
 
+```{r}
+
+masa_rangowanie %>%
+  slice_max(n =5, order_by = mass) %>%
+  ggplot() +
+  geom_col(aes(x = reorder(name, mass), y = mass)) +
+  coord_flip()
+
+```
+
+
 
 ```{r}
 
@@ -544,6 +566,7 @@ numer_wiersza <- starwars %>%
   mutate(numer_wiersza = row_number(mass))
 
 ```
+
 
 
 
@@ -579,7 +602,7 @@ GW_random_ten <- starwars %>%
 ```{r}
 
 tail_5_GW_masa <- starwars %>%
-  slice_min(n = 5, mass)
+  slice_min(n = 5, mass) #według jakiej zmiennj ma być dobrana próbka
 
 ```
 
@@ -607,10 +630,6 @@ y <- starwars %>%
 ```
 
 
-
-```{r}
-
-```
 
 
 ```{r}
