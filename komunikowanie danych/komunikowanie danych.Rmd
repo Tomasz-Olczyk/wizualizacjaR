@@ -16,8 +16,22 @@ library(tidyverse)
 ```{r}
 ToothGrowth$dose <- as.factor(ToothGrowth$dose)
 
-p <- ggplot(ToothGrowth, aes(x=dose, y=len, fill=dose)) +
-  geom_boxplot()
+```
+
+
+```{r}
+p <- ggplot(ToothGrowth, aes(x=dose, y=len, 
+                             color=dose
+                             )) +
+  geom_boxplot() +
+  ggtitle("boxplot")
+
+p
+```
+
+
+```{r}
+p <- ggplot(Tooth)
 ```
 
 
@@ -37,14 +51,23 @@ p + theme(legend.position="none")
 Zmiana poprzez zmianę kolejności faktorów
 
 ## funkcja levels
+
 ```{r}
+
 levels(iris$Species)
+
 ```
 
 
 odwrócenie funkcją levels = rev()
 
 ```{r}
+levels(iris$Species)
+```
+
+
+```{r}
+
 iris$Species <- factor(iris$Species, levels = rev(levels(iris$Species)))
 
 ```
@@ -52,7 +75,9 @@ iris$Species <- factor(iris$Species, levels = rev(levels(iris$Species)))
 specyfikaccja ręczna
 
 ```{r}
-iris$Species <- factor(iris$Species, levels = c("virginica", "versicolor", "setosa"))
+
+iris$Species <- factor(iris$Species, levels = c("setosa", "versicolor","virginica"))
+
 ```
 
 wykres
@@ -60,7 +85,7 @@ wykres
 ```{r}
 (p1 <- ggplot(iris, aes(x = Species, y = Sepal.Length)) +
   geom_boxplot(aes(color = Species)) +
-  scale_color_manual(values = c("#E7B800", "#2E9FDF", "#FC4E07")))
+  scale_color_manual(values = c("#270C2E", "#2E9FDF", "#FC4E07")))
 ```
 
 
@@ -118,6 +143,39 @@ p + scale_size(guide="none")
 
 ```
 
+narysujemy wykres według płci,AverageViews
+
+```{r}
+panteon %>%
+  ggplot() +
+  geom_boxplot(aes(x = reorder(gender,AverageViews),
+                   y = AverageViews)) +
+  scale_y_log10(breaks = c(100, 10000, 1000000),
+                labels = c("", "10 tys.", "1 mln.")) +
+  scale_x_discrete(labels = c("mężczyzna", "kobieta")) +
+  labs(x = "płeć",
+       title = "boxplot") +
+  theme(plot.title = element_text(hjust = 0)) +
+  theme_wsj()
+```
+
+
+```{r}
+#install.packages("ggthemes")
+library(ggthemes)
+```
+
+```{r}
+
+panteon %>%
+  ggplot() +
+  geom_histogram(aes(AverageViews))
+
+
+```
+
+
+
 
 ```{r}
 
@@ -155,18 +213,27 @@ panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 
 panteon %>%
   ggplot() +
-  geom_boxplot(aes(x = gender, y = AverageViews))
+  geom_boxplot(aes(x = gender, 
+                   y = AverageViews)) +
+  scale_y_log10()
 
 
 ```
 
 
-Można doknowywać przekształceeń za pomocą skali 
 
 ```{r}
 panteon %>%
   ggplot() +
-  geom_boxplot(aes(x = gender, y = AverageViews)) +
+  geom_histogram(aes(AverageViews))
+```
+
+Można doknowywać przekształceeń za pomocą skali 
+
+```{r}
+p1 <- panteon %>%
+  ggplot() +
+  geom_boxplot(aes(x = reorder(gender, AverageViews), y = AverageViews)) +
   scale_y_log10()
 
 
@@ -183,6 +250,25 @@ options(scipen =999)
 
 Można ręcznie ustalać liczbę znaczników na skali
 
+
+```{r}
+p1 + 
+  labs(x = "płeć",
+       y = "wyświetlenia",
+       title = "Rozkład wyświetleń\n według płci") +
+  scale_x_discrete(labels = c("kobieta", "mężczyzna")) +
+  scale_y_log10(breaks = c(0, 100000, 1000000), 
+                labels = c("0", "100 tys.", "1 mln.")) +
+  theme_economist()
+```
+
+
+```{r}
+#install.packages("ggthemes")
+library(ggthemes)
+```
+
+
 ```{r}
 
 panteon %>%
@@ -193,7 +279,8 @@ panteon %>%
   labs(y = "średnia wyświetleń",
        x = "",
        title = "Biografie kobiet są średnio częściej wyświetlane niż biografie mężczyzn",
-       subtitle = "Rozkład średniej wyświetleń biografii postaci z Panteon 1.0")
+       subtitle = "Rozkład średniej wyświetleń biografii postaci z Panteon 1.0",
+       caption = "Źródło: Panteon 1.0")
 
 
 ```

@@ -621,7 +621,6 @@ wybory_long <- wybory %>%
 wybory_long <- wybory %>%
   pivot_longer(cols = c("frekwencja",  "PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "wyniki")
 
-
 ```
 
 ```{r}

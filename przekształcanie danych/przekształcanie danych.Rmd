@@ -13,7 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Biblioteki
 
 ```{r}
+
 library(tidyverse)
+
 ```
 
 
@@ -21,7 +23,9 @@ library(tidyverse)
 
 
 ```{r}
+
 panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+
 ```
 
 
@@ -39,13 +43,22 @@ glimpse(panteon)
 
 
 ```{r}
+dwie_kolumny <- select(panteon, name, gender)
+```
+
+
+```{r}
 
 
 kolumny <- panteon %>%
   select(name, 
-         countryCode3, 
-         birthyear)
+         gender)
 
+```
+
+
+```{r}
+kolumny2 <- select(panteon, gender, name)
 ```
 
 
@@ -61,6 +74,18 @@ matches() ##zawiera
 
 ```{r}
 mtcars_bez_kolumn_zaczynających_się_od_d <-select(mtcars, -starts_with("d"))
+```
+
+
+```{r}
+od_c <- panteon %>%
+  select(starts_with("c"))
+```
+
+
+```{r}
+bez_c <- panteon %>%
+  select(-starts_with("c"))
 ```
 
 
@@ -83,6 +108,12 @@ matches("(.)\\1") # wybiera zmienne pasujące do wyrażenia regularnego
 
 subset_mtcars <- select(mtcars, matches("pg|gea")) 
 
+```{r}
+en_lub_cou <- panteon  %>%
+  select(matches("en|cou"))
+```
+
+
 names(subset_mtcars)
 
 num_range("x", 1:3) #  pasuje do x1, x2 i x3
@@ -95,8 +126,9 @@ selekcjonując kolumny możemy od razu zmienić ich nazwy
 
 
 ```{r}
-wzrost_waga <- select(starwars, wzrost = height, waga = mass)
+wzrost_waga <- select(starwars, wzrost = height, masa = mass)
 ```
+
 
 
 rename()  zachowuje wszystkie zmienne, które nie zostały podane jawnie
@@ -107,6 +139,12 @@ starwars_pl <- rename(starwars,
                       wzrost = height,
                       waga = mass) # drugi argument jest nową nazwą kolumny/zmiennej
 
+```
+
+
+```{r}
+panteon <- panteon %>%
+  rename(płeć = gender)
 ```
 
 ## Filter - podzbiory obserwacji
@@ -132,18 +170,24 @@ glimpse(starwars)
 
 ```{r}
 
-dwumetrowcy_GW <- filter(starwars, height > 200) 
+dwumetrowcy_GW <- filter(starwars, height >= 200) 
 
 ```
 
 
-Zadanie Odfiltrujmy postacie o wzroście powyżej 200 cm i wadze poniżej średniej
+Zadanie odfiltrujmy postacie o wzroście powyżej 150 cm i o masie poniżej średniej
+
+
 
 ```{r}
 
-range(starwars$mass, na.rm = TRUE)
+median(starwars$mass, na.rm = TRUE)
 
 ```
+
+
+
+
 
 
 ```{r}
@@ -159,7 +203,7 @@ trzeba je zapisać do nowej ramki danych
 
 
 ```{r}
-fem <- filter(panteon, gender == "Female") 
+kobiety_pow_śr <- filter(panteon, płeć == "Female", AverageViews > mean(AverageViews, na.rm = TRUE))
 
 ```
 
@@ -172,6 +216,19 @@ fem <- filter(panteon, gender == "Female")
 
 
 ## jak wyszukać te postacie z gwiezdnych wojen, które mają częściowo zieloną skórę?
+
+
+```{r}
+zieloni <- starwars %>%
+  filter(skin_color == "green")
+```
+
+```{r}
+bez_zielonych <- starwars %>%
+  filter(skin_color != "green")
+```
+
+
 
 
 ```{r}
@@ -192,8 +249,13 @@ fem <- filter(panteon, gender == "Female")
 
 ```{r}
 
-Green_and_grepl <-  filter(starwars, grepl("green", 
-                                     skin_color))
+Green_and_grepl <-  filter(starwars, grepl("green", skin_color))
+```
+
+```{r}
+
+
+Green_and_grepl_str <-  filter(starwars, str_detect(skin_color, "green"))
 ```
 
 
@@ -223,11 +285,14 @@ Green_and_stringr <-  filter(starwars,
 ## zadanie Marie
 
 
+
+
+
 ```{r}
 marie <- filter(panteon, str_detect(name, "Mari"))
 ```
 
-bez mężczyzn
+
 
 
 ```{r}
@@ -266,6 +331,10 @@ x  %in% y - zostanie wybrany każdy wiersz, w którym x jest jedną z wartości 
 
 urodzeni_w_roku_wojny <- filter(panteon, birthyear %in% c(1914, 1918, 1939, 1945))
 
+```
+ 
+```{r}
+ron <- c("POL", )
 ```
  
 
@@ -386,6 +455,7 @@ arrange(starwars, height) #
 
 ```
 
+%in% 
 
 ```{r}
 
@@ -457,6 +527,15 @@ summarize najczęściej w towarzystwie group_by, która pozwala porównywać gru
 Np. gdybyśmy chcieli zsumować sławy  ze zbioru panteon 1.0 według kontynentów
 
 ```{r}
+library(tidyverse)
+```
+
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+```
+
+
+```{r}
 
 panteon %>% 
   group_by(continentName) %>%
@@ -492,10 +571,19 @@ panteon %>%
 Summarie może dotyczyć wielu typów podsumowań np. średnich
 
 ```{r}
-
 panteon %>%
-  group_by(domain, continentName) %>%
-  summarise(średnie = mean(AverageViews)) %>%
+  group_by(continentName, płeć) %>%
+  summarise(średnie_wyś = mean(AverageViews)) %>%
+  ggplot() +
+  geom_col(aes(x =płeć, 
+               średnie_wyś,
+               fill = płeć)) +
+  facet_wrap(~continentName)
+```
+
+
+```{r}
+%>%
   ggplot() +
   geom_col(aes(x = domain, 
                y = średnie)) +
@@ -524,9 +612,22 @@ dodawanie nowych kolumn, powstałych w wyniku wykonania funkcji na już istniej�
 operacje różnego typu
 zawsze  dodaje nowe kolumny na końcu
 
+zmieniamy kolumnę z nazwami 
 
+```{r}
+panteon <- panteon %>%
+  mutate(kraj = toupper(countryName))
+```
 
+wzrost w calach
 
+```{r}
+
+starwars <- starwars %>%
+  mutate(wfuntach = mass/2,
+         wcalach = height/2.5)
+
+```
 
 
 
@@ -534,10 +635,18 @@ zawsze  dodaje nowe kolumny na końcu
 
 ```{r}
 
-masa_rangowanie <- starwars %>%
-  mutate(rangi = min_rank(mass))
+starwars <- starwars %>%
+  mutate(rangi_waga = min_rank(mass),
+         wiersz = row_number())
 
 ```
+
+```{r}
+rząd <- starwars %>%
+  mutate(rząd = row_number())
+```
+
+
 
 ```{r}
 
@@ -574,11 +683,6 @@ numer_wiersza <- starwars %>%
 ## sample - pobieranie próby
 
 
-```{r}
-
-?sample_n()
-
-```
 
 
 ```{r}
@@ -587,6 +691,23 @@ numer_wiersza <- starwars %>%
 
 ```
 
+```{r}
+najwyżsi <- starwars %>%
+  slice_max(n=10, height)
+```
+
+
+
+```{r}
+losowo <- slice_sample(starwars, n = 10)
+```
+
+
+```{r}
+
+losowo <- slice_sample(starwars, n= 10)
+
+```
 
 
 ```{r}
@@ -612,9 +733,22 @@ tail_5_GW_masa <- starwars %>%
 
 stwórzmy dwie ramki danych
 
+
+```{r}
+x <- starwars %>%
+  slice_max(n = 7, height) %>%
+  select(name, height)
+```
+
+
+
+
+
 ```{r}
 
-x <- slice_max(starwars, n= 7, height) %>%
+x <- slice_max(starwars, 
+               n= 7, 
+               height) %>%
   select(name, height)
 
 ```
@@ -630,6 +764,27 @@ y <- starwars %>%
 ```
 
 
+```{r}
+pełne <- full_join(x, y)
+
+```
+
+
+
+```{r}
+lewe <- left_join(x,y)
+```
+
+
+```{r}
+prawe <- right_join(x,y)
+```
+
+
+
+```{r}
+wewn <- inner_join(x,y)
+```
 
 
 ```{r}
@@ -637,6 +792,11 @@ y <- starwars %>%
 złączona <-  inner_join(x, y)
 
 ```
+
+```{r}
+ wzrost_zł <- inner_join(x, y, by = "height")
+```
+
 
 
 ## typy złączeń
@@ -652,15 +812,39 @@ right_join(y, x) # zachowuje wszystkie obserwacje z tabeli y
 
 full_join(x,y) # zachowuje wszystkie obserwacje z obu tabel
 
+```{r}
+pełne <- full_join(x, y)
+```
+
+```{r}
+prawe <- right_join(x, y)
+```
+
 
 
 # złączenie filtrujące
 
 
+```{r}
+semi <- semi_join(x, y)
+```
+
+
+```{r}
+anti <- anti_join(x, y)
+```
+
 semi_join(x, y) # zachowuje wszystkie obserwacje w tabeli x, dla których istnieje dopasowanie w tabeli y
 
 anti_join(x, y) # opuszcza wszystkie obserwacje w tabeli x, dla których istnieje dopasowanie w tabeli y
 
+```{r}
+anti <- anti_join(x,y)
+```
+
+```{r}
+sem <- semi_join(x,y)
+```
 
 
 top_dest <- flights %>% count(dest, sort = TRUE) %>% head(10)

@@ -288,7 +288,7 @@ ggplot(map_data("world",
 
 ### kolor
 
-Lolorom poświęcimy więcej miejsca w przyszłości, w tym momencie tylko kilka przykładów
+Kolorom poświęcimy więcej miejsca w przyszłości, w tym momencie tylko kilka przykładów
 
 scale_color
 scale_color_brewer()
