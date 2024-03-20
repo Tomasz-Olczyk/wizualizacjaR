@@ -27,8 +27,7 @@ library(tidyverse)
 
 
 
-id <- "15xCXZ-LzVs32KK6y-8liToTFuq82onPO"
-panteon <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) 
+panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv')
 
 
 
@@ -54,8 +53,10 @@ france = map_data('world', region = 'France')
 
 ```{r}
 
-ggplot(france, aes(x = long, y = lat, group = group)) + 
-  geom_polygon(fill = 'white', colour = 'black')
+ggplot(france, aes(x = long, y = lat, 
+                   group = group)) + 
+  geom_polygon(fill = 'white', 
+               colour = 'black')
 
 
 ```
@@ -119,11 +120,8 @@ fr <- ggplot(world, aes(x = long, y = lat, group = group)) +
                                  colour = gender, 
                                  size = AverageViews/1000, 
                                  group = name), 
-                                 alpha = 0.5) +
-  ggrepel::geom_text_repel(data = francja, aes(x= LON, 
-                                               y = LAT, 
-                                               label = name, 
-                                               group = name)) +
+                                 alpha = 0.5,
+             show.legend = FALSE) +
   theme_void()
   
 
@@ -187,7 +185,10 @@ ggplot(polska, aes(x = long,
                  colour = gender, 
                  size = AverageViews*10, 
                  group = name, alpha = 0.5)) +
-  ggrepel::geom_text_repel(data = Polska, aes(x= LON, y = LAT, label = name, group = name)) +
+  ggrepel::geom_text_repel(data = Polska, aes(x= LON, 
+                              y = LAT, 
+                              label = name,
+                              group = name)) +
   theme_void()
 
 ```
@@ -220,13 +221,6 @@ world =  map_data('world')
 
 
 Z wykorzystaniem plotly
-
-```{r}
-
-
-library(plotly)
-
-```
 
 
 ```{r}
@@ -266,6 +260,10 @@ world <- world %>%
 
 ```
 
+```{r}
+?gapminder
+
+```
 
 
 ```{r}
@@ -332,7 +330,7 @@ world <- world %>%
 
 
 
-```{r eval}
+```{r }
 
 ggplotly(w) 
 
@@ -358,7 +356,7 @@ library(sf)
 ## Kształty województw na podstawie plików shp z użyciem funkcji st_read
 
 
-Uwaga: pliki shp należy ściągnać z https://gadm.org/download_country.html
+Uwaga: pliki shp należy ściągnać z [gadm.org](https://gadm.org/download_country.html)
 
 Dane geojson punkt niżej dostępne przez github
 
@@ -449,7 +447,7 @@ ggplot(powiaty) +
 
 ```{r}
 
-województwa <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozytrium/main/gadm41_POL_1.json")
+województwa <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_1.json")
 
 ```
 
@@ -464,13 +462,6 @@ ggplot(województwa) +
 
 
 ## Dane PKW na poziomie województw
-
-
-```{r}
-
-library(janitor)
-
-```
 
 
 
@@ -512,6 +503,18 @@ wybory23_woj2 <- wybory23_woj %>%
 
 ```
 
+
+
+```{r}
+write_csv(wybory23_woj2, "mapy/pkw_woj.csv")
+```
+
+
+```{r}
+
+pkw_woj <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/pkw_woj.csv")
+
+```
 
 
 ```{r}
