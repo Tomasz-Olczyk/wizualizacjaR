@@ -430,7 +430,7 @@ Bezpośrednio do formatu simple feature
 
 ```{r}
 
-powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozytrium/main/gadm41_POL_2.json")
+powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_2.json")
 
 ```
 
@@ -470,7 +470,7 @@ Dane PKW z poziomu województw  via Github
 
 ```{r}
 
-wybory23_woj  <- read_csv2("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozytrium/main/wyniki_gl_na_listy_po_wojewodztwach_proc_sejm_utf8.csv") %>% 
+wybory23_woj  <- read_csv2("https://github.com/Tomasz-Olczyk/wizualizacjaR/blob/main/mapy/wyniki_gl_na_listy_po_wojewodztwach_proc_sejm_utf8.csv") %>% 
   janitor::clean_names() 
 
 ```
