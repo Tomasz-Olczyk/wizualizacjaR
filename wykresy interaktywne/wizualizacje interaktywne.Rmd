@@ -84,6 +84,8 @@ ggplotly(wykres, tooltip = "text")
 
 # Połączenie z tabelką crosstalk o DT
 
+Jeśli nie mamy zainstalowanych poniższych bibliotek to instalujmy je najpierw funkcją install.packages.
+
 ```{r}
 
 library(crosstalk)
@@ -134,9 +136,10 @@ library(plotly)
  
 m <- highlight_key(mpg) #czyli format ramki musi być zmieniony
  
-p <- ggplot(m, aes(displ, hwy)) + geom_point() #mamy wykrs w ggplocie z tej nowej ramki
+p <- ggplot(m, aes(displ, hwy)) + 
+  geom_point() #mamy wykres w ggplocie z tej nowej ramki
  
-gg <- highlight(ggplotly(p), "plotly_hover") #mamy highlight(ggploly(tego wykresy)) i jeszcze argument dotyczący ego jak wybierać kolumny
+gg <- highlight(ggplotly(p), "plotly_hover") #mamy highlight(ggploly(tego wykresu)) i jeszcze argument dotyczący ego jak wybierać kolumny
 
 crosstalk::bscols(gg, DT::datatable(m), widths = 12) #i mamy zestawienie elementów
 ```
@@ -163,7 +166,9 @@ plot_ly(diamonds, x = ~cut, y = ~clarity)
 
 ```{r}
 
-plot_ly(diamonds, x = ~cut, color = ~clarity, colors = "Accent")
+plot_ly(diamonds, x = ~cut, 
+        color = ~clarity, 
+        colors = "Accent")
 ```
 
 
@@ -246,159 +251,11 @@ panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 ```
 
 
-Spróbujemy skonstruować animację ostatnich pięciu wiek lat pozycji Państw jeśli chodzi o liczbę osób sławnych ich sumaryczne HPI i sumaryczne LPstar
-
-
-```{r}
-Panteon_VC <- panteon %>%
-  filter(birthyear >= 1800) %>%
-  group_by(birthyear, 
-            countryCode3) %>%
-  summarise(sławy = row_number(),
-            hpi = cumsum(HPI),
-            L_Star = cumsum(L_star))
-```
-
-
-Z wykorzystaniem mutate i cumsum
-
-```{r}
-
-Panteon_VC_3 <- panteon %>%
-  filter(birthyear >= 1800) %>%
-  group_by(birthyear, 
-            countryCode3,
-           continentName) %>%
-  summarise(hpi = sum(HPI),
-            L_Star = sum(L_star)) %>%
-  group_by(countryCode3) %>%
-  mutate(hpi = cumsum(hpi),
-         L_Star = cumsum(L_Star)) %>%
-  ungroup()
-```
-
-
-```{r}
-
-Panteon_VC_2 <- panteon %>%
-  filter(birthyear >= 1800) %>%
-  group_by(birthyear, 
-            countryCode3, 
-           continentName) %>%
-  summarise(count = n()) %>%
-  group_by(countryCode3) %>%
-  mutate(count = cumsum(count)) %>%
-  ungroup()
-
-```
-
-
-
-Panteon podsumowania z kumulatywnymi danymi
-
-
-```{r}
-Panteon_VC_2 <- panteon %>%
-  filter(birthyear >= 1800, birthyear < 1990) %>%
-  group_by(birthyear, 
-            countryCode3, 
-           continentName) %>%
-  summarise(count = n(),
-            hpi = sum(HPI),
-            lstar = sum(L_star)) %>%
-  group_by(countryCode3) %>%
-  mutate(sławy = cumsum(count),
-         kumulatywne_hpi = cumsum(hpi),
-        kumulatywne_lstar = cumsum(lstar)) %>%
-  ungroup()
-```
-
-
-
-
-
-```{r}
-
-pp <- ggplot(Panteon_VC_2, aes(x= kumulatywne_hpi, 
-                             y = kumulatywne_lstar,
-                             color = continentName)) +
-  geom_point(aes(size = sławy,
-                 frame = birthyear,
-                 ids = countryCode3))  
-  
-```
-
-
-```{r}
-pp
-
-```
-
-```{r}
-
-ggplotly(pp)
-
-```
-
-Tylko kontynenty
-
-
-```{r}
-
-kontynenty <- panteon %>%
-  filter(birthyear >= 1800, birthyear < 1980) %>%
-  group_by(birthyear, 
-           continentName) %>%
-  summarise(count = n(),
-            hpi = sum(HPI),
-            lstar = sum(L_star)) %>%
-  group_by(continentName) %>%
-  mutate(sławy = cumsum(count),
-         kumulatywne_hpi = cumsum(hpi),
-        kumulatywne_lstar = cumsum(lstar)) %>%
-  ungroup()
-```
-
-
-```{r}
-
-wykres_kontynenty <- ggplot(kontynenty, aes(x= kumulatywne_hpi, 
-                             y = kumulatywne_lstar,
-                             color = continentName)) +
-  geom_point(aes(size = sławy,
-                 frame = birthyear,
-                 ids = continentName))  
-  
-```
-
-
-```{r}
-ggplot(kontynenty, aes(x= kumulatywne_hpi, 
-                             y = kumulatywne_lstar,
-                             color = continentName)) +
-  geom_point(aes(size = sławy))  +
-  labs(title = 'rok: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
-  transition_time(birthyear) 
-```
-
-
-
-```{r}
-wykres_kontynenty
-```
-
-
-
-```{r}
-
-ggplotly(wykres_kontynenty)
-
-```
 
 ```{r}
 #install.packages("gganimate")
-install.packages("gifski")
-install.packages("av")
+#install.packages("gifski")
+#install.packages("av")
 ```
 
 
@@ -446,15 +303,7 @@ ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, colour = country)) +
 ```
 
 
-Z tymi danymi
-
-labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
-  transition_time(year) +
-  ease_aes('linear')
-
-```{r}
-
-```
+Inne animacje z danymi gapminder
 
 
 ```{r}
@@ -528,7 +377,7 @@ base <- plot_ly(tx, color = I("black")) %>%
 ```
 
 
-To poniżej nie działa tak jak powonno]
+
 
 
 ```{r}
@@ -694,18 +543,22 @@ bscols( widths = c(6, 6, 3), p, map, stations )
 
 
 ```{r}
+
 library(gapminder) 
 
 g <- highlight_key(gapminder, ~country) 
 
-continent_filter <- filter_select( "filter", "Select a country", g, ~continent ) 
+country_filter <- filter_select( "filter", "Select a country", g, ~country ) 
 
 p	 <- plot_ly(g) %>% 
   group_by(country) %>% 
-  add_lines(x = ~year, y = ~lifeExp, color = ~continent) %>% layout(xaxis = list(title = "")) %>% 
+  add_lines(x = ~year, 
+            y = ~lifeExp, 
+            color = ~continent) %>% layout(xaxis = list(title = "")) %>% 
   highlight(selected = attrs_selected(showlegend = FALSE))
 
 bscols(continent_filter, p, widths = 12)
+
 ```
 
 
@@ -825,6 +678,9 @@ withr::with_options( list(persistent = TRUE), crosstalk::bscols(widths = c(6, 6)
 
 # trelliscope
 
+```{r}
+#install.packages("trelliscop")
+```
 
 
 ```{r eval = FALSE}
