@@ -1,0 +1,844 @@
+---
+title: "Wizualizacje interaktywne - plotly"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Plotly
+
+
+
+```{r}
+
+#install.packages("plotly")
+
+```
+
+```{r}
+library(tidyverse)
+library(plotly)
+library(gapminder)
+```
+
+# funkcja ggplotly =  transformacja ggplot w wykres interakwyny
+
+```{r}
+w <- ggplot(mpg, aes(displ,
+                     hwy)) + 
+  geom_point()
+```
+
+
+```{r}
+
+ggplotly(w)
+
+```
+
+
+
+```{r}
+wykres <- 
+  ggplot(gapminder, 
+         aes(y = lifeExp, 
+             x = gdpPercap)) +
+  geom_point()
+
+```
+
+``` {r}
+
+x <- ggplotly(wykres)
+x
+```
+
+
+
+```{r}
+y <- ggplotly(wykres)
+
+style(y, 
+      text = gapminder$country)
+
+```
+
+
+```{r}
+wykres <- ggplot(gapminder, aes(y = lifeExp, 
+                                x = gdpPercap,
+                                color = continent,
+                                text = paste('kraj: ', country,
+                  '<br>kontynent:', continent,
+                  "<br>rok:", year)),
+                 alpha = 0.5)  +
+  geom_point()
+
+ggplotly(wykres, tooltip = "text")
+
+```
+
+
+
+# Połączenie z tabelką crosstalk o DT
+
+```{r}
+
+library(crosstalk)
+library(DT)
+
+```
+
+Krok 1 zmieniamy format funkcją plotly::highlight_key
+
+```{r}
+
+m <- highlight_key(mpg) # format ramki musi być zmieniony funkcją highlight_key
+
+```
+
+Krok2. Tworzymy wykres w ggplot z użyciem zmienionego formatu ramki
+
+```{r}
+
+p <- ggplot(m, aes(displ, 
+                   hwy)) + 
+  geom_point() # tworzymy wykres w ggplocie z tej nowej ramki
+
+```
+
+Krok 3. 
+
+```{r}
+
+gg <- highlight(ggplotly(p), "plotly_selected") # tworzymy wykres plotly wewnątrz funkcji highlight, "plotly_hover" jest argumentem ustalającym jak wybierane będą podświetlane punkty
+
+```
+
+ 
+Krok 4. tworzymy tabelę interaktywną funkcją datatable pakietu DT i łączymy ją z wykresem funkcją bscols pakietu crosstalk
+
+```{r}
+
+crosstalk::bscols(gg, DT::datatable(m)) # datatable tworzy tabelę, crosstalk::bscols łączy wykres z tabelą
+
+```
+
+
+Tabela pod wykresem
+
+```{r}
+library(plotly)
+ 
+m <- highlight_key(mpg) #czyli format ramki musi być zmieniony
+ 
+p <- ggplot(m, aes(displ, hwy)) + geom_point() #mamy wykrs w ggplocie z tej nowej ramki
+ 
+gg <- highlight(ggplotly(p), "plotly_hover") #mamy highlight(ggploly(tego wykresy)) i jeszcze argument dotyczący ego jak wybierać kolumny
+
+crosstalk::bscols(gg, DT::datatable(m), widths = 12) #i mamy zestawienie elementów
+```
+
+
+
+## plotly podstawy
+
+```{r}
+
+plot_ly(diamonds, x = ~cut)
+ 
+```
+
+
+
+```{r}
+
+plot_ly(diamonds, x = ~cut, y = ~clarity)
+ 
+```
+
+
+
+```{r}
+
+plot_ly(diamonds, x = ~cut, color = ~clarity, colors = "Accent")
+```
+
+
+```{r}
+
+library(dplyr) 
+diamonds %>% 
+  plot_ly(x = ~cut) %>% 
+  add_histogram() %>% 
+  group_by(cut) %>% 
+  summarise(n = n()) %>% 
+  add_text( text = ~scales::comma(n), y = ~n,
+ textposition = "top middle",
+ cliponaxis = FALSE
+ )
+```
+
+
+
+
+## ggplotly
+
+```{r}
+p1 <- ggplot(diamonds, aes(x = log(price),
+                           color = clarity)) +
+  geom_freqpoly() 
+
+ggplotly(p)
+```
+
+
+```{r}
+
+p2 <- ggplot(diamonds, aes(x = log(price), 
+                           color = clarity)) + 
+  geom_freqpoly(stat = "density") + 
+  facet_wrap(~cut)
+
+ggplotly(p)
+
+```
+
+
+
+
+# Aranżowanie wielu wykresów
+
+```{r}
+
+subplot(p1,p2)
+
+```
+
+
+# Animacje
+
+```{r}
+data(gapminder, 
+     package = "gapminder") 
+
+gg <- ggplot(gapminder, aes(gdpPercap, 
+                            lifeExp,
+                            color = continent)) +
+  geom_point(aes(size = pop,
+                 frame = year,
+                 ids = country)) + 
+  scale_x_log10() 
+
+ggplotly(gg)
+```
+
+
+Panteon
+
+
+```{r}
+
+panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv')
+
+```
+
+
+Spróbujemy skonstruować animację ostatnich pięciu wiek lat pozycji Państw jeśli chodzi o liczbę osób sławnych ich sumaryczne HPI i sumaryczne LPstar
+
+
+```{r}
+Panteon_VC <- panteon %>%
+  filter(birthyear >= 1800) %>%
+  group_by(birthyear, 
+            countryCode3) %>%
+  summarise(sławy = row_number(),
+            hpi = cumsum(HPI),
+            L_Star = cumsum(L_star))
+```
+
+
+Z wykorzystaniem mutate i cumsum
+
+```{r}
+
+Panteon_VC_3 <- panteon %>%
+  filter(birthyear >= 1800) %>%
+  group_by(birthyear, 
+            countryCode3,
+           continentName) %>%
+  summarise(hpi = sum(HPI),
+            L_Star = sum(L_star)) %>%
+  group_by(countryCode3) %>%
+  mutate(hpi = cumsum(hpi),
+         L_Star = cumsum(L_Star)) %>%
+  ungroup()
+```
+
+
+```{r}
+
+Panteon_VC_2 <- panteon %>%
+  filter(birthyear >= 1800) %>%
+  group_by(birthyear, 
+            countryCode3, 
+           continentName) %>%
+  summarise(count = n()) %>%
+  group_by(countryCode3) %>%
+  mutate(count = cumsum(count)) %>%
+  ungroup()
+
+```
+
+
+
+Panteon podsumowania z kumulatywnymi danymi
+
+
+```{r}
+Panteon_VC_2 <- panteon %>%
+  filter(birthyear >= 1800, birthyear < 1990) %>%
+  group_by(birthyear, 
+            countryCode3, 
+           continentName) %>%
+  summarise(count = n(),
+            hpi = sum(HPI),
+            lstar = sum(L_star)) %>%
+  group_by(countryCode3) %>%
+  mutate(sławy = cumsum(count),
+         kumulatywne_hpi = cumsum(hpi),
+        kumulatywne_lstar = cumsum(lstar)) %>%
+  ungroup()
+```
+
+
+
+
+
+```{r}
+
+pp <- ggplot(Panteon_VC_2, aes(x= kumulatywne_hpi, 
+                             y = kumulatywne_lstar,
+                             color = continentName)) +
+  geom_point(aes(size = sławy,
+                 frame = birthyear,
+                 ids = countryCode3))  
+  
+```
+
+
+```{r}
+pp
+
+```
+
+```{r}
+
+ggplotly(pp)
+
+```
+
+Tylko kontynenty
+
+
+```{r}
+
+kontynenty <- panteon %>%
+  filter(birthyear >= 1800, birthyear < 1980) %>%
+  group_by(birthyear, 
+           continentName) %>%
+  summarise(count = n(),
+            hpi = sum(HPI),
+            lstar = sum(L_star)) %>%
+  group_by(continentName) %>%
+  mutate(sławy = cumsum(count),
+         kumulatywne_hpi = cumsum(hpi),
+        kumulatywne_lstar = cumsum(lstar)) %>%
+  ungroup()
+```
+
+
+```{r}
+
+wykres_kontynenty <- ggplot(kontynenty, aes(x= kumulatywne_hpi, 
+                             y = kumulatywne_lstar,
+                             color = continentName)) +
+  geom_point(aes(size = sławy,
+                 frame = birthyear,
+                 ids = continentName))  
+  
+```
+
+
+```{r}
+ggplot(kontynenty, aes(x= kumulatywne_hpi, 
+                             y = kumulatywne_lstar,
+                             color = continentName)) +
+  geom_point(aes(size = sławy))  +
+  labs(title = 'rok: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
+  transition_time(birthyear) 
+```
+
+
+
+```{r}
+wykres_kontynenty
+```
+
+
+
+```{r}
+
+ggplotly(wykres_kontynenty)
+
+```
+
+```{r}
+#install.packages("gganimate")
+install.packages("gifski")
+install.packages("av")
+```
+
+
+```{r}
+library(gganimate)
+```
+
+
+```{r}
+p <- ggplot(airquality, aes(Day, Temp)) + 
+  geom_line(size = 2, colour = 'steelblue') + 
+  transition_states(Month, 4, 1) + 
+  shadow_mark(size = 1, colour = 'grey')
+```
+
+```{r}
+ggplot(mtcars, aes(factor(cyl), mpg)) + 
+  geom_boxplot() + 
+  # Here comes the gganimate code
+  transition_states(
+    gear,
+    transition_length = 2,
+    state_length = 1
+  ) +
+  enter_fade() + 
+  exit_shrink() +
+  ease_aes('sine-in-out')
+```
+
+Z danymi gapminder
+
+```{r}
+
+ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, colour = country)) +
+  geom_point(alpha = 0.7, show.legend = FALSE) +
+  scale_colour_manual(values = country_colors) +
+  scale_size(range = c(2, 12)) +
+  scale_x_log10() +
+  facet_wrap(~continent) +
+  # Here comes the gganimate specific bits
+  labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
+  transition_time(year) +
+  ease_aes('linear')
+
+```
+
+
+Z tymi danymi
+
+labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
+  transition_time(year) +
+  ease_aes('linear')
+
+```{r}
+
+```
+
+
+```{r}
+base <- gapminder %>% 
+  plot_ly(x = ~gdpPercap, 
+          y = ~lifeExp, 
+          size = ~pop, 
+          text = ~country, 
+          hoverinfo = "text") %>% 
+  layout(xaxis = list(type = "log"))
+
+```
+
+
+
+```{r}
+
+meanLife <- with(gapminder, tapply(lifeExp, INDEX = continent, mean)) 
+
+gapminder$continent <- factor( gapminder$continent, levels = names(sort(meanLife)) )
+
+base %>% 
+  add_markers(data = gapminder, frame = ~continent) %>% hide_legend() %>% 
+  animation_opts(frame = 1000, transition = 0, redraw = FALSE)
+```
+
+
+```{r}
+base %>% add_markers(
+ color = ~continent, showlegend = F,
+ alpha = 0.2, alpha_stroke = 0.2
+ ) %>%
+ add_markers(color = ~continent, frame = ~year, ids = ~country) %>%
+ animation_opts(1000, redraw = FALSE)
+```
+
+
+
+## Graphical queries
+
+
+```{r}
+
+library(plotly) 
+
+mtcars %>% 
+  highlight_key(~cyl) %>% # highliht key jako zmienna filtrująca jak w SQL SELECT * FROM mtcars WHERE cyl IN $SELECTION_VALUE
+  plot_ly(
+    x = ~wt, 
+          y = ~mpg, 
+          text = ~cyl, 
+          mode = "markers+text",
+          textposition = "top", 
+          hoverinfo = "x+y")
+```
+
+
+
+```{r}
+# load the `txhousing` dataset 
+data(txhousing, package = "ggplot2") 
+# declare `city` as the SQL 'query by' column 
+tx <- highlight_key(txhousing, ~city) 
+# initiate a plotly object 
+base <- plot_ly(tx, color = I("black")) %>% 
+  group_by(city) # create a time series of median house price 
+
+(time_series <- base %>% 
+  group_by(city) %>% 
+  add_lines(x = ~date, y = ~median))
+```
+
+
+To poniżej nie działa tak jak powonno]
+
+
+```{r}
+highlight( time_series, 
+           on = "plotly_click",
+           selectize = TRUE,
+           dynamic = TRUE,
+           persistent = TRUE
+ )
+```
+
+
+Poniżej powinno pozwolić mi wybierać kolory ale nie działa tak ja powinno
+
+```{r}
+dot_plot <- base %>% 
+  summarise(miss = sum(is.na(median))) %>% 
+  filter(miss > 0) %>% 
+  add_markers( x = ~miss,
+ y = ~forcats::fct_reorder(city, miss),
+ hoverinfo = "x+y"
+ ) %>% layout(
+ xaxis = list(title = "Number of months missing"),
+ yaxis = list(title = "")
+ ) 
+
+dot_plot
+
+```
+
+
+```{r}
+highlight(dot_plot, 
+           on = "plotly_click",
+           selectize = TRUE,
+           dynamic = TRUE,
+           persistent = TRUE)
+```
+
+
+
+
+```{r}
+subplot(dot_plot, 
+        time_series, 
+        widths = c(.2, .8), 
+        titleX = TRUE) %>% 
+  layout(showlegend = FALSE) %>%
+  highlight(on = "plotly_selected", #plotly_selected zmienia zachowanie
+            dynamic = TRUE, 
+            selectize = TRUE,
+            persistent = TRUE)
+```
+
+
+```{r}
+hist <- add_histogram(base, 
+                      x = ~median, 
+                      histnorm = "probability density" ) 
+
+subplot(time_series, hist, nrows = 2) %>% 
+  layout(barmode = "overlay", showlegend = FALSE) %>% 
+  highlight( dynamic = TRUE,
+ selectize = TRUE,
+ selected = attrs_selected(opacity = 0.3)
+ )
+```
+
+
+# highlight versus filter
+
+```{r}
+library(crosstalk) 
+# generally speaking, use a "unique" key for filter, # especially when you have multiple filters! 
+
+tx <- highlight_key(txhousing)
+
+gg <- ggplot(tx) + 
+  geom_line(aes(date, median, group = city))
+
+filter <- bscols(
+ filter_select("id", "Select a city", tx, ~city),
+ ggplotly(gg, dynamicTicks = TRUE),
+ widths = c(12, 12)
+ ) 
+
+tx2 <- highlight_key(txhousing, ~city, "Select a city") 
+
+gg <- ggplot(tx2) + 
+  geom_line(aes(date, median, group = city)) 
+
+select <- highlight( ggplotly(gg, tooltip = "city"), 
+                     selectize = TRUE, persistent = TRUE ) 
+
+bscols(filter, select)
+```
+
+
+
+## Checkbox
+
+
+```{r}
+
+library(crosstalk) 
+
+tx <- highlight_key(txhousing) 
+
+widgets <- bscols( widths = c(12, 12, 12), 
+                   filter_select("city", "Cities", tx, ~city),
+                   filter_slider("sales", "Sales", tx, ~sales),
+                   filter_checkbox("year", "Years", tx, ~year,
+                                   inline = TRUE)
+)
+
+
+bscols(widths = c(4, 8), 
+        widgets, 
+        plot_ly(tx, x = ~date, y = ~median, showlegend = FALSE) %>% 
+          add_lines(color = ~city, colors = "black") 
+        )
+
+
+
+```
+
+
+## Leaflet
+
+```{r}
+
+library(leaflet) 
+
+eqs <- highlight_key(quakes) 
+
+
+stations <- filter_slider("station", "Number of Stations",
+ eqs, ~stations
+)
+  
+  
+```
+
+
+```{r}
+p	 <- plot_ly(eqs, x = ~depth, y = ~mag) %>% 
+  add_markers(alpha = 0.5) %>% 
+  highlight("plotly_selected")
+```
+
+
+```{r}
+map <- leaflet(eqs) %>%
+  addTiles() %>% 
+  addCircles() 
+
+bscols( widths = c(6, 6, 3), p, map, stations )
+```
+
+
+
+# filter i highlight
+
+
+```{r}
+library(gapminder) 
+
+g <- highlight_key(gapminder, ~country) 
+
+continent_filter <- filter_select( "filter", "Select a country", g, ~continent ) 
+
+p	 <- plot_ly(g) %>% 
+  group_by(country) %>% 
+  add_lines(x = ~year, y = ~lifeExp, color = ~continent) %>% layout(xaxis = list(title = "")) %>% 
+  highlight(selected = attrs_selected(showlegend = FALSE))
+
+bscols(continent_filter, p, widths = 12)
+```
+
+
+
+# Łączenie animowanych views
+
+
+
+```{r}
+g <- highlight_key(gapminder, ~continent) 
+
+gg <- ggplot(g, aes(gdpPercap, lifeExp, color = continent, frame = year)) +
+  geom_point(aes(size = pop, ids = country)) +
+ geom_smooth(se = FALSE, method = "lm") +
+ scale_x_log10()
+ highlight(ggplotly(gg), "plotly_hover")
+  
+```
+
+
+
+# Przykłady
+
+
+```{r}
+library(dplyr)
+ cities <- c("Galveston", "Midland", "Odessa", "South Padre Island")
+ 
+txsmall <- txhousing %>%
+ select(city, year, month, median) %>%
+ filter(city %in% cities)
+ txsmall %>% highlight_key(~year) %>% { 
+   ggplot(., aes(month, median, group = year)) + geom_line() + facet_wrap(~city, ncol = 2)
+ } %>%
+ggplotly(tooltip = "year")
+```
+
+
+
+```{r}
+demo("crosstalk-highlight-binned-target-a", package = "plotly")
+```
+
+
+
+```{r}
+
+d <- highlight_key(mpg)
+
+dots <- plot_ly(d, colors = "Set1", color = ~class, x = ~displ, y = ~jitter(cyl)) %>%
+ layout(
+xaxis = list(title = "Engine displacement"),
+yaxis = list(title = "Number of cylinders")
+)
+
+ boxs <- plot_ly(d, colors = "Set1", color = ~class, x = ~class, y = ~cty) %>% 
+  add_boxplot() %>%
+layout(
+ xaxis = list(title = ""),
+  yaxis = list(title = "Miles per gallon (city)")
+ )
+
+bars <- plot_ly(d, colors = "Set1", x = ~class, color = ~class)
+
+subplot(dots, boxs, titleX = TRUE, titleY = TRUE) %>%
+  subplot(bars, nrows = 2, titleX = TRUE, titleY = TRUE) %>%
+layout(
+  title = "Dynamic 2-way ANOVA (click & drag on scatterplot)",
+   barmode = "overlay",
+  showlegend = FALSE
+) %>%
+highlight("plotly_selected", opacityDim = 0.6)
+
+```
+
+
+# queries z ggplotem
+
+```{r}
+
+m <- highlight_key(mpg, ~class)
+
+p1 <- ggplot(m, aes(displ, fill = class)) + geom_density()
+
+p2 <- ggplot(m, aes(displ, hwy, fill = class)) + geom_point()
+
+subplot(p1, p2) %>% 
+  hide_legend() %>%
+  highlight("plotly_hover")
+
+```
+
+
+# leaflet
+
+```{r}
+
+library(leaflet) 
+
+qquery <- highlight_key(quakes) 
+p	 <- plot_ly(qquery, x = ~depth, y = ~mag) %>% 
+  add_markers(alpha = 0.5) %>% 
+  highlight("plotly_selected", dynamic = TRUE) 
+
+
+map <- leaflet(qquery) %>% 
+  addTiles() %>% 
+  addCircles()
+# persistent selection can be specified via options() 
+
+withr::with_options( list(persistent = TRUE), crosstalk::bscols(widths = c(6, 6), p, map)
+)
+
+
+```
+
+
+# trelliscope
+
+
+
+```{r eval = FALSE}
+
+
+library(trelliscopejs)
+
+data(gapminder, package = "gapminder")
+
+qplot(year, lifeExp, data = gapminder) +
+ xlim(1948, 2011) + ylim(10, 95) + 
+  theme_bw() + 
+  facet_trelliscope(~ country + continent, nrow = 2, ncol = 6, width = 300, as_plotly = TRUE, plotly_args = list(dynamicTicks = T), plotly_cfg = list(displayModeBar = F) 
+)
+```
+
+
