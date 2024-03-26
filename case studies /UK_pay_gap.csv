@@ -1,0 +1,82 @@
+Occupation;Category;Women average annual salary (£);Men average annual salary (£);Pay gap (£);Pay gap as a percentage
+Admin & organisation;admin & organisation;20272;24691;4419;21.20%
+Receptionists;admin & organisation;12009;13281;1272;10.59%
+Secretaries;admin & organisation;14614;15315;701;4.80%
+Admin;admin & organisation;14594;18729;4135;28.33%
+Stock control;admin & organisation;17271;20538;3267;18.92%
+Government admin;admin & organisation;19287;23047;3760;19.49%
+Payroll & accounts;admin & organisation;17914;25744;7830;43.71%
+Human resources;admin & organisation;25376;30153;4777;18.82%
+Research & admin;admin & organisation;31261;34986;3725;11.92%
+Accountants;admin & organisation;30122;40427;10305;34.21%
+Care & education;care & education;22527;29104;6577;27.01%
+Paramedics;care & education;34764;37078;2314;6.66%
+Childcare;care & education;11092;12880;1788;16.12%
+Teaching assistants;care & education;10931;13391;2460;22.50%
+Care workers;care & education;12204;16271;4067;33.33%
+School crossing;care & education;2301;3219;918;39.90%
+Nurses;care & education;26291;31816;5525;21.01%
+Social workers;care & education;29898;32286;2388;7.99%
+Teaching & education;care & education;30307;36971;6664;21.99%
+Medical practitioners;care & education;44955;78025;33070;73.56%
+Creative & media;creative & media;25748;30876;5128;21.50%
+Culture & media;creative & media;16093;24227;8134;50.54%
+Graphic designers;creative & media;22227;25610;3383;15.22%
+Arts & media;creative & media;22738;30197;7459;32.80%
+Designers;creative & media;25025;30506;5481;21.90%
+Public relations;creative & media;25536;28820;3284;12.86%
+Web design;creative & media;26180;28990;2810;10.73%
+Media professionals;creative & media;28585;32236;3651;12.77%
+Business & media;creative & media;31168;37212;6044;19.39%
+Advertising;creative & media;34179;40084;5905;17.28%
+Law & justice;law & justice;29073;32160;3087;12.94%
+Prison service;law & justice;22634;28486;5852;25.85%
+Legal associate;law & justice;22645;31142;8497;37.52%
+Police officers;law & justice;34715;40275;5560;16.02%
+Senior police;law & justice;59871;57701;-2170;-3.62%
+Probation officers;law & justice;29767;31777;2010;6.75%
+Solicitors;law & justice;37734;42998;5264;13.95%
+Traffic wardens;law & justice;20023;18630;-1393;-6.96%
+Security;law & justice;19426;20096;670;3.45%
+Debt collectors;law & justice;14845;18338;3493;23.53%
+Manual work;manual work;15837;22828;6991;46.84%
+Agricultural;manual work;11925;18458;6533;54.78%
+Construction;manual work;18696;20442;1746;9.34%
+Sewing machinists;manual work;13510;17689;4179;30.93%
+Printing & binding;manual work;14190;20927;6737;47.48%
+Textiles;manual work;12938;21862;8924;68.98%
+Leatherwork;manual work;14146;22779;8633;61.03%
+Metalwork;manual work;15074;25544;10470;69.46%
+Instrument making;manual work;17952;28088;10136;56.46%
+Electricians;manual work;24102;29666;5564;23.09%
+Sales & serving others;sales & serving others;21161;25743;4582;30.58%
+Fire service;sales & serving others;29782;30968;1186;3.98%
+Housekeeping;sales & serving others;11330;17101;5771;50.94%
+Travel agents;sales & serving others;14974;22505;7531;50.29%
+Valeters;sales & serving others;15183;14632;-551;-3.63%
+Refuse;sales & serving others;12571;19289;6718;53.44%
+Postal workers;sales & serving others;16303;22974;6671;40.92%
+Train & tram drivers;sales & serving others;48422;47943;-479;-0.99%
+Pharmacists;sales & serving others;34039;44554;10515;30.89%
+Sales assistants;sales & serving others;7847;11720;3873;49.36%
+Science, tech & engineering;science, tech & engineering;25014;30738;5724;31.05%
+Lab technicians;science, tech & engineering;16471;24094;7623;46.28%
+Town planners;science, tech & engineering;29183;27725;-1458;-5.00%
+Animal control;science, tech & engineering;14880;19210;4330;29.10%
+Machine operatives;science, tech & engineering;13814;25280;11466;83.00%
+Chemical operatives;science, tech & engineering;15840;25768;9928;62.68%
+Architects;science, tech & engineering;29858;36006;6148;20.59%
+Social scientists;science, tech & engineering;32007;36268;4261;13.31%
+Civil engineers;science, tech & engineering;30472;38906;8434;27.68%
+Electrical engineers;science, tech & engineering;42599;43382;783;1.84%
+Senior managers & execs;senior managers & execs;39874;50392;10518;29.00%
+Finance & investing;senior managers & execs;28609;37370;8761;30.62%
+Taxation experts;senior managers & execs;36155;42357;6202;17.15%
+Retail managers;senior managers & execs;19391;28658;9267;47.79%
+HR managers;senior managers & execs;39248;50516;11268;28.71%
+IT directors;senior managers & execs;63328;60215;-3113;-4.92%
+Bank managers;senior managers & execs;37129;63133;26004;70.04%
+CEOs;senior managers & execs;59048;86551;27503;46.58%
+Business analysts;senior managers & execs;33555;40599;7044;20.99%
+Economists;senior managers & execs;42405;44133;1728;4.07%
+All occupations average;;24938;30817;5878;27.52%
