@@ -1,7 +1,9 @@
 ---
 title: "Wizualizacja czasu"
-output: pdf_document
-author: Tomasz Olczyk
+author: "Tomasz Olczyk"
+output:
+  html_document:
+    df_print: paged
 bibliography: references.bib
 ---
 
@@ -38,7 +40,9 @@ Użyjemy danych dotyczących dat publikacji i liczby słów w książkach z sag 
 
 ```{r}
 
+
 fantasy <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/fantasy.csv")
+
 
 ```
 
@@ -198,7 +202,7 @@ timeline_data <- data.frame(event = c("Event 1", "Event 2"),
                             end   = c("2020-10-01", "2020-12-31"),
                             group = "My Events")
                             
-gg_vistime(timeline_data)
+
 ```
 
 
@@ -207,7 +211,7 @@ gg_vistime(timeline_data)
 
 timeline_data %>%
   ggplot() +
-  geom_segment(aes(y = event, 
+  geom_segment(aes(y = event, #potrzebujemy esttyk y, yend i analogizni z x
                    xend = end, 
                    x= start,
                    yend = event)) +
@@ -216,14 +220,17 @@ timeline_data %>%
 ```
 
 
-Zaminiem napisy na daty funkcja as.Date:
+Zamienimy napisy na daty funkcja as.Date:
 
 ```{r}
 timeline_data %>%
   mutate(start = as.Date(start),
          end = as.Date(end)) %>%
  ggplot() +
-  geom_segment(aes(y = event, xend = end, x= start, yend = event)) +
+  geom_segment(aes(y = event, 
+                   xend = end, 
+                   x= start, 
+                   yend = event)) +
   theme_bw()
 ```
 
@@ -241,6 +248,8 @@ timeline_data %>%
 
 ```
 
+
+## Wykres Gantta z wykorzystaniem biblioteki vistaime
 
 ```{r}
 library(vistime)
@@ -276,7 +285,7 @@ View(premierzyIIIRP)
 ```
 
 
-Dla uniknięcia problemów z rysowaniem linii można uzupełnić końcową komórkę w zmiennej end datą systemową:
+Dla uniknięcia problemów z rysowaniem linii można uzupełnić końcową komórkę w zmiennej end datą systemową funkcją Sys.Date, wewnątrz funkcji ymd z biblioteki lubridate. Komórka znajduje się w 7 kolumnie, w 22 wierszu więc robimy to tak:
 
 
 ```{r}
@@ -320,6 +329,7 @@ ggplot(premierzyIIIRP) +
 ```
 
 
+Jeśli użyj
 ```{r}
 gg_vistime(premierzyIIIRP,
            col.event = "nazwisko",
@@ -335,10 +345,10 @@ ggplot(premierzyIIIRP) +
                    x= start,
                    yend = stronnictwo, 
                    colour = stronnictwo)) +
-  scale_x_date(breaks = (premierzyIIIRP$end), 
-               date_labels = "%Y") +
+  scale_x_date(breaks = (premierzyIIIRP$end), # ustawiamy daty na osi x na koniec danego rządu
+               date_labels = "%Y") + #date_labels ustawione na rok
   theme_bw() +
-  guides(colour = "none")
+  guides(colour = "none") # wyłączamy legendę
 
 ```
 
@@ -405,27 +415,32 @@ plotly::ggplotly(z, tooltip = "text")
 
 ```
 
-text = paste("", name,
-                  "<br>rok urodzenia: ", birthyear,
-                  "<br>zawód: ", occupation,
-                  "<br>obszar działalności: ", domain)
-text = paste("", name,
-                  "<br>rok urodzenia: ", birthyear,
-                  "<br>zawód: ", occupation,
-                  "<br>obszar działalności: ", domain)
-## próba z timevis
+
+```{r}
+y <- ggplot(premierzyIIIRP) +
+  geom_segment(aes(y = reorder(stronnictwo, start), 
+                   xend = end, 
+                   x= start,
+                   yend = stronnictwo, 
+                   colour = stronnictwo,
+                   text = paste("",nazwisko,
+                  "<br>",stronnictwo,
+                  "<br>objęcie urzędu:",start,
+                  "<br>złożenie urzędu:",end)),
+                  linewidth = 10) +
+  scale_x_date(breaks = kadencje, 
+               date_labels = "%Y") +
+  scale_color_brewer(palette = "Set3") +
+  theme_bw()
+```
+
 
 
 ```{r}
 
-premierzyIIIRP %>%
-  rename(content = nazwisko) %>%
-  rename(group = stronnictwo) %>% #argument groups i soubgroups do sprawdzenia
-timevis()
-
+plotly::ggplotly(y, tooltip = "text")
 
 ```
-
 
 
  
@@ -467,6 +482,21 @@ timevis(data)
 ```{r}
 ?timevis
 ```
+
+
+## próba z timevis
+
+
+```{r}
+
+premierzyIIIRP %>%
+  rename(content = nazwisko) %>%
+  rename(group = stronnictwo) %>% #argument groups i soubgroups do sprawdzenia
+timevis()
+
+
+```
+
 
 z danymi Panteon
 
@@ -552,7 +582,7 @@ library(vistime)
 ```
 
 
-## Kalendarz-mapacieplna z wykorzystaniem geom_tile i facet_wrap
+## Kalendarz-mapa cieplna z wykorzystaniem geom_tile i facet_wrap
 
 ## Kalendarz z Oryxem
 
@@ -573,7 +603,7 @@ oryx %>%
   mutate(month = month(date, label = TRUE), 
          wday = wday(date, label = TRUE),
          day = day(date), 
-         week = isoweek(date)) -> df2 #operator przypisania moz działać także w drugą stron
+         week = epiweek(date)) -> df2 #operator przypisania moz działać także w drugą stron
 ```
 
 Epiweek - tydzień zaczyna się od niedzieli:
@@ -594,7 +624,7 @@ oryx %>%
   mutate(month = month(date, label = TRUE), 
          wday = wday(date, label = TRUE),
          day = day(date), 
-         week = lubridate::isoweek(date)) -> df2 
+         week = lubridate::epiweek(date)) -> df2 
 ```
 
 Kolejność dni
@@ -636,7 +666,7 @@ library(plotly)
 
 ```
 
-```{r}
+```{r, eval = FALSE}
 ggplotly(x, tooltip = "text")
 ```
 
@@ -756,7 +786,7 @@ miesiące = as.data.frame(table(df2$month))
 library(plotly)
 ```
 
-```{r}
+```{r, eval = FALSE}
 
 ggplotly(y)
 ```

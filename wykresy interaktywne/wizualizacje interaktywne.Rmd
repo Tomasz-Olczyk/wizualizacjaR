@@ -566,6 +566,16 @@ bscols(continent_filter, p, widths = 12)
 # Łączenie animowanych views
 
 
+```{r}
+g <- highlight_key(gapminder, ~continent) 
+
+gg <- ggplot(g, aes(gdpPercap, lifeExp, color = continent, frame = year)) +
+  geom_point(aes(size = pop, ids = country)) +
+ #geom_smooth(se = FALSE, method = "lm") +
+ scale_x_log10()
+ highlight(ggplotly(gg), "plotly_hover")
+```
+
 
 ```{r}
 g <- highlight_key(gapminder, ~continent) 
@@ -578,7 +588,79 @@ gg <- ggplot(g, aes(gdpPercap, lifeExp, color = continent, frame = year)) +
   
 ```
 
+## Wykresy 3d
 
+```{r}
+plot_ly(mpg, x = ~cty, y = ~hwy, z = ~cyl) %>%
+  add_markers(color = ~cyl)
+```
+
+
+```{r}
+plot_ly(kobiety,
+       x = ~AverageViews,
+       y = ~HPI,
+       z = ~L_star ) %>%
+  add_trace( 
+    text = paste("nazwisko" ~name, "HPI: " ~HPI),
+    hoverinfo = 'text',
+    showlegend = F
+  )
+```
+
+
+```{r}
+library(deSolve)
+
+```
+
+
+```{r}
+# Initial state 
+parms <- c(a=10, b=8/3, c=26.48)
+state <- c(x=0.01, y=0.0, z=0.0)
+
+# Time span
+times <- seq(0, 100, by=1/500)
+
+# Lorenz system
+lorenz <- function(times, state, parms) {
+  with(as.list(c(state, parms)), {
+    dxdt <- a*(y-x)
+    dydt <- x*(c-z)-y
+    dzdt <- x*y-b*z
+    return(list(c(dxdt, dydt, dzdt)))
+  })
+}
+
+# Make dataframe
+df <- as.data.frame(ode(func=lorenz, y=state, parms=parms, times=times))
+```
+
+
+add_trace(
+    x = c(1:5), 
+    y = rnorm(5, mean = 5),
+    text = c("Text A", "Text B", "Text C", "Text D", "Text E"),
+    hoverinfo = 'text',
+    marker = list(color='green'),
+    showlegend = F
+  )
+
+```{r}
+x <- seq_len(nrow(volcano)) + 100
+y <- seq_len(ncol(volcano)) + 500
+plot_ly() %>% add_surface(x = ~x, y = ~y, z = ~volcano)
+```
+
+
+```{r}
+plot_ly(df,
+        x= ~x,
+        y= ~y,
+        z = ~z,
+        marker = list(size = 0.8))
+```
 
 # Przykłady
 
@@ -595,6 +677,7 @@ txsmall <- txhousing %>%
  } %>%
 ggplotly(tooltip = "year")
 ```
+
 
 
 
