@@ -21,7 +21,7 @@ poniższy kod działa na macu
 
 ## Timeline - oś czasu z wykorzystanie geom_segment
 
-Według Dana Roama autora ksiażki "Narysuj swoje myśli" oś czasu jest modelem wizualnym ilustrującym odpowiedź na pytanie "kiedy" [@roam2010]. Najprościej stworzyć *timeline* używając funkcji `geom_segment()` ggplota
+Według Dana Roama autora ksiażki "Narysuj swoje myśli" oś czasu jest modelem wizualnym ilustrującym odpowiedź na pytanie "kiedy" [@roam2010]. Najprościej stworzyć *timeline* używając funkcji `geom_segment()` ggplot2.
 
 
 ### Biblioteki
@@ -55,8 +55,6 @@ head(fantasy)
 ```
 
 
-
-
 Poniższy wykres jest połączeniem wykresu [lizakowego](https://r-graph-gallery.com/lollipop-plot.html)
 (lollypop chart) z osią czasu. Lizaki - słupki a właściwie odcinki zakończone punktem - oznaczać będą daty kolejnych książek
 
@@ -84,7 +82,7 @@ ggplot() +
               size  = 4) +
     geom_point(aes(x = rok,
                    y = disloc)) +
-  #kontroluje etykiety na skali ręcznie wybierając tylko lata publikacji książek
+  # kontroluję etykiety na skali ręcznie wybierając tylko lata publikacji książek
     scale_x_continuous(breaks = c(1996, 1999, 2000, 2005, 2011)) +
     theme_minimal() +
     theme(axis.title.x = element_blank(), #usuwa tytuł
@@ -173,6 +171,7 @@ ggplot() +
           text = element_text(size = 10))
 ```
 
+
 ```{r fig.width = 20, fig.height= 5}
 
 fantasy %>% 
@@ -186,15 +185,18 @@ fantasy %>%
   scale_x_continuous(breaks = c(1994, 1995, 1996, 1997, 1999, 2000,2005, 2011)) +
   scale_y_continuous(limits = c(0, 450000)) +
   theme_bw() +
-  theme(axis.title.x = element_blank(), #usuwa tytuł
+  labs(y = "słowa") +
+  theme(axis.title.x = element_blank(), #usuwa podpis na osi x
        #axis.title.y = element_blank(),
-        axis.text.y = element_blank(),
+        axis.text.y = element_blank(), # usuwa tekst etykiet na osi y
         text = element_text(size = 15)) +
   facet_wrap(~author, nrow =2)
 ```
 
 ## Wykres Gantta z wykorzystaniem geom_segment
 
+
+Prosty przykład ramki danych z datami w formie znakowej.
 
 ```{r}
 timeline_data <- data.frame(event = c("Event 1", "Event 2"),
@@ -206,12 +208,13 @@ timeline_data <- data.frame(event = c("Event 1", "Event 2"),
 ```
 
 
+Na poniższym wykresie widać problem z właściwą interpretacją dat w formie napisów:
 
 ```{r}
 
 timeline_data %>%
   ggplot() +
-  geom_segment(aes(y = event, #potrzebujemy esttyk y, yend i analogizni z x
+  geom_segment(aes(y = event, #potrzebujemy esetyk y, yend i analogizni z x
                    xend = end, 
                    x= start,
                    yend = event)) +
@@ -220,7 +223,7 @@ timeline_data %>%
 ```
 
 
-Zamienimy napisy na daty funkcja as.Date:
+Dlatego zamienimy napisy na daty funkcją as.Date:
 
 ```{r}
 timeline_data %>%
@@ -234,13 +237,44 @@ timeline_data %>%
   theme_bw()
 ```
 
+Ponieważ w moim systeme daty ustawione są na amerykańskie zmieniam ustawienie na polskie.
+
+Poniższy kod działa tylko na mac os i ma sens jedynie gdy mamy niepolskie ustawienia  a chcemy zmienić na polskie
+
+```{r}
+Sys.setlocale("LC_TIME", "pl_PL.UTF-8")
+```
+
+
+Ten sam wykres będzie wyglądał inaczej.
+
+
+```{r}
+timeline_data %>%
+  mutate(start = as.Date(start),
+         end = as.Date(end)) %>%
+ ggplot() +
+  geom_segment(aes(y = event, 
+                   xend = end, 
+                   x= start, 
+                   yend = event)) +
+  theme_bw()
+```
+
+
+Gantt w jednej linii
+
 ```{r}
 
 timeline_data %>%
   mutate(start = as.Date(start),
          end = as.Date(end)) %>%
   ggplot() +
-  geom_segment(aes(y = group, xend = end, x= start, yend = group, colour = event)) +
+  geom_segment(aes(y = group, 
+                   xend = end, 
+                   x= start, 
+                   yend = group,
+                   colour = event)) +
   scale_x_date() +
   theme_bw()
 
@@ -249,26 +283,9 @@ timeline_data %>%
 ```
 
 
-## Wykres Gantta z wykorzystaniem biblioteki vistaime
-
-```{r}
-library(vistime)
-```
-
-```{r}
-timeline_data <- data.frame(event = c("Event 1", "Event 2"),
-                            start = c("2020-06-06", "2020-10-01"), 
-                            end   = c("2020-10-01", "2020-12-31"),
-                            group = "My Events")
-```
 
 
-```{r}
-gg_vistime(timeline_data)
-```
-
-
-### Dane - rządy III RP
+## Wykres Gantta rządów III RP
 
 
 Dane dotyczące długości trwania poszczególnych rządów w IIIRP za wikipedią:
@@ -280,10 +297,12 @@ premierzyIIIRP <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizu
 ```
 
 
+
 ```{r}
 View(premierzyIIIRP)
 ```
 
+Jak widać w ostatniej komórce brakuje daty.
 
 Dla uniknięcia problemów z rysowaniem linii można uzupełnić końcową komórkę w zmiennej end datą systemową funkcją Sys.Date, wewnątrz funkcji ymd z biblioteki lubridate. Komórka znajduje się w 7 kolumnie, w 22 wierszu więc robimy to tak:
 
@@ -329,13 +348,7 @@ ggplot(premierzyIIIRP) +
 ```
 
 
-Jeśli użyj
-```{r}
-gg_vistime(premierzyIIIRP,
-           col.event = "nazwisko",
-           col.group = "stronnictwo")
-```
-
+Ustalmy etykiety na osi y na zakończenia kadencji (premierzyIIIRP$end).
 
 ```{r}
 
@@ -352,6 +365,10 @@ ggplot(premierzyIIIRP) +
 
 ```
 
+To nie jest dobre rozwiązanie bo daty się nakładają
+
+
+Dlatego stworzymy wektor z unikalnymi datami rocznymi funkcjami unique i year.
 
 ```{r}
 
@@ -360,6 +377,15 @@ kadencje <- unique(year(premierzyIIIRP$start))
 ```
 
 
+Wektor który uzyskaliśmy ma format  numeryczny.
+
+
+```{r}
+class(kadencje)
+```
+
+Następnie zmienimy jego format na dat
+
 ```{r}
 
 kadencje <- lubridate::ymd(kadencje, 
@@ -367,7 +393,9 @@ kadencje <- lubridate::ymd(kadencje,
 
 ```
 
-
+```{r}
+class(kadencje)
+```
 
 
 ```{r}
@@ -381,7 +409,7 @@ plotly::ggplotly(ggplot(premierzyIIIRP) +
   scale_x_date(breaks = kadencje, 
                date_labels = "%Y") +
   theme_bw() +
-    guides(colour = "none") # guides = "none" nie działa z plotly
+    guides(colour = "none") 
 )
 
 ```
@@ -427,7 +455,7 @@ y <- ggplot(premierzyIIIRP) +
                   "<br>",stronnictwo,
                   "<br>objęcie urzędu:",start,
                   "<br>złożenie urzędu:",end)),
-                  linewidth = 10) +
+                  linewidth = 10) + # poszerzymy lini
   scale_x_date(breaks = kadencje, 
                date_labels = "%Y") +
   scale_color_brewer(palette = "Set3") +
@@ -435,10 +463,14 @@ y <- ggplot(premierzyIIIRP) +
 ```
 
 
+```{r}
+y
+```
+
 
 ```{r}
 
-plotly::ggplotly(y, tooltip = "text")
+plotly::ggplotly(y, tooltip = "text") # dodatmy tekst do argumntu tooltip
 
 ```
 
@@ -491,100 +523,19 @@ timevis(data)
 
 premierzyIIIRP %>%
   rename(content = nazwisko) %>%
-  rename(group = stronnictwo) %>% #argument groups i soubgroups do sprawdzenia
+  rename(group = stronnictwo) %>% #argument groups i soubgroups pakitu timevis
 timevis()
 
 
 ```
 
 
-z danymi Panteon
-
-## Dane
-
-\`
-
-## Dane
-
-
-
-```{r}
-
-id <- "15xCXZ-LzVs32KK6y-8liToTFuq82onPO"
-panteon <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) 
-
-```
-
-```{r}
-
-Polska1900 <- panteon %>%
-  filter(birthyear > 1900, countryCode3 == "POL") %>%
-  select(name, birthyear, AverageViews) %>%
-  mutate(start = lubridate::ymd(birthyear, 
-                                truncated = 2L)) %>% #funkcja z biblioteki  która zmienia liczbę czterocyfrową na datę w formacie rok(y) miesiąc (m) dzień (d) przyjmując  za dzień i miesiać 1 (pierwszy stycznia danego roku)
-  rename(content = name)
-  
-
-```
-
-
-
-```{r}
-
-premierzyIIIRP %>%
-  rename(content = nazwisko)
-timevis(Polska1900)
-```
-
-
-
-
-```{r}
-
-Polska1950 <- panteon %>%
-  filter(birthyear > 1950, countryCode3 == "POL") %>%
-  select(name, birthyear, AverageViews) %>%
-  mutate(start = lubridate::ymd(birthyear, truncated = 2L)) %>% #funkcja która zmienia liczbę czterocyfroą na datę, 1 stycznia danego roku
-  rename(content = name)
-
-```
-
-```{r}
-
-timevis(Polska1950)
-
-```
-
-## Biblioteka vistime
-
-```{r}
-
-#install.packages("vistime")
-
-```
-
-```{r}
-
-library(vistime)
-
-```
-
-```{r}
-
-?vistime()
-
-
-```
-
-```{r}
-?gg_vistime
-
-```
-
 
 ## Kalendarz-mapa cieplna z wykorzystaniem geom_tile i facet_wrap
 
 ## Kalendarz z Oryxem
+
+Użyjemy danych na temat sttrat sprzętu wojskowego w Ukrainie:
 
 ```{r }
 
@@ -592,18 +543,27 @@ oryx <- read.csv("https://raw.githubusercontent.com/Tomasz-Olczyk/testowe-repozy
 
 ```
 
+zajrzyjmy do danych:
+
 ```{r}
+
 glimpse(oryx)
+
 ```
+
+
+`oryx$date` jest wektorem napisów a `oryx$change_3` liczb całkowitych z wartościami brakującymi
 
 ```{r}
 oryx %>% 
   mutate(date = as.Date(date)) %>%
-  complete(date = seq.Date(as.Date("2022-02-01"), as.Date("2023-12-31"), by="day")) %>% 
+  complete(date = seq.Date(as.Date("2022-02-01"), #funkcja complete tworzy nowe obserwacje, funkcja seq.Date tworzy sekwencję dat
+                           as.Date("2023-12-31"), 
+                           by="day")) %>% 
   mutate(month = month(date, label = TRUE), 
          wday = wday(date, label = TRUE),
          day = day(date), 
-         week = epiweek(date)) -> df2 #operator przypisania moz działać także w drugą stron
+         week = epiweek(date)) -> df2 #operator przypisania może działać także w drugą stronę
 ```
 
 Epiweek - tydzień zaczyna się od niedzieli:
@@ -719,7 +679,7 @@ ggplot(df2, aes(y = fct_rev(wday),
   #dodaję skalę kolorów a'la github na podstawi kolorymetru i funkcji rgb
   scale_fill_gradient(low = "#BAE177",
                       high ="#155219") +
-  #poniższa funkcja sprawia że rysują się kwadraty a nie prostokąty
+  #coord_equal sprawia że rysują się kwadraty a nie prostokąty
   coord_equal() +
   theme_minimal()
   
@@ -811,23 +771,30 @@ ataki_rakietowe <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wiz
 
 ```{r}
 
-ataki_rakietowe %>% 
+ataki <- ataki_rakietowe %>% 
   select(time_end, model,launched, destroyed) %>%
   mutate(date = as.Date(time_end)) %>%
-  complete(date = seq.Date(as.Date("2022-01-01"), as.Date("2023-12-31"), by="day")) %>% 
+  complete(date = seq.Date(as.Date("2022-01-01"), 
+                           as.Date("2023-12-31"), 
+                           by="day")) %>% 
   mutate(year = year(date),
          month = month(date, label = TRUE),
          months = month(date, label = FALSE),
          wday = wday(date, label = TRUE),
          day = day(date), 
-         week = lubridate::isoweek(date))  -> df3 
+         week = lubridate::isoweek(date)) 
 
 ```
 
 Łączymy ramkę danych z ramką opisującą typy środków napadu powietrznego żeby wyselekcjonować ataki z użyciem wybranego typu:
 
+
 ```{r}
-df3 <- left_join(df3, środki)
+
+```
+
+```{r}
+ataki <- left_join(df3, środki)
 ```
 
 ```{r}
@@ -912,8 +879,3 @@ df4 %>%
   
 ```
 
-Problem z przeliczaniem 365/7 w plotly.
-
-```{r}
-ggplotly(z)
-```
