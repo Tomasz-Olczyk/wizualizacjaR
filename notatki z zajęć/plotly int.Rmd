@@ -1,0 +1,240 @@
+---
+title: "notatka interaktywna"
+author: "Tomasz Olczyk"
+date: "3/20/2024"
+output: 
+  slidy_presentation:
+    incremental: yes
+  html_document: default
+  powerpoint_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## R Markdown
+
+Hans Rosling Gapminder Factfullnes
+
+```{r }
+
+#install.packages("plotly")
+
+```
+
+
+
+You can also embed plots, for example:
+
+```{r }
+library(plotly)
+library(tidyverse)
+library(gapminder)
+
+
+```
+
+
+## wykes statyczny
+
+```{r}
+
+(w1 <- ggplot(gapminder %>% filter(year == 2007), 
+              aes(y = lifeExp,
+                  x= gdpPercap)) +
+  geom_point())
+
+```
+
+
+## wykres dynamiczny w2
+
+```{r}
+
+w2 <- ggplotly(w1)
+
+```
+
+
+
+```{r}
+
+style(w2, text = gapminder$country)
+
+```
+
+## wykres dynamiczny w3
+
+```{r}
+w3 <- ggplot(gapminder %>% filter(year == 2007), 
+              aes(y = lifeExp,
+                  x= gdpPercap,
+                  text = paste("kraj: ", country,
+                               "<br>rok: ", year),
+                  color = continent)) +
+  geom_point()
+
+```
+
+
+```{r}
+
+ggplotly(w3, tooltip = "text")
+
+
+```
+
+
+## Wykres dynamiczny w 4
+
+```{r}
+
+w4 <- ggplot(gapminder %>% filter(year == 2007), 
+              aes(y = lifeExp,
+                  x= gdpPercap,
+                  text = paste("kraj: ", country,
+                               "<br>rok: ", year,
+                               "<br>PKB na głowę: ", gdpPercap,
+                               "<br>populacja: ", pop),
+                  color = continent,
+                  size = pop)) +
+  geom_point()
+
+```
+
+
+
+```{r}
+ggplotly(w4, tooltip = "text")
+```
+
+
+
+```{r, eval = FALSE}
+#install.packages("crosstalk")
+#install.packages("DT")
+```
+
+
+```{r}
+
+library(crosstalk)
+library(DT)
+
+```
+
+
+```{r}
+
+m <- highlight_key(mpg)
+
+
+
+```
+
+
+
+```{r}
+
+
+p <- ggplot(m, aes(displ, hwy)) +
+  geom_point()
+
+```
+
+
+```{r}
+ip <- highlight(ggplotly(p), "plotly_selected")
+```
+
+
+```{r}
+
+crosstalk::bscols(ip, DT::datatable(m))
+
+
+```
+
+
+
+```{r}
+panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv')
+```
+
+
+## zadanie
+
+Wykres punktowy rankingowy połączony z tabelą, na osi x osoby, a na osi averageViews, od
+najrzadziej do najczęściej wyświetlanej połączony z tabelą
+
+
+```{r}
+kobiety <- panteon %>%
+  filter(gender == "Female",
+         countryCode3 == "POL")
+```
+
+
+```{r}
+
+k_i <- highlight_key(kobiety)
+
+```
+
+
+```{r}
+
+w_k <- ggplot(k_i) +
+  geom_point(aes(x=reorder(name, AverageViews), 
+                 y = AverageViews,
+                 text = paste("nazwisko:" , name,
+                              "<br>rok urodzenia:  ", birthyear))) +
+  coord_flip()
+```
+
+
+
+```{r}
+ik <- highlight(ggplotly(w_k, tooltip = "text"), "plotly_click")
+```
+
+
+
+```{r}
+crosstalk::bscols(ik, DT::datatable(k_i), widths = 12)
+```
+
+
+```{r}
+
+library(gapminder)
+
+```
+
+
+
+```{r}
+
+gi <- highlight_key(gapminder)
+
+```
+
+```{r}
+wn <- ggplot(gi,
+             aes(x = gdpPercap,
+                 y = lifeExp,
+                 color = continent,
+                 frame = continent)) +
+  geom_point(aes(size = pop,
+                 ids = country)) +
+  scale_x_log10()
+
+```
+
+
+```{r}
+
+highlight(ggplotly(wn), "plotly_click")
+```
+

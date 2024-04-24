@@ -1,0 +1,114 @@
+---
+title: "notatka z 3 gr1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(tidyverse)
+
+```
+
+
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+
+```
+
+
+```{r}
+
+dwie_kolumny <- select(panteon, name, gender)
+
+```
+
+```{r}
+
+na_c <- select(panteon, starts_with("c"))
+```
+
+
+```{r}
+ce_en <- select(panteon, matches("co|en"))
+```
+
+```{r}
+bez_ce_en <- select(panteon, -matches("co|en"))
+```
+
+Chcemy sfiltrować kobiety
+
+```{r}
+kobiety <- panteon %>%
+  filter(płeć == "Female")
+```
+
+```{r}
+
+kobiety_z_pol <- panteon %>%
+  filter(płeć == "Female",
+         countryCode3 == "POL")
+```
+
+
+```{r}
+kobiety_z_pol <- panteon %>%
+  filter(płeć == "Female",
+         countryCode3 == "POL",
+         AverageViews > mean(panteon$AverageViews))
+```
+
+
+```{r}
+
+zieloni <- starwars %>%
+  filter(skin_color == "green")
+
+```
+
+
+```{r}
+
+zielonkawi <- starwars %>%
+  filter(grepl("green", skin_color))
+
+
+```
+
+
+```{r}
+zielonkawi_str <- starwars %>%
+  filter(str_detect(skin_color, "green"))
+```
+
+
+sumujey osoby wg kontynentu
+
+```{r}
+kontynenty <- panteon %>%
+  group_by(continentName) %>%
+  summarise(osoby = n())
+```
+
+```{r}
+kontynenty_płeć <- panteon %>%
+  group_by(continentName, płeć, domain) %>%
+  summarise(osoby = n())
+```
+
+
+```{r}
+panteon %>%
+  group_by(continentName, płeć) %>%
+  summarise(średnia_wyśw = mean(AverageViews)) %>%
+  ggplot() +
+  geom_col(aes(x= płeć, 
+               y = średnia_wyśw,
+               fill = płeć)) +
+  facet_wrap(~continentName)
+```
+

@@ -1,0 +1,291 @@
+---
+title: "notatka 10"
+author: "Tomasz Olczyk"
+date: "3/27/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R3 D
+
+
+```{r }
+
+library(plotly)
+library(tidyverse)
+
+```
+
+## 
+```{r }
+
+plot_ly(mpg,
+        x= ~cty,
+        y = ~hwy,
+        z = ~cyl)
+
+```
+
+
+
+```{r}
+
+df <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/wykresy%20interaktywne/lorenz.csv")
+
+```
+
+
+```{r}
+plot_ly(df,
+        x= ~x,
+        y = ~y,
+        z= ~z,
+        marker =list(size = 1) )
+```
+
+
+
+```{r}
+x <- seq_len(nrow(volcano)) + 100
+y <- seq_len(ncol(volcano)) + 500
+plot_ly() %>% add_surface(x = ~x, y = ~y, z = ~volcano)
+```
+
+# Mapy
+
+
+```{r}
+
+?map_data
+
+```
+
+```{r}
+install.packages(maps)
+```
+
+
+```{r}
+
+Polska <- map_data("world", region = "Poland")
+
+
+```
+
+
+
+```{r}
+
+ggplot(Polska, aes(x= long, 
+                   y =lat,
+                   group = group)) +
+  geom_polygon(fill = "red",
+               colour = "white") +
+  theme_minimal()
+
+```
+
+
+
+```{r}
+panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv')
+```
+
+
+```{r}
+
+polska_panteon <- panteon %>%
+  filter(countryCode3 == "POL",
+         gender == "Female")
+
+```
+
+
+
+```{r}
+install.packages("ggrepel")
+```
+
+
+```{r}
+library(ggrepel)
+```
+
+
+```{r}
+
+ggplot(Polska, aes(x= long, 
+                   y =lat,
+                   group = group)) +
+  geom_polygon(fill = "white",
+               colour = "black") +
+  geom_point(data = polska_panteon, aes(x = LON,
+                                        y = LAT,
+                                        group = name,
+                                        size = AverageViews)) +
+  geom_label_repel(data = polska_panteon %>% filter(name == "Maria Leszczyńska"), 
+                   aes(x = LON,
+                                        y = LAT,
+                                        group = name,
+                                        label = name)) +
+  theme_minimal()
+
+```
+
+
+
+```{r}
+ggplot(Polska, aes(x = long,
+                   y = lat,
+                   group = group)) +
+  geom_polygon(fill = "white",
+               colour = "black") +
+  geom_point(data = polska_panteon, aes(x = LON, 
+                                        y = LAT,
+                                        group = name)) +
+  theme_minimal()
+```
+
+```{r}
+przed_1000 <- panteon %>%
+  filter(birthyear < 1000)
+```
+
+
+```{r}
+
+świat <- map_data("world")
+
+(w <- ggplot(świat, aes(x = long, y = lat, group = group))+
+  geom_polygon(fill = "white", colour = "black") +
+  geom_point(data = przed_1000, aes(x = LON, 
+                                        y = LAT,
+                                        group = name,
+                                    colour = gender)))
+
+
+```
+
+
+
+
+```{r}
+ggplotly(w)
+```
+
+
+```{r}
+ggplot(świat, aes(x= long, y= lat, group = group))+
+  geom_polygon(fill = "white", colour = "black") +
+  geom_point(data = przed_1000, aes(x= LON, y= LAT, group = name, colour = gender))
+```
+
+
+
+# Czas
+
+
+```{r}
+
+fantasy <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/fantasy.csv")
+
+```
+
+
+```{r}
+Martin <- fantasy %>% 
+  filter(author == "Martin")
+
+```
+
+```{r}
+  
+  ggplot(Martin) +
+  geom_segment(aes(x= rok,
+               xend = rok,
+               y = words,
+               yend = 0)) +
+  geom_segment(aes(x = 1990,
+                   y=0,
+                   xend = 2020,
+                   yend = 0),
+               arrow = arrow(length = unit(x = 0.2, units = "cm"))) +
+geom_point(aes(x = rok, words)) +
+  geom_text_repel(aes(x = rok, y= words, label = title )) +
+  scale_x_continuous(breaks = Martin$rok)
+```
+
+
+```{r}
+
+  
+  ggplot(fantasy) +
+  geom_segment(aes(x= rok,
+               xend = rok,
+               y = words,
+               yend = 0)) +
+  geom_segment(aes(x = 1990,
+                   y=0,
+                   xend = 2020,
+                   yend = 0),
+               arrow = arrow(length = unit(x = 0.2, units = "cm"))) +
+geom_point(aes(x = rok, y =words)) +
+  geom_text_repel(aes(x = rok, y= words, label = title )) +
+  scale_x_continuous(breaks = fantasy$rok) +
+  facet_wrap(~author, nrow = 2)
+
+```
+
+
+```{r}
+
+
+premierzyIIIRP <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/premierzyIIIRP.csv")
+```
+
+
+```{r}
+library(lubridate)
+```
+
+
+
+
+```{r}
+x <- ggplot(premierzyIIIRP) +
+  geom_segment(aes(y = reorder(stronnictwo,start),
+                   x= start,
+               xend = end,
+               yend = stronnictwo,
+               colour = stronnictwo), 
+               linewidth = 10) +
+  labs(x = "",
+       y = "") +
+  scale_x_date() 
+```
+
+
+
+```{r}
+ggplotly(x)
+```
+
+
+
+
+```{r}
+
+premierzyIIIRP[22,7] <- lubridate::ymd(Sys.Date())
+
+
+```
+
+
+
+```{r}
+
+```
+

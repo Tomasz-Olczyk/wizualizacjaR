@@ -26,7 +26,6 @@ library(tidyverse)
 ```{r}
 
 
-
 panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv')
 
 
@@ -46,53 +45,96 @@ panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 
 ```{r}
 
-france = map_data('world', region = 'France') 
+poland <- map_data('world', region = 'Poland') 
 
 
 ```
+
+
+```{r}
+germany <- map_data('world', region = 'Germany') 
+```
+
 
 ```{r}
 
-ggplot(france, aes(x = long, y = lat, 
+ggplot(germany, aes(x = long, 
+                   y = lat, 
                    group = group)) + 
-  geom_polygon(fill = 'white', 
-               colour = 'black')
-
+  geom_polygon(fill = 'red', 
+               colour = 'white') +
+  coord_map()
 
 ```
 
 
+
+```{r}
+panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv')
+```
 
 
 Francja miejsca urodzenia znanych osób po 1945
 
 ```{r}
 
-francja <- panteon %>%
-  filter(countryCode3 == "FRA",
-         birthyear > 1980)
+niemcy <- panteon %>%
+  filter(countryCode3 == "DEU",
+         birthyear  > 1945)
   
   
+```
+
+```{r}
+#install.packages("ggrepel")
+library(ggrepel)
+```
+
+```{r}
+
+poland <- map_data('world', region = 'Poland') 
+
+
+```
+
+```{r}
+polska <- panteon %>%
+  filter(countryCode3 == "POL")
+```
+
+
+```{r}
+
+p <-  ggplot(poland, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(fill = 'white', colour = 'black')  +
+  geom_point(data = polska, aes(x= LON, 
+                                y = LAT, 
+                                 colour = gender,
+                                 size = AverageViews*10, 
+                                 group = name), alpha = 0.5) +
+  ggrepel::geom_text_repel(data = polska, aes(x= LON, 
+                                               y = LAT, 
+                                               label = name, 
+                                               group = name), size =3) +
+  #coord_map() +
+  theme_void()
+
+
+  
+
 ```
 
 
 
 ```{r}
-
-ggplot(france, aes(x = long, y = lat, group = group)) + 
-  geom_polygon(fill = 'white', colour = 'black') +
-  geom_point(data = francja, aes(x= LON, y = LAT, 
-                                 colour = gender,
-                                 size = AverageViews*10, 
-                                 group = name), alpha = 0.5) +
-  ggrepel::geom_text_repel(data = francja, aes(x= LON, 
-                                               y = LAT, 
-                                               label = name, 
-                                               group = name)) +
-  theme_void()
-  
-
+library(plotly)
 ```
+
+```{r}
+ggplotly(p)
+```
+
+
 
 
 ```{r}
@@ -100,7 +142,7 @@ ggplot(france, aes(x = long, y = lat, group = group)) +
 
 world =  map_data('world') 
 
-ggplot(world, aes(x = long, y = lat, group = group)) +
+świat6 <- ggplot(world, aes(x = long, y = lat, group = group)) +
   geom_polygon(fill = 'white', colour = 'black')
 
 
@@ -108,6 +150,12 @@ ggplot(world, aes(x = long, y = lat, group = group)) +
 
 
 Francja
+
+```{r}
+francja <- panteon %>%
+  filter(countryCode3 == "FRA",
+         birthyear  > 1945)
+```
 
 
 ```{r}
@@ -215,7 +263,7 @@ world =  map_data('world')
                  size = AverageViews/10000, 
                  group = name, 
                  alpha = 0.1)) +
-  theme_void()
+  theme_void() 
 )
 
 
@@ -375,13 +423,16 @@ województwa <- sf::st_read("ścieżkadopliku/gadm41_POL_1.shp")
 Użyjemy jednak danych typu geojson bo są lżejsze:
 
 
-# Dane typu geojson
+# Dane typu geojson i kartogram wyników wyborów
 
 Potrzeba wcześniej zainstalować bibliotekę geojsonio
 
 ```{r}
 
 #install.packages("geojsonio")
+#install.packages("sf")
+library(sf)
+library(geojsonio)
 
 ```
 
@@ -402,6 +453,15 @@ powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualiza
 ```
 
 
+```{r}
+powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_2.json")
+```
+
+
+
+```{r}
+powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_2.json")
+```
 
 Rysujemy powiaty:
 
@@ -417,6 +477,11 @@ ggplot(powiaty) +
 
 województwa <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_1.json")
 
+```
+
+
+```{r}
+województwa <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_1.json")
 ```
 
 Rysujemy województwa:
@@ -443,6 +508,12 @@ pkw_woj <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 
 
 ```{r}
+pkw_woj <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/pkw_woj.csv")
+```
+
+
+
+```{r}
 
 glimpse(pkw_woj)
 
@@ -455,12 +526,19 @@ województwa_s <- województwa %>%
   select(NAME_1, geometry) %>%
   mutate(wojewodztwo = tolower(NAME_1))
 
+```
 
+```{r}
+
+wybory_g <- left_join(województwa_s, pkw_woj)
 ```
 
 
 
-## Wykres z przeskalowanych danych
+
+
+
+## Wykres-mapa z przeskalowanych danych
 
 ```{r}
 wybory_23_woj_s <- pkw_woj %>% mutate_at(c(2,3,4,5,6,7), scale)
@@ -472,19 +550,32 @@ wybory_23_woj_2s <- pkw_woj %>% mutate_at((2:7), scale)
 ```
 
 
+```{r}
+wybory_g1 <- left_join(pkw_woj,  wybory_23_woj_2s)
+```
 
 
 ```{r}
-wybory <- left_join(województwa_s, wybory_23_woj_s,
+wybory2 <- left_join(województwa_s, wybory_23_woj_2s,
                   by = "wojewodztwo")
 ```
 
 
+
+```{r}
+ggplot(wybory_g) +
+  geom_sf(aes(fill = frekwencja)) +
+  coord_sf()
+```
+
+
+
+
 ```{r}
 
-wybory_long <- wybory %>%
+wybory_long <- wybory_g %>%
   select(-frekwencja) %>%
-  pivot_longer(cols = c("PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "wyniki")
+  pivot_longer(cols = c("PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "partie", values_to = "wyniki") 
 
 
 ```
@@ -492,19 +583,19 @@ wybory_long <- wybory %>%
 
 ```{r}
 
-wybory_long <- wybory %>%
-  pivot_longer(cols = c("frekwencja",  "PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "wyniki")
+wybory_long2 <- wybory2 %>%
+  pivot_longer(cols = c("frekwencja",  "PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "partie")
 
 ```
 
 ```{r}
 
-ggplot(wybory_long) + 
+ggplot(wybory_long2) + 
   geom_sf(aes(fill = value)) + 
-  coord_sf()  +
   theme_void() +
- scale_fill_gradient(low = "grey90", high = "red3") +
- facet_wrap(~wyniki)
+  coord_sf()+
+ scale_fill_gradient(low = "white", high = "red3") +
+ facet_wrap(~partie)
 
 ```
 
@@ -513,45 +604,8 @@ ggplot(wybory_long) +
 
 
 
-```{r}
 
-ggplot(wybory) + 
-  geom_sf(aes(fill = frekwencja)) + 
-  coord_sf()  
-
-```
-
-
-
-```{r}
-
-ggplot(wybory) + 
-  geom_sf(aes(fill = frekwencja)) + 
-  coord_sf()  +
-  theme_void() +
-  geom_sf_text(aes(label = NAME_1))
-               
-               
-```
-
-
-```{r}
-
-
-ggplot(wybory) + 
-  geom_sf(aes(fill = PiS)) + 
-  coord_sf()  +
-  theme_void() +
-  geom_sf_text(aes(label = NAME_1))
-               
-               
-```
-
-
-
-
-
-## Wykres z nieprzeskalowanych danych
+## Wykres-mapa z nieprzeskalowanych danych
 
 Łączenie ramki danych PKW z ramką z konturami województw
 
@@ -615,4 +669,194 @@ geom_point(data = Polska, aes(x= LON, y = LAT, colour = gender, size = AverageVi
 ```
 
 
+
+
+```{r}
+kor <- wybory_23_woj_2s %>%
+  select(2:7) 
+```
+
+```{r}
+korr <- round(cor(kor), 5)
+```
+
+```{r}
+korrr <- t(korr)
+```
+
+
+Biblioteka do korelacji
+
+
+```{r}
+#install.packages("lares")
+library(lares)
+
+```
+
+
+
+
+## Heatmap
+
+
+col <- colorRampPalette(c("blue", "white", "red"))(20)
+heatmap(x = corr, col = col, symm = TRUE)
+
+
+
+```{r}
+
+#par(oma=c(6,3,3,3))
+#par(mar = c(2,2,2,2))
+
+heatmap(x = as.matrix(korr), symm = FALSE)
+
+```
+
+
+
+```{r}
+
+library(ggdendro) #wymaga ggplot
+
+```
+
+
+
+
+```{r}
+
+klastry <- hclust(dist(korrr))
+
+```
+
+
+```{r}
+plot(klastry)
+```
+
+
+```{r}
+
+plot(klastry, hang = -1, cex = 1) #argument hang na -1 lokuje wszystkie etykiety na jednym poziomie 
+#argument cex odpowiada z rozmiar czcionki
+```
+
+
+```{r}
+plot(klastry, 
+     #type = "triangle", # kształ trójkątny podaje jako obsolete
+     ylab = "wysokość",
+     hang = -1, 
+     cex = 1)
+```
+
+
+
+
+
+```{r}
+# Dane dotyczące aresztowań w USA
+
+data(USArrests)
+
+# zlicza dystanse
+
+dd <- dist(scale(USArrests), method = "euclidean")
+hc <- hclust(dd, method = "ward.D2")
+```
+
+
+
+## Phylogenetic trees - biblioteka ape
+
+
+```{r}
+
+#install.packages("ape")
+
+```
+
+
+
+```{r}
+library(ape)
+```
+
+### Funkcja ape::as.phylo
+
+```{r}
+plot(as.phylo(klastry), type = "cladogram", cex = 0.6, 
+     label.offset = 0.5)
+```
+
+
+```{r}
+plot(as.phylo(hc), type = "unrooted", cex = 0.6,
+     no.margin = TRUE)
+```
+
+
+```{r}
+plot(as.phylo(hc), type = "fan")
+```
+
+
+
+## Z wykorzystaniem biblioteki ggdendro
+
+
+```{r}
+#install.packages("ggdendro")
+library(ggdendro) #wymaga ggplot
+library(ggplot2)
+
+```
+
+### Funkcja ggdendrogram
+
+```{r}
+
+ggdendrogram(klastry, rotate = TRUE) 
+
+```
+
+### Funkcja ggdendro::dendro_data
+
+
+```{r}
+?ggdendro::dendro_data
+  
+```
+
+
+```{r}
+
+data <- dendro_data(hc, type = "triangle")
+
+```
+
+
+```{r}
+
+head(data$labels)
+
+```
+
+
+
+```{r}
+
+ggplot(segment(data)) + 
+  geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) + 
+  scale_y_reverse(expand = c(0.2, 0)) +
+ geom_text(data = data$labels, 
+             aes(x, y, label = label),
+            hjust = 0) +
+    theme_dendro() +
+      coord_flip() 
+
+  
+```
 

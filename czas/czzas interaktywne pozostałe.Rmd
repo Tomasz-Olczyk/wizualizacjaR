@@ -1,0 +1,128 @@
+---
+title: "czas interaktywne"
+author: "Tomasz Olczyk"
+date: "3/26/2024"
+output: html_document
+---
+
+
+## Wykres Gantta z wykorzystaniem biblioteki vistime
+
+```{r}
+library(vistime)
+```
+
+
+```{r}
+gg_vistime(timeline_data)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+z danymi Panteon
+
+## Dane
+
+\`
+
+## Dane
+
+
+
+```{r}
+
+id <- "15xCXZ-LzVs32KK6y-8liToTFuq82onPO"
+panteon <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) 
+
+```
+
+```{r}
+
+Polska1900 <- panteon %>%
+  filter(birthyear > 1900, countryCode3 == "POL") %>%
+  select(name, birthyear, AverageViews) %>%
+  mutate(start = lubridate::ymd(birthyear, 
+                                truncated = 2L)) %>% #funkcja z biblioteki  która zmienia liczbę czterocyfrową na datę w formacie rok(y) miesiąc (m) dzień (d) przyjmując  za dzień i miesiać 1 (pierwszy stycznia danego roku)
+  rename(content = name)
+  
+
+```
+
+
+
+```{r}
+
+premierzyIIIRP %>%
+  rename(content = nazwisko)
+timevis(Polska1900)
+```
+
+
+
+
+```{r}
+
+Polska1950 <- panteon %>%
+  filter(birthyear > 1950, countryCode3 == "POL") %>%
+  select(name, birthyear, AverageViews) %>%
+  mutate(start = lubridate::ymd(birthyear, truncated = 2L)) %>% #funkcja która zmienia liczbę czterocyfroą na datę, 1 stycznia danego roku
+  rename(content = name)
+
+```
+
+```{r}
+
+timevis(Polska1950)
+
+```
+
+## Biblioteka vistime
+
+```{r}
+
+#install.packages("vistime")
+
+```
+
+```{r}
+
+library(vistime)
+
+```
+
+```{r}
+
+?vistime()
+
+
+```
+
+```{r}
+?gg_vistime
+
+```
+
+

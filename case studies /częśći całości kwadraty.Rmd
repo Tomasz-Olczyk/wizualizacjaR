@@ -1,0 +1,114 @@
+---
+title: "squars part to whole"
+author: "Tomasz Olczyk"
+date: "4/6/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Biblioteki
+
+```{r }
+
+library(tidyverse)
+library(showtext) # to jest biblioteka do czcionek która mi nie działa do sprawdzenia
+library(janitor)
+library(MetBrewer)
+
+```
+
+## Dane
+
+
+
+```{r , echo=FALSE}
+
+data <- readr::read_csv("/Users/golemxiv/Desktop/analizy\ R/vehicle-registration.csv")
+```
+
+
+
+## Transformacja danych
+
+
+```{r}
+df <- data %>% 
+  clean_names() %>% 
+  filter(year == 2022) %>%
+  filter(area_name %in% c("Hyde County", "Orange County")) %>% 
+  select(2:3, 6:8) %>% 
+  pivot_longer(!area_name, names_to = "type", values_to = "units") %>% 
+  mutate(type = replace(type, type == "all_hybrids", "hybrid")) %>% 
+  group_by(area_name, type) %>% 
+  summarise(n = sum(units)) %>%
+  mutate(percent = round(n / sum(n), 5)) %>% 
+  group_by(type) %>% 
+  mutate(ymax = if_else(type %in% c("gas", "electric"), sqrt(percent), 0), # pierwiastek z rocentu jako wysokość ifelse mówi jeśli w type jest któraś z nazw policz pierwiastek jeśli nie wstaw zaero tutaj te które są na plusie na osi y
+         xmax = if_else(type %in% c("hybrid", "electric"), sqrt(percent), 0), # pierwiastek jest liczony bo tu liczy się powierzchnia kwadratu
+         xmin = if_else(type %in% c("gas", "diesel"), -sqrt(percent), 0),
+         ymin = if_else(type %in% c("diesel", "hybrid"), -sqrt(percent), 0)) %>% 
+  mutate(type = str_to_title(type)) %>%  # str_to_title zamienia na takie jak w tytule czyli pierwsza litera
+  mutate(area_name = case_when(area_name == "Hyde County" ~ "Hyde County\n(low)",
+                               area_name == "Orange County" ~ "Orange County\n(high)"))
+
+df$type <- factor(df$type, levels = c("Gas", "Diesel", "Hybrid", "Electric")) # na końcu zmienia na czynniki
+```
+
+
+Sprawdzam ten kod po kolei co robi
+
+```{r}
+df1 <- data %>% 
+  clean_names() %>% 
+  filter(year == 2022) %>%
+  filter(area_name %in% c("Hyde County", "Orange County")) %>% 
+  select(2:3, 6:8) %>% 
+  pivot_longer(!area_name, names_to = "type", values_to = "units") %>% 
+  mutate(type = replace(type, type == "all_hybrids", "hybrid")) %>% #zastępuje nazdwy
+  group_by(area_name, type) %>% 
+  summarise(n = sum(units)) # sumuje jednostki według grup typów
+```
+
+
+```{r}
+df0 <- data %>% 
+  clean_names() %>% 
+  filter(year == 2022) %>%
+  filter(area_name %in% c("Hyde County", "Orange County")) %>% 
+  select(2:3, 6:8) %>% 
+  pivot_longer(!area_name, names_to = "type", values_to = "units")
+```
+
+
+```{r}
+
+df3 <- data %>% 
+  clean_names() %>% 
+  filter(year == 2022) %>%
+  filter(area_name %in% c("Hyde County", "Orange County")) %>% 
+  select(2:3, 6:8) %>% 
+  pivot_longer(!area_name, names_to = "type", values_to = "units") %>% 
+  mutate(type = replace(type, type == "all_hybrids", "hybrid")) %>% 
+  group_by(area_name, type) %>% 
+  summarise(n = sum(units)) %>%
+  mutate(percent = round(n / sum(n), 5)) #Ten ostatni argument ustawia liczbę miejsc po przecinku
+
+```
+
+
+
+```{r}
+df %>% 
+  ggplot() +
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = type), color = "#FFFFFF") +
+  geom_text(aes(x = ifelse(type %in% c("Gas", "Electric"), xmin + 0.01, xmin + 0.01), y = ifelse(type %in% c("Gas", "Electric"), ymax + 0.05, ymin - 0.05), label = scales::percent(percent), color = type),  size = 2.5, hjust = 0) + # color fontu ustawiony na kolor wypełnienia
+  scale_color_manual(values = rev(met.brewer("Renoir", 4))) +
+  scale_fill_manual(values = rev(met.brewer("Renoir", 4))) + #met.brewer palety inspirowane 
+  facet_wrap(~ area_name) +
+  coord_equal(clip = "off") +
+  theme_void()
+```
+

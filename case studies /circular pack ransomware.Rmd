@@ -1,0 +1,1125 @@
+---
+title: "circular packing ransomware"
+author: "Tomasz Olczyk"
+date: "3/28/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Zadanie
+
+Stwórzmy wykresy podobne do znajdujących się pod tym [linkiem](https://informationisbeautiful.net/visualizations/ransomware-attacks/)
+
+na podstawie danych:
+https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/case%20studies%20/ransomware_attacks.csv
+
+## Biblioteki
+
+Zaczniemy od tidyverse.
+
+```{r}
+library(tidyverse)
+```
+
+
+## Dane
+
+
+```{r}
+ransom_atak <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/case%20studies%20/ransomware_attacks.csv"
+)
+```
+
+
+## Wykres pierwszy p. "Ransomware Attacks "z wykorzystaniem bazowego ggplot, krok po kroku
+
+
+Na wykresie oryginalnym  koła ułożone są tak, że na siebie nie zachodzą. Taka aranżacja jest nietrywialnym problemem matematycznym i geom_jitter sobie z nim nie poradzi. Możemy jednak wykorzystać argumenty width i height tej funkcji by rozsiać punkty i uzyskać efekt nieco zbliżony. Nie wiemy co decyduje o położeniu punktów na osi y w oryginalnym wykresie. Mój pomysł polega na tym by użyć miesięcy (month) jako zmiennej mapowanej na oś y.
+
+```{r}
+glimpse(ransom_atak)
+```
+
+
+
+
+```{r}
+
+ransom_atak$month <- toupper(ransom_atak$month)
+```
+
+
+```{r}
+ransom_atak$month <- factor(ransom_atak$month, levels = c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"))
+
+```
+
+
+
+```{r}
+ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter(aes(size = organisation_size,
+                  color = year), 
+              alpha = 0.7) +
+  labs(x= "",
+       y = "") 
+  
+```
+
+
+Rozproszymy punkty bardziej i wyolbrzymimyy różnice wielkości punktów
+
+```{r}
+ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter(aes(size = organisation_size^2,
+                  color = year), 
+              width = 0.1,
+              height = 40,
+              alpha = 0.7) +
+  labs(x= "",
+       y = "") 
+  
+```
+
+
+
+
+Wyłączymy legendy
+
+```{r}
+
+ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter(aes(size = organisation_size^2,
+                  color = year), 
+              width = 0.1,
+              height = 40,
+              alpha = 0.7) +
+  labs(x= "",
+       y = "") +
+  guides(color= "none",
+         size = "none")
+```
+
+Dodamy wszystki lata i przsniesiemy na oś x na górę wykresu
+
+```{r}
+
+ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter(aes(size = organisation_size^2,
+                  color = year), 
+              width = 0.1,
+              height = 40,
+              alpha = 0.7) +
+  scale_x_continuous(breaks = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
+                     position = "top") +
+  labs(x= "",
+       y = "") +
+  guides(color= "none",
+         size = "none")
+
+```
+
+
+Zmienimy theme, dodamy tytuły, usuniemy linie siatki i etykiety osi y,
+
+
+```{r}
+
+ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter(aes(size = organisation_size^2,
+                  color = year), 
+              width = 0.1,
+              height = 40,
+              alpha = 0.7) +
+  scale_x_continuous(breaks = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
+                     position = "top") +
+  labs(x= "",
+       y = "",
+       title = "Ransomware attacks",
+       subtitle = "size = size of organisation") +
+  guides(color= "none",
+         size = "none") +
+  theme_minimal() +
+  theme(axis.line.x = element_line(colour = 'black', linewidth=0.1, linetype='solid'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text.y = element_blank())
+
+
+```
+
+Ustawmy rozmiar wykresu na 5 na 8 i użyjemy kolorów z oryginalnego wykresu. Użyłem kolorymetru żeby zmierzyć wartości rgb i zapisuję je do obiektów funkcją rgb a następnie tworzę wektor z nazwami kolorów
+
+
+```{r}
+kol1 <- rgb(206, 218,131, maxColorValue = 255)
+kol2 <- rgb(237, 226, 142, maxColorValue = 255)
+kol3 <- rgb(206, 213, 154, maxColorValue = 255)
+kol4 <- rgb(172, 201, 177, maxColorValue = 255)
+kol5 <- rgb(136, 189, 194, maxColorValue = 255)
+kol6 <- rgb(92, 177,211, maxColorValue = 255)
+kol7 <- rgb(21, 165,229, maxColorValue = 255)
+```
+
+```{r}
+paleta <- c(kol1, kol2, kol3, kol4, kol5, kol6, kol7)
+```
+
+Zmienimy atrybut year w estetyce color na factor aby można było przypisać ręczną skalę kolorów
+
+```{r, fig.height = 8, fig.width= 5}
+
+
+ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter(aes(size = organisation_size^2,
+                  color = factor(year)), #zmieniamy na factor bo R traktuj year jako zmienną ciągłą a n
+              width = 0.1,
+              height = 40,
+              alpha = 0.7) +
+  scale_x_continuous(breaks = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
+                     position = "top") +
+  labs(x= "",
+       y = "",
+       title = "Ransomware attacks",
+       subtitle = "size = size of organisation") +
+  scale_color_manual(values = paleta) + #zadziała ze zmienną typu faktor, stąd transformacja color = factor(year)
+  guides(color= "none",
+         size = "none") +
+  theme_minimal() +
+  theme(axis.line.x = element_line(colour = 'black', linewidth=0.1, linetype='solid'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text.y = element_blank())
+
+```
+
+
+### Wersja interaktywna z plotly
+
+```{r, fig.height = 6, fig.width= 5}
+
+
+p <- ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter(aes(size = organisation_size^2,
+                  color = factor(year)), #zmieniamy na factor bo R traktuj year jako zmienną ciągłą a n
+              width = 0.1,
+              height = 40,
+              alpha = 0.7) +
+  scale_x_continuous(breaks = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
+                     position = "top") +
+  labs(x= "",
+       y = "",
+       title = "Ransomware attacks",
+       subtitle = "size = size of organisation") +
+  scale_color_manual(values = paleta) + #zadziała ze zmienną typu faktor, stąd transformacja color = factor(year)
+  guides(color= "none",
+         size = "none") +
+  theme_minimal() +
+  theme(axis.line.x = element_line(colour = 'black', linewidth=0.1, linetype='solid'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text.y = element_blank())
+
+```
+
+
+```{r}
+library(plotly)
+```
+
+
+
+
+```{r, fig.height = 6, fig.width= 5}
+
+ggplotly(p)
+
+```
+
+Plotly zepsuł nam trochę układ wykresu ale w zamian mamy interaktywność. Zmodyfikujmy tekst wyświetlany w chmurce.
+Potrzebujemy estetyki text.
+
+```{r}
+p1 <- ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter(aes(size = organisation_size^2,
+                  color = factor(year),
+                  text = paste('organizacja: ', target,
+                  '<br>czy opłacono okup:', ransom_paid,
+                  "<br>środek ataku: ", interesting_story)), #zmieniamy na factor bo R traktuj year jako zmienną ciągłą a n
+              width = 0.1,
+              height = 40,
+              alpha = 0.7) +
+  scale_x_continuous(breaks = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
+                     position = "top") +
+  labs(x= "",
+       y = "",
+       title = "Ransomware attacks",
+       subtitle = "size = size of organisation") +
+  scale_color_manual(values = paleta) + #zadziała ze zmienną typu faktor, stąd transformacja color = factor(year)
+  guides(color= "none",
+         size = "none") +
+  theme_minimal() +
+  theme(axis.line.x = element_line(colour = 'black', linewidth=0.1, linetype='solid'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text.y = element_blank())
+```
+
+
+```{r}
+ggplotly(p1, tooltip = "text")
+```
+
+
+### Wersja intraktywna z wykorzystaniem bibliotek ggirpah
+
+```{r}
+#install.packages("ggiraph")
+```
+
+```{r}
+library(ggiraph)
+```
+
+
+```{r}
+
+p2 <- ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter_interactive(aes(size = organisation_size^2, # geometria biblioteki ggiraph
+                  color = factor(year),
+                  tooltip = organisation_size),
+              width = 0.1,
+              height = 40,
+              alpha = 0.7) +
+  scale_x_continuous(breaks = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
+                     position = "top") +
+  labs(x= "",
+       y = "",
+       title = "Ransomware attacks",
+       subtitle = "size = size of organisation") +
+  scale_color_manual(values = paleta) + #zadziała ze zmienną typu faktor, stąd transformacja color = factor(year)
+  guides(color= "none",
+         size = "none") +
+  theme_minimal() +
+  theme(axis.line.x = element_line(colour = 'black', linewidth=0.1, linetype='solid'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text.y = element_blank())
+
+  
+
+girafe(ggobj = p2)
+```
+
+
+Zmodyfikujemy tooltip i zmienimy wymiary wykresu wewnątrz funkcji girafe.
+
+```{r}
+
+
+p3 <- ransom_atak %>%
+  filter(year  >= 2017) %>%
+  ggplot(aes(x = year, y = month)) +
+  geom_jitter_interactive(aes(size = organisation_size^2,
+                  color = factor(year),
+                  tooltip = paste("nazwa: ", target,
+                                  "<br>sektor:", sector)),
+              width = 0.1,
+              height = 40,
+              alpha = 0.7) +
+  scale_x_continuous(breaks = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
+                     position = "top") +
+  labs(x= "",
+       y = "",
+       title = "Ransomware attacks",
+       subtitle = "size = size of organisation") +
+  scale_color_manual(values = paleta) + #zadziała ze zmienną typu faktor, stąd transformacja color = factor(year)
+  guides(color= "none",
+         size = "none") +
+  theme_minimal() +
+  theme(axis.line.x = element_line(colour = 'black', linewidth=0.1, linetype='solid'),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.text.y = element_blank())
+
+  
+
+girafe(ggobj = p3, 
+       width_svg = 5, 
+       height_svg = 6)
+```
+
+
+## Wykres 2 "Ransomware attacks by year"
+
+Wykres drugi pod tym samy [linkiem](https://informationisbeautiful.net/visualizations/ransomware-attacks/)
+
+Wykres ma formę treemap - na polskie tłumaczone jako mapa-drzewo lub wykres kafelkowy. Typowy treemap składa się z prostokątów, ten jest złożony z kół. Taką formę określa się po angielsku [circular packing](https://r-graph-gallery.com/circle-packing.html) 
+
+Taki wykres można stworzyć w R conajmniej na dwa sposoby:
+
+### Podejście pierwsze z użyciem biblioteki packircles
+
+Biblioteka:
+
+```{r}
+#install.packages("packcirles")
+library(packcircles)
+
+```
+
+
+Wyzwaniem dla replikacji wykresów z tego zdania jest  ułożenie kół tak, że na siebie nie zachodzą. Biblioteka dokonuje takiej kalkulacji. Niestety wygląda na to, że nie da się (a przynajmniej ja nie znam sposobu) wykorzystać tu funkcji facet_wrap by podzielić wykres na panele wg lat, tak jak na oryginalnym wykresie. Pozostaje zatem powtórzyć kalkulacje dla każdego roku (powiedzmy od 2017 do 2023) narysować 7 wykresów i skleić je w jeden. Można do tego celu napisać własne funkcje żeby nie powtarzać kodu, ale nie robiliśmy tego na zajęciach.
+
+#### przygotowanie danych 
+
+1. Filtrujemy ataki z kolejnych lat
+
+```{r}
+r17 <- ransom_atak %>%
+  filter(year == 2017)
+
+r18  <- ransom_atak %>%
+  filter(year == 2018)
+
+r19  <- ransom_atak %>%
+  filter(year == 2019)
+
+r20  <- ransom_atak %>%
+  filter(year == 2020)
+
+
+r21  <- ransom_atak %>%
+  filter(year == 2021)
+
+r22  <- ransom_atak %>%
+  filter(year == 2022)
+
+r23  <- ransom_atak %>%
+  filter(year == 2023)
+
+
+
+```
+
+
+2. Tworzymy ramki danych ramkę danych z koordynatami kół do rysowania. Koła będą miały rozmiar odpowiadający rozmiarowi organizacji wykorzystując funkcję packcircles::circleProgressiveLayout:
+
+```{r}
+ 
+
+packing17 <- circleProgressiveLayout(r17$organisation_size, sizetype='area')
+
+packing18 <- circleProgressiveLayout(r18$organisation_size, sizetype='area')
+
+packing19 <- circleProgressiveLayout(r19$organisation_size, sizetype='area')
+
+packing20 <- circleProgressiveLayout(r20$organisation_size, sizetype='area')
+
+packing21 <- circleProgressiveLayout(r21$organisation_size, sizetype='area')
+
+packing22 <- circleProgressiveLayout(r22$organisation_size, sizetype='area')
+
+packing23 <- circleProgressiveLayout(r23$organisation_size, sizetype='area')
+
+```
+
+
+3. Łączymy ramki danych  z punktu 1 i 2.
+
+
+```{r}
+
+data17 <- cbind(r17, packing17)
+
+data18 <- cbind(r18, packing18)
+
+data19 <- cbind(r19, packing19)
+
+data20 <- cbind(r20, packing20)
+
+data21 <- cbind(r21, packing21)
+
+data22 <- cbind(r22, packing22)
+
+data23 <- cbind(r23 ,packing23)
+
+
+```
+
+
+Tworzymy layooty dla każdego roku
+
+```{r}
+
+
+dat17 <- circleLayoutVertices(packing17, npoints=50)
+
+dat18 <- circleLayoutVertices(packing18, npoints=50)
+
+dat19 <- circleLayoutVertices(packing19, npoints=50)
+
+dat20 <- circleLayoutVertices(packing20, npoints=50)
+
+dat21 <-circleLayoutVertices(packing21, npoints=50)
+
+dat22 <-circleLayoutVertices(packing22, npoints=50)
+
+dat23 <-circleLayoutVertices(packing23, npoints=50)
+
+
+
+```
+
+#### Eksperymenty na dwóch wykresach
+
+
+Wygeneruję wykresy i spróbuję je skleić.
+
+
+```{r}
+a17 <- ggplot() +
+  geom_polygon(data = dat17, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data17 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal() +
+  ggtitle("2017")
+
+
+
+a18 <- ggplot() +
+  geom_polygon(data = dat18, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data18 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal() + 
+  ggtitle("2018")
+
+```
+
+
+Jest wiele bibliotek pozwalających łączyć wykresy w jeden wykres: cowplot, patchwork. Użyjemy gridExtra, w połączeniu z grid.
+
+
+```{r}
+
+#install.packages("grid")
+#install.packages("gridExtra")
+```
+
+
+```{r}
+library(grid)
+library(gridExtra)
+```
+
+
+
+```{r}
+
+grid.arrange(a17, 
+             a18, 
+             nrow = 1, #ustawia liczbę wierszy w macierzy wykresu
+             top =textGrob("Ransomware attacks by year",
+                           just = "right",
+                           gp = gpar(fontsize = 20)))
+
+                           
+                           
+                           
+```
+
+Wykresy nie wyglądają tak jak powinny. W 2018 ataków było o proporcjonalnie mniej. Trzeba ustawić sztywne limity współrzędnych w zmiennej coord_equal. Limity ustawiam na oko.
+
+```{r}
+
+b17 <- ggplot() +
+  geom_polygon(data = dat17, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data17 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-40, 40), ylim =c(-40, 40)) +
+  ggtitle("2017")
+
+
+
+b18 <- ggplot() +
+  geom_polygon(data = dat18, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data18 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-40, 40), ylim =c(-40, 40)) + 
+  ggtitle("2018")
+
+```
+
+ 
+```{r}
+
+grid.arrange(b17, 
+             b18, 
+             nrow = 1, #ustawia liczbę wierszy w macierzy wykresu
+             top =textGrob("Ransomware attacks by year",
+                           just = "left",
+                           gp = gpar(fontsize = 20)))
+
+                           
+                           
+                           
+```
+
+Teraz proporcje się zgadzają. 
+
+
+#### 7 wykresów w 1
+
+```{r}
+w17 <- ggplot() +
+  geom_polygon(data = dat17, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data17 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-40, 40), ylim =c(-40, 40)) +
+  ggtitle("2017")
+
+
+
+w18 <- ggplot() +
+  geom_polygon(data = dat18, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data18 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-40, 40), ylim =c(-40, 40)) + 
+  ggtitle("2018")
+
+w19 <- ggplot() +
+  geom_polygon(data = dat19, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data19 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-40, 40), ylim =c(-40, 40)) + 
+  ggtitle("2019")
+
+
+w20 <- ggplot() +
+  geom_polygon(data = dat20, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data20 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-40, 40), ylim =c(-40, 40)) + 
+  ggtitle("2020")
+
+w21 <- ggplot() +
+  geom_polygon(data = dat21, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data21 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-40, 40), ylim =c(-40, 40)) + 
+  ggtitle("2021")
+
+
+w22 <- ggplot() +
+  geom_polygon(data = dat22, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data22 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+ coord_equal(xlim = c(-40, 40), ylim =c(-40, 40)) + 
+  ggtitle("2022")
+
+w23 <- ggplot() +
+  geom_polygon(data = dat23, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data22 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-40, 40), ylim =c(-40, 40)) + 
+  ggtitle("2023")
+
+```
+
+
+Jeden wykres
+
+```{r, fig.height=5, fig.width=20}
+
+grid.arrange(w17, w17, w19, w20, w21, w22, w23,
+             nrow = 1, #ustawia liczbę wierszy w macierzy wykresu
+             top =textGrob("Ransomware attacks by year",
+                           just = "right",
+                           gp = gpar(fontsize = 20)))
+
+       
+```
+
+
+Przeniosę tytuł wykresów na spód i zmienię limity osi żeby nie przycinało niektórych wykresów
+
+```{r}
+d17 <- ggplot() +
+  geom_polygon(data = dat17, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data17 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-50, 50), ylim =c(-50, 50)) +
+  labs(caption = "2017") 
+
+d17
+
+```
+
+
+Powiększę podpis i przenios na środek:
+
+```{r}
+d17 <- ggplot() +
+  geom_polygon(data = dat17, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data17 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-50, 50), ylim =c(-50, 50)) +
+  labs(caption = "2017") +
+  theme(plot.caption = element_text(size = 20, hjust = 0.5))
+
+d17
+```
+
+
+Wykresy 2017-2023:
+
+```{r}
+d17 <- ggplot() +
+  geom_polygon(data = dat17, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data17 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-50, 50), ylim =c(-50, 50)) +
+  labs(caption = "2017") +
+  theme(plot.caption = element_text(size = 18, hjust = 0.5))
+
+d18 <- ggplot() +
+  geom_polygon(data = dat18, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data18 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+ coord_equal(xlim = c(-50, 50), ylim =c(-50, 50)) +
+  labs(caption = "2018") +
+  theme(plot.caption = element_text(size = 18, hjust = 0.5))
+
+d19 <- ggplot() +
+  geom_polygon(data = dat19, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data19 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-50, 50), ylim =c(-50, 50)) +
+  labs(caption = "2019") +
+  theme(plot.caption = element_text(size = 18, hjust = 0.5))
+
+
+d20 <- ggplot() +
+  geom_polygon(data = dat20, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data20 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-50, 50), ylim =c(-50, 50)) +
+  labs(caption = "2020") +
+  theme(plot.caption = element_text(size = 18, hjust = 0.5))
+
+d21 <- ggplot() +
+  geom_polygon(data = dat21, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data21 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-50, 50), ylim =c(-50, 50)) +
+  labs(caption = "2021") +
+  theme(plot.caption = element_text(size = 18, hjust = 0.5))
+
+
+d22 <- ggplot() +
+  geom_polygon(data = dat22, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data22 %>% filter(organisation_size > 50), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+ coord_equal(xlim = c(-50, 50), ylim =c(-50, 50)) +
+  labs(caption = "2022") +
+  theme(plot.caption = element_text(size = 18, hjust = 0.5))
+
+d23 <- ggplot() +
+  geom_polygon(data = dat23, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
+  geom_text(data = data23 %>% filter(organisation_size > 100), aes(x, y, size=organisation_size, label = target)) +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal(xlim = c(-50, 50), ylim =c(-50, 50)) +
+  labs(caption = "2023") +
+  theme(plot.caption = element_text(size = 18, hjust = 0.5))
+```
+
+
+```{r}
+p <- grid.arrange(d17, d18, d19, d20, d21, d22, d23, 
+                  nrow =1,
+                  top =textGrob("Ransomware attacks by year",
+                           hjust = 0.1,
+                           gp = gpar(fontsize = 18)))
+
+p
+```
+
+
+
+```{r, fig.height= 5, fig.width= 18}
+p <- grid.arrange(d17, d18, d19, d20, d21, d22, d23, 
+                  nrow =1,
+                  top =textGrob("Ransomware attacks by year",
+                           x= 0,
+                           hjust = 0,
+                           gp = gpar(fontsize = 18)))
+
+p
+```
+
+## Wykres 3 "Ransomware attakcs by sector" z wykorzystaniem bibliotek ggraph
+
+
+[Oryginalny wykres](https://informationisbeautiful.net/visualizations/ransomware-attacks/) to treemap (mapa drzewo/wykres kafelkowy), w którym inaczej niż w klasycznj wersji zamiast prostokątów mamy koła. Treemap jest specyficznym typem grafu (sieci) w której węzły/wierzchołki łączą się jak w drzewie hierarchicznie (upraszczając): pień>gałęzie>liście. Każdy liść łączy się tylko z jedną gałęzią, a każda gałąź z jednym pniem. Stąd do narysowania takiego wykresu można użyć bibliotek do analizy wizualizacji sieci: igraph i ggraph. W tym przypadku układ jest prosty: ransom attack > sector > attack. Liśćmi są konkretne ataki, a rozmiar liści determinuje wielkość zaatakowanej organizacji, gałęziami są sektory. "Circle pack" jest po prostu szczególnym sposobem zwizualizowania tej struktury.
+
+#### Biblioteki do analizy i wizualizacji grafów
+
+
+```{r}
+
+library(ggraph)
+library(igraph)
+
+```
+
+
+#### Zamiana tabeli frekwencji na graf
+
+Żeby narysować graf potrzeba dwóch rodzajów informacji: listy węzłów/wierzchołków, listy krawędzi, czyli inaczej mówiąc par powiązanych węzłów/wierzchołków. 
+
+Wierzchołki to 18 sektorów i 635 konkretnych ataków.
+
+Ponieważ wydaje się, że były przypadki ataku tych samych celów
+```{r}
+unikalne <- unique(ransom_atak$target)
+
+length(unikalne) 
+```
+
+Dodamy id dla każdego ataku bo sama nazwa nie będzie unikalnym identyfikatorem
+
+
+
+```{r}
+ransom_atak$id <- seq(1:635)
+```
+
+
+
+Listę krawędzi uzyskamy w prosty sposób, wybierzemy kolumny
+
+```{r}
+
+edges <- ransom_atak %>%
+  select(from = sector, to = id)
+
+```
+
+Wierzchołki to nazwy sektorów i nazwy ataków:
+
+```{r}
+sektory <- ransom_atak %>%
+  select(name = sector) %>%
+  distinct(name) %>%
+  mutate(label = name,
+         size = 0,
+         sektor = name)
+
+```
+
+```{r}
+targety <- ransom_atak %>%
+  mutate(id = as.character(id)) %>%
+  select(name = id, label =target, size = organisation_size, sektor = sector)
+
+
+```
+
+Łączę
+
+```{r}
+vertices <- rbind(sektory, targety)
+```
+
+Tworzę obiekt graf:
+
+```{r}
+mygraph <- graph_from_data_frame(edges, vertices=vertices )
+```
+
+
+Rysuję obiekt graf:
+
+```{r}
+
+ggraph(mygraph, layout = 'circlepack', weight=size) + 
+  geom_node_circle(aes(fill = depth)) +
+  scale_fill_viridis() +
+  theme_void() 
+
+```
+
+Usunę legendę
+
+
+```{r}
+ggraph(mygraph, layout = 'circlepack', weight=size) + 
+  geom_node_circle(aes(fill = depth)) +
+  scale_fill_viridis() +
+  theme_void() +
+  guides(fill = "none")
+```
+
+
+Dodam etykiety
+
+```{r}
+ggraph(mygraph, layout = 'circlepack', weight=size) + 
+  geom_node_circle(aes(fill = depth)) +
+  scale_fill_viridis() +
+  geom_node_text(aes(label = label, filter=leaf, size=size)) +
+  theme_void() +
+  guides(fill = "none")
+```
+
+Wybiorę tylko etykiety największych organizacji
+
+```{r}
+ggraph(mygraph, layout = 'circlepack', weight=size) + 
+  geom_node_circle(aes(fill = depth)) +
+  scale_fill_viridis() +
+  geom_node_text(aes(label = ifelse(size> 80, label, NA), filter=leaf, size=size/10)) +
+  theme_void() +
+  guides(fill = "none",
+         size = "none")
+```
+
+
+Eksperymentuje z argumentem repel
+```{r}
+
+ggraph(mygraph, layout = 'circlepack', weight=size) + 
+  geom_node_circle(aes(fill = sektor), alpha =  0.3) +
+  geom_node_text(aes(label = ifelse(size> 80, label, NA), filter=leaf, size=size/10), repel = TRUE) +
+  theme_void() +
+  guides(fill = "none",
+         size = "none")
+```
+
+
+Ustawię coord_equal, żeby koła były zawsze były kołami.
+
+
+```{r}
+
+ggraph(mygraph, layout = 'circlepack', weight=size) + 
+  geom_node_circle(aes(fill = sektor), alpha =  0.3) +
+  geom_node_text(aes(label = ifelse(size> 80, label, NA), filter=leaf, size=size/10)) +
+  theme_void() +
+  guides(fill = "none",
+         size = "none") +
+  coord_equal()
+```
+
+
+Zmniejszę napisy
+
+
+
+```{r}
+
+
+ggraph(mygraph, layout = 'circlepack', weight=size) + 
+  geom_node_circle(aes(fill = sektor), alpha =  0.3) +
+  geom_node_text(aes(label = ifelse(size> 80, label, NA), filter=leaf), size = 2) +
+  theme_void() +
+  guides(fill = "none",
+         size = "none") +
+  coord_equal()
+
+```
+
+
+Zmienię kolory:
+
+```{r}
+ggraph(mygraph, layout = 'circlepack', weight=size) + 
+  geom_node_circle(aes(fill = sektor), alpha =  0.3) +
+  geom_node_text(aes(label = ifelse(size> 80, label, NA), filter=leaf, size=size/10), repel = TRUE) +
+  theme_void() +
+  guides(fill = "none",
+         size = "none")
+```
+
+Użyję kolorów palety z biblioteki MetBrewer
+
+```{r}
+library(MetBrewer)
+library(ggthemes)
+```
+
+
+
+```{r}
+
+ggraph(mygraph, layout = 'circlepack', weight=size) + 
+  geom_node_circle(aes(fill = sektor), alpha =  0.7) +
+  geom_node_text(aes(label = ifelse(size> 80, label, NA), filter=leaf), size = 2.6, color = "white") +
+  theme_void() +
+  guides(fill = "none",
+         size = "none") +
+  scale_fill_manual(values = rev(met.brewer("Pillement", 18)))+
+  coord_equal() 
+```
+
+Dodajemy tytuł wykresu i etykiety dla "gałęzi" czyli zmiennej sektor
+
+
+### Interaktywny wykres z biblioteką circlepackeR
+
+Dodatkowo potrzebujemy biblioteki data.tree
+
+```{r}
+#library(devtools)
+#install_github("jeromefroe/circlepackeR")
+#install.packages("data.tree")
+```
+
+#### przykład z rgraph gallery
+
+
+
+##### kreowanie zagnieżdżonej ramki danych
+
+```{r}
+data <- data.frame(
+  root=rep("root", 15),
+  group=c(rep("group A",5), rep("group B",5), rep("group C",5)), 
+  subgroup= rep(letters[1:5], each=3),
+  subsubgroup=rep(letters[1:3], 5),
+  value=sample(seq(1:15), 15)
+)
+```
+
+
+
+#### zmiana formatu
+
+```{r}
+library(data.tree)
+library(circlepackeR)
+```
+
+
+
+```{r}
+data$pathString <- paste("world", data$group, data$subgroup, data$subsubgroup, sep = "/")
+population <- as.Node(data)
+```
+
+
+
+```{r}
+p <- circlepackeR(population, size = "value", color_min = "hsl(56,80%,80%)", color_max = "hsl(341,30%,40%)")
+```
+
+
+
+### CirclepackeR z danymi ransomware
+
+CirclepackeR potrzebuje danych wejściowych w postaci tzw. nested data frame lub listy krawędzi (edge list). Zagnieżdżona ramka danych powinna być łatwiejsza do uzyskania.
+
+```{r}
+nested <- ransom_atak %>%
+  select(sector, target, organisation_size)
+```
+
+
+
+
+```{r}
+nested$pathString <- paste("ransom", nested$sector, nested$target,sep = "/")
+nested_data <- as.Node(nested)
+```
+
+
+```{r}
+w <- circlepackeR(nested_data, size = "organisation_size")
+```
+
+
+```{r, fig.cap= "Ransomware Attacks by sector"}
+w
+```
+
+
+
+```{r}
+w <- circlepackeR(nested_data,
+                  size = "organisation_size",
+                  color_min = "hsl(56,80%,80%)", color_max = "hsl(341,30%,40%)")
+```
+
+
+```{r}
+w
+```
+
+W pliku html R markdowna interaktywność nie działa zoomowanie. Plik z wykresem trzeba zapisać oddzielnie i otwrzyc kilkając na link, np. tak, jak poniżej (trzeba oczywiście podsawić własną nazwę folder)
+
+
+```{r, eval = FALSE}
+htmlwidgets::saveWidget(w, file=paste0(getwd(), "/folder/circular_packing_ransomware.html"))
+```
+

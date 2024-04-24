@@ -26,13 +26,16 @@ library(tidyverse)
 Jedną z ciekawszych bibliotek do tworzenia chmur słów jest wordlcoud2: 
 
 ```{r wordcloud2.}
-install.packages("wordcloud2")
+#install.packages("wordcloud2")
 
 ```
 
-```{eval = false}
+```{r, eval = false}
+
 library(wordcloud2)
+
 ```
+
 
 Wordcloud2 ma dwie ciekawe funkcje: wordcloud2 i letterCloud
 

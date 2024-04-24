@@ -23,10 +23,16 @@ library(plotly)
 library(gapminder)
 ```
 
+
+```{r}
+#install.packages("gapminder")
+#install.packages("plotly")
+```
+
 # funkcja ggplotly =  transformacja ggplot w wykres interakwyny
 
 ```{r}
-w <- ggplot(mpg, aes(displ,
+w <- ggplot(mpg, aes(cty,
                      hwy)) + 
   geom_point()
 ```
@@ -44,7 +50,9 @@ ggplotly(w)
 wykres <- 
   ggplot(gapminder, 
          aes(y = lifeExp, 
-             x = gdpPercap)) +
+             x = gdpPercap,
+             size = pop,
+             alpha = 0.3)) +
   geom_point()
 
 ```
@@ -72,19 +80,57 @@ wykres <- ggplot(gapminder, aes(y = lifeExp,
                                 color = continent,
                                 text = paste('kraj: ', country,
                   '<br>kontynent:', continent,
-                  "<br>rok:", year)),
-                 alpha = 0.5)  +
+                  "<br>rok:", year,
+                  "<br> populacja:", pop,
+                  "<br> pkb na łebka:", gdpPercap), alpha = 0.9))  +
   geom_point()
+
+wykres
+```
+
+```{r}
 
 ggplotly(wykres, tooltip = "text")
 
 ```
 
 
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+```
+
+
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+```
+
+# zadanie z panteonem - wykres punktowy kobiety z Polski z nazwiskiem i liczbą wyświetleń, na osi x L_star, a na osiy HPI, wielkość punktów na AverageViews w chmurce: nazwisko, i liczba wyświetleń AverageViews
+
+
+
+```{r}
+wykres2 <- panteon %>%
+  filter(gender == "Female",
+         countryCode3 == "POL") %>%
+  ggplot(aes(y = L_star, 
+                                x = HPI,
+                                color = continent,
+                                text = paste('nazwisko: ', name,
+                  '<br>wyświetlenia:', AverageViews ,
+                  "<br>rok:", year), alpha = 0.9)) +
+  geom_point
+```
+
 
 # Połączenie z tabelką crosstalk o DT
 
 Jeśli nie mamy zainstalowanych poniższych bibliotek to instalujmy je najpierw funkcją install.packages.
+
+```{r}
+#install.packages("DT")
+#
+```
+
 
 ```{r}
 
@@ -105,7 +151,7 @@ Krok2. Tworzymy wykres w ggplot z użyciem zmienionego formatu ramki
 
 ```{r}
 
-p <- ggplot(m, aes(displ, 
+p <- ggplot(m, aes(cty, 
                    hwy)) + 
   geom_point() # tworzymy wykres w ggplocie z tej nowej ramki
 
@@ -115,7 +161,7 @@ Krok 3.
 
 ```{r}
 
-gg <- highlight(ggplotly(p), "plotly_selected") # tworzymy wykres plotly wewnątrz funkcji highlight, "plotly_hover" jest argumentem ustalającym jak wybierane będą podświetlane punkty
+gg <- highlight(ggplotly(p), "plotly_click") # tworzymy wykres plotly wewnątrz funkcji highlight, "plotly_hover" jest argumentem ustalającym jak wybierane będą podświetlane punkty
 
 ```
 
@@ -139,12 +185,12 @@ m <- highlight_key(mpg) #czyli format ramki musi być zmieniony
 p <- ggplot(m, aes(displ, hwy)) + 
   geom_point() #mamy wykres w ggplocie z tej nowej ramki
  
-gg <- highlight(ggplotly(p), "plotly_hover") #mamy highlight(ggploly(tego wykresu)) i jeszcze argument dotyczący ego jak wybierać kolumny
+gg <- highlight(ggplotly(p), "plotly_hover") #mamy highlight(ggploly(tego wykresu)) i jeszcze argument dotyczący tego jak wybierać kolumny hovr zczyli podczas najeżdżania
 
 crosstalk::bscols(gg, DT::datatable(m), widths = 12) #i mamy zestawienie elementów
 ```
 
-
+## Zadanie użyjmy wykresu z zadania 1 i połączmy go z tabelą, tak by wyświetlała nam się obok lub pod wykresem
 
 ## plotly podstawy
 
@@ -239,6 +285,24 @@ gg <- ggplot(gapminder, aes(gdpPercap,
 
 ggplotly(gg)
 ```
+
+
+```{r}
+
+data(gapminder, 
+     package = "gapminder") 
+
+gg <- ggplot(gapminder, aes(gdpPercap, 
+                            lifeExp,
+                            color = continent)) +
+  geom_point(aes(size = pop,
+                 frame = continent,
+                 ids = country)) + 
+  scale_x_log10() 
+
+ggplotly(gg)
+```
+
 
 
 Panteon
@@ -557,7 +621,7 @@ p	 <- plot_ly(g) %>%
             color = ~continent) %>% layout(xaxis = list(title = "")) %>% 
   highlight(selected = attrs_selected(showlegend = FALSE))
 
-bscols(continent_filter, p, widths = 12)
+bscols(country_filter, p, widths = 12)
 
 ```
 
@@ -590,9 +654,35 @@ gg <- ggplot(g, aes(gdpPercap, lifeExp, color = continent, frame = year)) +
 
 ## Wykresy 3d
 
+z danymi mpg
+
 ```{r}
-plot_ly(mpg, x = ~cty, y = ~hwy, z = ~cyl) %>%
+plot_ly(mpg, 
+        x = ~cty, 
+        y = ~hwy, 
+        z = ~cyl) %>%
   add_markers(color = ~cyl)
+```
+
+
+z danymi panteon
+
+```{r}
+
+kobiety <-  panteon %>%
+  filter(gender == "Female",
+         countryCode3 == "POL")
+```
+
+
+
+```{r}
+
+plot_ly(kobiety,
+       x = ~AverageViews,
+       y = ~HPI,
+       z = ~L_star ) %>%
+  add_trace()
 ```
 
 
@@ -601,11 +691,7 @@ plot_ly(kobiety,
        x = ~AverageViews,
        y = ~HPI,
        z = ~L_star ) %>%
-  add_trace( 
-    text = paste("nazwisko" ~name, "HPI: " ~HPI),
-    hoverinfo = 'text',
-    showlegend = F
-  )
+  add_trace()
 ```
 
 
@@ -638,19 +724,20 @@ df <- as.data.frame(ode(func=lorenz, y=state, parms=parms, times=times))
 ```
 
 
-add_trace(
-    x = c(1:5), 
-    y = rnorm(5, mean = 5),
-    text = c("Text A", "Text B", "Text C", "Text D", "Text E"),
-    hoverinfo = 'text',
-    marker = list(color='green'),
-    showlegend = F
-  )
+
+```{r}
+df <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/wykresy%20interaktywne/lorenz.csv")
+```
+
 
 ```{r}
 x <- seq_len(nrow(volcano)) + 100
 y <- seq_len(ncol(volcano)) + 500
-plot_ly() %>% add_surface(x = ~x, y = ~y, z = ~volcano)
+
+plot_ly() %>% 
+  add_surface(x = ~x,
+              y = ~y, 
+              z = ~volcano)
 ```
 
 
@@ -663,7 +750,7 @@ plot_ly(df,
 ```
 
 
-# Przykłady
+# Inne przykłady
 
 
 ```{r}
