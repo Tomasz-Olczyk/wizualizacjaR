@@ -1,0 +1,375 @@
+---
+title: "kwadraty część całość"
+author: "Tomasz Olczyk"
+date: "4/6/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(tidyverse)
+#library(showtext) # to jest biblioteka do czcionek która mi nie działa do sprawdzenia
+library(janitor)
+library(MetBrewer)
+```
+
+
+
+
+```{r}
+
+
+# zbiór missile_attacks z kaggle
+
+ataki_rakietowe <- read_csv("case\ studies\ /missile_attacks_daily.csv")
+
+
+#zbiór missiles_and_uav 
+środki <- read_csv("case\ studies\ /missiles_and_uav.csv")
+
+```
+
+
+
+```{r}
+
+środki_s <- środki %>%
+  select(model, category)
+
+```
+
+
+```{r}
+
+ataki_s <-  ataki_rakietowe %>% 
+  select(time_end, model,launched, destroyed)
+```
+
+
+
+```{r}
+
+ataki_środki <- left_join(ataki_s, środki_s)
+```
+
+
+
+```{r}
+na_typ <- ataki_środki %>%
+  filter(is.na(category))
+  
+```
+
+
+polski_lg_c <- polski_lg %>% 
+  mutate(pos = case_when(lemma == "ratować" ~ "VERB",
+                         lemma == "trybunał" ~ "PROPN",
+                         lemma == "Trybunałem" ~ "PROPN",
+                         lemma == "przyłębski" ~ "PROPN",
+                         lemma == "Przyłębski" ~ "PROPN",
+                         lemma == "konfederacja" ~ "PROPN",
+                         lemma == "platforma" ~ "PROPN",
+                         lemma == "ordo" ~ "PROPN",
+                         lemma == "iuris" ~ "PROPN",
+                         lemma == "ją" ~ "PRON",
+                         lemma == "bezwod" ~ "NOUN",
+                         TRUE ~ as.character(pos)))
+                         
+ręczne poprawki
+                         
+```{r}
+ataki_środki_m <- ataki_środki %>%
+  mutate(category = case_when(model == "C-300 and C-400" ~ "surface-to-air missile",
+                              model =="3M22 Zircon" ~ "ballistic missile",
+                              model =="Iskander-M/KN-23/X-47 Kinzhal" ~ "ballistic missile",
+                              model =="Iskander-M/KN-23" ~ "ballistic missile",
+                               model =="C-300 and C-400 and Iskander-M" ~ "ballistic missile",
+                               model =="C-400 and Iskander-M" ~ "ballistic missile",
+                              model =="C-400 and Iskander-M" ~ "ballistic missile",
+                          model =="Iskander-M and Iskander-K" ~ "cruise missile",
+                          model =="X-101/X-555 and X-22 and Kalibr" ~ "cruise missile",
+                          model =="Shahed-136/131 and Lancet" ~ "UAV",
+                         TRUE ~ as.character(category)))
+
+```
+
+```{r}
+ataki_środki_na <- ataki_środki %>%
+  filter(!category == "guided bomb") %>%
+  drop_na()
+```
+
+
+```{r}
+
+ataki_środki_na <- ataki_środki_m %>%
+  filter(!category == "guided bomb") %>%
+  drop_na()
+
+```
+
+Zliczę odsetki
+
+
+```{r}
+df <- ataki_środki_m %>%
+  group_by(category) %>%
+  summarise(launched = sum(launched)) %>%
+  mutate(percent = round(launched / sum(launched), 5))
+```
+
+
+mutate(ymax = if_else(type %in% c("gas", "electric"), sqrt(percent), 0), # pierwiastek z rocentu jako wysokość ifelse mówi jeśli w type jest któraś z nazw policz pierwiastek jeśli nie wstaw zaero tutaj te które są na plusie na osi y
+         xmax = if_else(type %in% c("hybrid", "electric"), sqrt(percent), 0), # pierwiastek jest liczony bo tu liczy się powierzchnia kwadratu
+         xmin = if_else(type %in% c("gas", "diesel"), -sqrt(percent), 0),
+         ymin = if_else(type %in% c("diesel", "hybrid"), -sqrt(percent), 0)) %>% 
+
+
+
+```{r}
+
+d5f <- ataki_środki_na %>%
+  group_by(category) %>%
+  summarise(launched = sum(launched)) %>%
+  mutate(percent = round(launched / sum(launched), 5)) %>%
+group_by(category) %>% 
+  mutate(ymax = if_else(category %in% c("UAV", "cruise missile"), sqrt(percent), 0), # pierwiastek z rocentu jako wysokość ifelse mówi jeśli w type jest któraś z nazw policz pierwiastek jeśli nie wstaw zaero tutaj te które są na plusie na osi y
+         xmax = if_else(category  %in% c("surface-to-air missile", "cruise missile"), sqrt(percent), 0), # pierwiastek jest liczony bo tu liczy się powierzchnia kwadratu
+         xmin = if_else(category  %in% c("UAV", "ballistic missile"), -sqrt(percent), 0),
+         ymin = if_else(category %in% c("ballistic missile", "surface-to-air missile"), -sqrt(percent), 0)) #%>% 
+ # mutate(type = str_to_title(category )) 
+
+```
+
+```{r}
+
+d5f <- ataki_środki_na %>%
+  group_by(category) %>%
+  summarise(launched = sum(launched)) %>%
+  mutate(percent = round(launched / sum(launched), 5)) %>%
+group_by(category) %>% 
+  mutate(ymax = if_else(category %in% c("UAV", "cruise missile"), sqrt(percent), 0), # pierwiastek z rocentu jako wysokość ifelse mówi jeśli w type jest któraś z nazw policz pierwiastek jeśli nie wstaw zaero tutaj te które są na plusie na osi y
+         xmax = if_else(category  %in% c("surface-to-air missile", "cruise missile"), sqrt(percent), 0), # pierwiastek jest liczony bo tu liczy się powierzchnia kwadratu
+         xmin = if_else(category  %in% c("UAV", "ballistic missile"), -sqrt(percent), 0),
+         ymin = if_else(category %in% c("ballistic missile", "surface-to-air missile"), -sqrt(percent), 0)) #%>% 
+ # mutate(type = str_to_title(category )) 
+
+```
+
+```{r}
+#df$type <- factor(df$type, levels = c("Gas", "Diesel", "Hybrid", "Electric")) # na końcu zmienia na czynniki
+```
+
+
+
+```{r}
+ggthm
+```
+
+```{r}
+d5f %>%
+ggplot() +
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = category), color = "#FFFFFF") +
+  geom_text(aes(x = ifelse(category %in% c("UAV", "cruise missile"), xmin + 0.01, xmin + 0.01), y = ifelse(category %in% c("UAV", "cruise missile"), ymax + 0.05, ymin - 0.05), label = scales::percent(percent), color = category),  size = 2.5, hjust = 0) + # color fontu ustawiony na kolor wypełnienia
+  scale_color_manual(values = rev(met.brewer("Renoir", 4))) +
+  scale_fill_manual(values = rev(met.brewer("Renoir", 4))) + #met.brewer palety inspirowane 
+  coord_equal(clip = "off") +
+  theme_void()
+```
+
+
+```{r}
+d5f %>%
+ggplot() +
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = category), color = "#FFFFFF") +
+  geom_text(aes(x = ifelse(category %in% c("UAV", "cruise missile"), xmin + 0.01, xmin + 0.01), y = ifelse(category %in% c("UAV", "cruise missile"), ymax + 0.05, ymin - 0.05), label = scales::percent(percent), color = category),  size = 2.5, hjust = 0) + # color fontu ustawiony na kolor wypełnienia
+  scale_color_manual(values = rev(met.brewer("Klimt", 4))) +
+  scale_fill_manual(values = rev(met.brewer("Klimt", 4))) + #met.brewer palety inspirowane 
+  coord_equal(clip = "off") +
+  theme_void()
+```
+
+
+
+```{r}
+
+d5f %>%
+ggplot() +
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = category), color = "#FFFFFF") +
+  geom_text(aes(x = ifelse(category %in% c("UAV", "cruise missile"), xmin + 0.01, xmin + 0.01), y = ifelse(category %in% c("UAV", "cruise missile"), ymax + 0.05, ymin - 0.05), label = scales::percent(percent), color = category),  size = 2.5, hjust = 0) + # color fontu ustawiony na kolor wypełnienia
+  scale_color_manual(values = rev(met.brewer("Hokusai1", 4))) +
+  scale_fill_manual(values = rev(met.brewer("Hokusai1", 4))) + #met.brewer palety inspirowane 
+  coord_equal(clip = "off") +
+  theme_void()
+```
+
+
+```{r}
+
+ataki_środki_na <- ataki_środki_m %>%
+  filter(!category == "guided bomb") %>%
+  drop_na()
+
+```
+
+
+```{r}
+df2 <- ataki_środki_na %>%
+  group_by(category) %>%
+  summarise(launched = sum(launched),
+            destroyed = sum(destroyed)) %>%
+  pivot_longer(cols = c("launched", "destroyed"), names_to = "status", values_to = "numbers") %>%
+  group_by(category) %>% 
+  mutate(ymax = if_else(category %in% c("UAV", "cruise missile"), sqrt(numbers), 0), # pierwiastek z rocentu jako wysokość ifelse mówi jeśli w type jest któraś z nazw policz pierwiastek jeśli nie wstaw zaero tutaj te które są na plusie na osi y
+         xmax = if_else(category  %in% c("surface-to-air missile", "cruise missile"), sqrt(numbers), 0), # pierwiastek jest liczony bo tu liczy się powierzchnia kwadratu
+         xmin = if_else(category  %in% c("UAV", "ballistic missile"), -sqrt(numbers), 0),
+         ymin = if_else(category %in% c("ballistic missile", "surface-to-air missile"), -sqrt(numbers), 0)) %>%
+  mutate(category = case_when(category == "ballistic missile" ~ "ballistic",
+                               category == "cruise missile" ~ "cruise",
+                              category == "surface-to-air missile" ~ "surface-to-air",
+                              category == "UAV" ~ "UAV"))
+
+```
+
+
+Zamieniam na faktory
+
+```{r}
+df2$category <- factor(df2$category, levels = c("UAV", "cruise", "surface-to-air", "ballistic"))
+
+df2$status <- factor(df2$status, levels = c("launched", "destroyed"))
+
+
+```
+
+
+```{r}
+df2 %>%
+ggplot() +
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = category), color = "#FFFFFF") +
+  geom_text(aes(x = ifelse(category %in% c("UAV", "cruise missile"), xmin + 1, xmin + 1), y = ifelse(category %in% c("UAV", "cruise missile"), ymax + 1, ymin - 1), label = numbers, color = category),  size = 4, hjust = 0) + # color fontu ustawiony na kolor wypełnienia
+  scale_color_manual(values = rev(met.brewer("Hokusai1", 4))) +
+  scale_fill_manual(values = rev(met.brewer("Hokusai1", 4))) + #met.brewer palety inspirowane 
+  coord_equal(clip = "off") +
+  facet_wrap(~status) +
+  theme_void() 
+```
+
+
+
+```{r}
+
+df2 %>%
+ggplot() +
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = category), color = "#FFFFFF") +
+  geom_text(aes(x = ifelse(category %in% c("UAV", "cruise"), xmin + 1, xmin + 1), y = ifelse(category %in% c("UAV", "cruise"), ymax + 2, ymin - 2), label = numbers, color = category),  size = 2, hjust = 0) + # color fontu ustawiony na kolor wypełnienia
+  scale_color_manual(values = rev(met.brewer("Hokusai1", 4)), guide = "none") +
+  scale_fill_manual(values = rev(met.brewer("Hokusai1", 4))) + #met.brewer palety inspirowane 
+  coord_equal(clip = "off") +
+  facet_wrap(~status) +
+  labs(title = "Russian missile attacks on Ukraine",
+       subtitle= "October 2022 - April 2024",
+       caption = "data source: AFU official social media via:\nhttps://www.kaggle.com/datasets/piterfm/massive-missile-attacks-on-ukraine") +
+  guides(fill = guide_legend(title = NULL,
+                             position = "top")) +
+  theme_void() +
+  theme(plot.title = element_text(size = 24, hjust = 0.5, face = "bold", color = "#000000"),
+        plot.title.position = "plot",
+        plot.caption.position = "plot",
+        plot.subtitle = element_text(size = 9, hjust = 0.5, color = "#000000"),
+        plot.caption = element_text(size = 8, color = "#000000", hjust = 0.5),
+        strip.text = element_text(size = 9, color = "#000000", hjust = 0.5, margin = margin(b = 1)),
+        legend.position = "top",
+        legend.margin = margin(b = 15),
+        legend.text = element_text(size = 8, color = "#000000", hjust = 0.5),
+        legend.title = element_blank(),
+        plot.margin = unit(c(1, 0.25, 1, 0.25), "cm"),
+        plot.background = element_rect(color = NA, fill = "#FFFFFF"))
+```
+
+```{r}
+ggsave(paste0("dzień_7_", format(Sys.time(), "%d%m%Y"), ".png"), dpi = 320, width = 6, height = 6)
+```
+
+
+## ataki z sukcesm
+
+
+```{r}
+
+ataki_środki_na_3 <- ataki_środki_na %>%
+  mutate(hits = launched - destroyed) %>%
+  mutate(if_else(hits < 0,  0, hits))
+
+```
+
+
+```{r}
+df3 <- ataki_środki_na_3%>%
+  group_by(category) %>%
+  summarise(launched = sum(launched),
+            destroyed = sum(destroyed),
+            hits = sum(hits)) %>%
+  pivot_longer(cols = c("launched", "destroyed", "hits"), names_to = "status", values_to = "numbers") %>%
+  group_by(category) %>% 
+  mutate(ymax = if_else(category %in% c("UAV", "cruise missile"), sqrt(numbers), 0), # pierwiastek z rocentu jako wysokość ifelse mówi jeśli w type jest któraś z nazw policz pierwiastek jeśli nie wstaw zaero tutaj te które są na plusie na osi y
+         xmax = if_else(category  %in% c("surface-to-air missile", "cruise missile"), sqrt(numbers), 0), # pierwiastek jest liczony bo tu liczy się powierzchnia kwadratu
+         xmin = if_else(category  %in% c("UAV", "ballistic missile"), -sqrt(numbers), 0),
+         ymin = if_else(category %in% c("ballistic missile", "surface-to-air missile"), -sqrt(numbers), 0)) %>%
+  mutate(category = case_when(category == "ballistic missile" ~ "ballistic",
+                               category == "cruise missile" ~ "cruise",
+                              category == "surface-to-air missile" ~ "surface-to-air",
+                              category == "UAV" ~ "UAV"))
+
+```
+
+
+Zamieniam na faktory
+
+```{r}
+df3$category <- factor(df3$category, levels = c("UAV", "cruise", "surface-to-air", "ballistic"))
+
+df3$status <- factor(df3$status, levels = c("launched", "destroyed", "hits"))
+
+
+```
+
+
+```{r}
+
+df3 %>%
+ggplot() +
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = category), color = "#FFFFFF") +
+  geom_text(aes(x = ifelse(category %in% c("UAV", "cruise"), xmin + 1, xmin + 1), y = ifelse(category %in% c("UAV", "cruise"), ymax + 2, ymin - 2), label = numbers, color = category),  size = 2, hjust = 0) + # color fontu ustawiony na kolor wypełnienia
+  scale_color_manual(values = rev(met.brewer("Hokusai1", 4)), guide = "none") +
+  scale_fill_manual(values = rev(met.brewer("Hokusai1", 4))) + #met.brewer palety inspirowane 
+  coord_equal(clip = "off") +
+  facet_wrap(~status) +
+  labs(title = "Russian missile attacks on Ukraine",
+       subtitle= "October 2022 - April 2024",
+       caption = "data source: AFU official social media via:\nhttps://www.kaggle.com/datasets/piterfm/massive-missile-attacks-on-ukraine") +
+  guides(fill = guide_legend(title = NULL,
+                             position = "top")) +
+  theme_void() +
+  theme(plot.title = element_text(size = 24, hjust = 0.5, face = "bold", color = "#000000"),
+        plot.title.position = "plot",
+        plot.caption.position = "plot",
+        plot.subtitle = element_text(size = 9, hjust = 0.5, color = "#000000"),
+        plot.caption = element_text(size = 8, color = "#000000", hjust = 0.5),
+        strip.text = element_text(size = 9, color = "#000000", hjust = 0.5, margin = margin(b = 1)),
+        legend.position = "top",
+        legend.margin = margin(b = 15),
+        legend.text = element_text(size = 8, color = "#000000", hjust = 0.5),
+        legend.title = element_blank(),
+        plot.margin = unit(c(1, 0.25, 1, 0.25), "cm"),
+        plot.background = element_rect(color = NA, fill = "#FFFFFF"))
+```
+
+```{r}
+ggsave(paste0("dzień_7_m_", format(Sys.time(), "%d%m%Y"), ".png"), dpi = 320, width = 6, height = 6)
+```

@@ -25,12 +25,37 @@ library(tidyverse)
 ```
 
 
-## Dane
+## Dane z githuba
 
 
 ```{r}
 ransom_atak <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/case%20studies%20/ransomware_attacks.csv"
 )
+```
+
+
+## Dane bezpośrednio
+
+https://docs.google.com/spreadsheets/d/1wPgM8ye1AUTVxlZOFsyiKEPWp6iFt34xpp2XA5iM6P0/edit#gid=25233212
+
+
+
+```{r}
+library(googlesheets4)
+library(janitor)
+```
+
+```{r}
+ransom_google <- read_sheet("https://docs.google.com/spreadsheets/d/1wPgM8ye1AUTVxlZOFsyiKEPWp6iFt34xpp2XA5iM6P0/edit#gid=25233212", skip =1)  %>%
+  clean_names()
+```
+
+ponieważ tabela ma tytuł trzeba uzyć skip
+
+```{r}
+ransom_google <- read_sheet("https://docs.google.com/spreadsheets/d/1wPgM8ye1AUTVxlZOFsyiKEPWp6iFt34xpp2XA5iM6P0/edit#gid=25233212",
+                            skip =1) %>%
+  clean_names()
 ```
 
 
@@ -72,7 +97,7 @@ ransom_atak %>%
 ```
 
 
-Rozproszymy punkty bardziej i wyolbrzymimyy różnice wielkości punktów
+Rozproszymy punkty bardziej i wyolbrzymimy różnice wielkości punktów
 
 ```{r}
 ransom_atak %>%

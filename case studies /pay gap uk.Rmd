@@ -1,0 +1,128 @@
+---
+title: "gender pay gap uk"
+author: "Tomasz Olczyk"
+date: "3/30/2024"
+output: html_document
+params:
+  category:
+    value: all
+    choices: [all, admin & organisation, 
+    care & education, creative & media, law & justice,
+     manual work, sales & serving others, science, tech & engineering,
+     senior managers & execs]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+pay_gap <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/case%20studies%20/pay_gap_uk.csv")
+head(pay_gap)
+```
+
+
+
+```{r}
+dane_gap <- pay_gap %>%
+  select(occupation, 
+        women = women_average_annual_salary, 
+         men = men_average_annual_salary,
+        pay_gap,
+        category) #%>%
+ # mutate(category = factor(category))
+```
+
+
+```{r}
+dane_long <- pay_gap %>%
+  select(occupation, 
+         women = women_average_annual_salary, 
+         men =men_average_annual_salary, 
+         pay_gap,
+         category)  %>%
+  pivot_longer(cols = c(women, men), 
+               names_to  = "gender", 
+               values_to = "salary")# %>%
+  #mutate(category = factor(category))
+
+```
+
+```{r}
+head(dane_long)
+```
+
+
+kolory <-
+```{r}
+kolor1 <- rgb(80, 27, 60, maxColorValue = 255)
+kolor2 <- rgb(186, 195, 106, maxColorValue = 255)
+
+skala <- c(kolor1, kolor2)
+```
+
+
+
+## wykres według pensji
+
+```{r}
+
+x <- 
+ggplot(data = dane_long %>% 
+         filter(category == "admin & organisation"), aes(y=reorder(occupation, salary))) +
+  geom_segment(data = dane_gap %>% 
+         filter(category == "admin & organisation"), 
+         aes(y = occupation, 
+                                    yend=occupation, 
+                                    x= women, 
+                                    xend = men)) +
+  geom_point(aes(x = salary, colour = gender)) +
+  #scale_color_manual(values = skala, guide_legend(position = "top")) +
+  theme_void() 
+  
+```
+
+
+
+```{r}
+x
+```
+
+
+# wykres według pay gap
+
+```{r}
+y <- dane_long %>% 
+  filter(category == params$category) %>% 
+  ggplot( aes(y=reorder(occupation, pay_gap))) +
+  geom_segment(data = dane_gap, aes(y = occupation, 
+                                    yend=occupation, 
+                                    x= women, 
+                                    xend = men)) +
+  geom_point(aes(x = salary, colour = gender)) 
+  
+```
+
+
+```{r}
+y
+```
+
+
+```{r}
+library(plotly)
+```
+
+
+
+```{r}
+
+ggplotly(y)
+
+```
+

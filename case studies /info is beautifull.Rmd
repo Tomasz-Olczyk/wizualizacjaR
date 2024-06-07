@@ -1,0 +1,170 @@
+---
+title: "case studies info is beautifull"
+author: "Tomasz Olczyk"
+date: "3/30/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Studia przypadku z info is beaudifull
+
+
+### Hollywood hits and flops
+
+https://informationisbeautiful.net/visualizations/hollywood-2023-hits-flops/
+
+
+położenia etykiet, skale kolorów, kształy linie
+
+adnotacje w postaci kształtów
+
+dane: 
+
+https://docs.google.com/spreadsheets/d/12bnGB7w5T03f7Bq1PG6gqFIdsLccdP6E-86xdVjbCOc/edit#gid=423546026
+
+
+### most common passwords
+
+https://informationisbeautiful.net/visualizations/top-500-passwords-visualized/
+
+wordloud na jajku według kolorów dość bazowe ale ciekawe wizualnie można dodać jako zadanie zaawansowane
+ew. coś na zajęcia
+
+
+
+### prawda fałsz w filmach
+
+dane, skala kolorów, geom segment geom segment informacyjnie, czas liczony w minutach sekundach i jego przeliczanie
+
+https://docs.google.com/spreadsheets/d/1sJDpzYH_sMYuYHqkmZeJGIq_TEXGDjboYdSoew7UjZ8/edit#gid=1939779101
+
+
+### ukraina w liczbach
+
+kolory, kombinacje wykresów, treemaps może na zadanie końcowe?
+
+https://informationisbeautiful.net/visualizations/ukraine-russian-war-infographics-data-visuals/#two-years
+
+
+https://docs.google.com/spreadsheets/d/17YhLXD459Q8_8ez0aAl9EP4EbwgYndTDeMgJzvp5G_w/edit#gid=445996165
+
+
+
+### analiza sieciowa middle east key players noable  relationsips
+
+Trochę zaawansowanej wizualizacji : wymaga kontrolowania typu więzi  i typu węzła
+https://informationisbeautiful.net/visualizations/the-middle-east-key-players-notable-relationships/
+
+https://docs.google.com/spreadsheets/d/1cu0V71960pnrkf5meIavnsoKJcvCRQTV8Y-koODrPc8/edit#gid=8
+
+
+nad danymi trzeba by popracować
+
+
+### mapa, który kraj jest w czym najlepszy
+
+
+zagadka jak dodać etykietę do kraju z linią może ggrepel, a może wystarczy 
+https://docs.google.com/spreadsheets/d/11uifsxtHKwRysrxNxTDhvWLDHTlxQ0jYP8PODoLM2hM/edit#gid=0
+
+
+### mapa  energia odnawialna
+
+https://informationisbeautiful.net/visualizations/renewable-energy-and-electricity/
+
+Dane:
+można wykorzystać do ćwiczenia z mapami typu kartogram:
+
+https://docs.google.com/spreadsheets/d/1j8E3rPujJHWgrLCX8ushGQizIlxPn1v4YxPyMoMgMXY/edit#gid=2077503762
+
+
+### geometrie, osie kolory
+
+https://informationisbeautiful.net/visualizations/mountains-out-of-molehills/
+
+
+### Circular voronoi
+
+https://informationisbeautiful.net/visualizations/ukraine-russian-war-infographics-data-visuals/#OilReserves
+
+
+```{r}
+install.packages("voronoiTreemap")
+```
+
+
+```{r}
+library(voronoiTreemap)
+
+vor <- data.frame(h1 = 'World', 
+                  h2 = c('Europe', 'Europe', 'Americas', 'Asia',
+                         'Europe', 'Other'),
+                  h3 = df$country,
+                  color = hcl.colors(nrow(df), palette = 'TealRose'),
+                  weight = df$prod,
+                  codes = df$country)
+
+vt <- vt_input_from_df(vor)
+
+vt_d3(vt_export_json(vt))
+```
+
+
+# arcdiagram
+
+podróże w czasie
+
+
+
+https://docs.google.com/spreadsheets/d/1XcwuvLzlq3KEauW7LnbFGC2oleHR5TJOmSYhhsJwv5k/edit?hl=en_GB&pli=1&hl=en_GB&pli=1#gid=0
+
+
+https://informationisbeautiful.net/2009/time-travel/
+
+
+
+It's relatively easy to make a Voronoi tasselation in R, but it's harder to make a Voronoi treemap. The linked Q&A does it by using the voronoiTreemap package, which is essentially just a wrapper round a JavaScript library. As far as I can tell, this is the only published R package that generates Voronoi treemaps.
+
+Our two options are to calculate the polygons ourselves from scratch, or somehow extract the polygons from the SVG output of voronoiTreemap.
+
+With regards to the first option, this is not a trivial problem. To see just how complex it is, and also to get a fully worked solution in R, you can check out this fantastic article by Paul Murrell. The code runs to several pages and is over a decade old, so I'm not sure if all the dependencies still work. It's disappointing that no-one has put it all together in a package on CRAN, but perhaps it's a bit niche.
+
+If you struggle with Paul Murrell's approach, you are left trying to harvest polygons from the output of voronoiTreemap. Although this package works well, the output does not lend itself to being harvested for polygons, and we do not get access to the intermediate calculations that would allow us to generate the polygons ourselves in R. It's not impossible, and there are a few ways to tackle it, but they are all fairly convoluted.
+
+The following approach starts with plotting your treemap as normal with voronoiTreemap, but without the labels:
+
+```{r}
+library(voronoiTreemap)
+library(terra)
+library(tidyverse)
+
+```
+
+```{r}
+
+df <- data.frame(country = c("Ukraine", "Russia", "Argentina", 
+                             "China", "Romania", "Other"),
+                 prod = c(11.0, 10.6, 3.1, 2.4, 2.1, 15.3))
+
+vor <- data.frame(h1 = 'World', 
+                  h2 = c('Europe', 'Europe', 'Americas', 'Asia',
+                         'Europe', 'Other'),
+                  h3 = df$country,
+                  color = hcl.colors(nrow(df), palette = 'TealRose'),
+                  weight = df$prod,
+                  codes = "")
+
+vt <- vt_input_from_df(vor)
+
+v <- vt_d3(vt_export_json(vt))
+
+v
+```
+
+
+
+
+
