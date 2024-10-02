@@ -1,0 +1,418 @@
+---
+title: "Sieci i grafy"
+author: "Tomasz Olczyk"
+date: "10/2/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Biblioteki
+
+
+```{r}
+library(tidyverse)
+library(igraph) #biblioteka igraph jest popularną biblioteką do przetwarzania i wizualizacji danych sieciowych
+
+```
+
+## Dane
+
+Plik z relacjami małżeńskimi między rodzinami florenckimi z okresu średniowiecza/renesansu:
+
+```{r}
+
+florenckie <- read_csv("https://raw.githubusercontent.com/kosukeimai/qss/master/DISCOVERY/florentine.csv")
+
+
+```
+
+
+
+
+```{r}
+
+Florencja <- florenckie %>%
+  column_to_rownames(var = "FAMILY") %>% #zamienia kolumnę na nazwy wierszy
+  as.matrix() #zamienia w macierz
+
+## graph.adjacency zamienia w macierz adjacency
+
+```
+
+
+
+Wizualizacja z użyciem biblioteki igraph i bazowej funkcji plot 
+``` {r }
+
+
+#tworzy obiekt typu igraph na podsawie macierzy
+
+florenckie_graf <- graph.adjacency(Florencja, 
+                                   mode = "undirected",
+                                   diag = FALSE)
+
+
+plot(florenckie_graf) # rysuje graf
+
+```
+
+
+
+```{r, warning=FALSE}
+degree(florenckie_graf)
+```
+
+```{r, warning=FALSE}
+closeness(florenckie_graf)
+```
+
+
+```{r, warning=FALSE}
+1 / (closeness(florenckie_graf) * 15)
+```
+
+
+```{r}
+betweenness(florenckie_graf)
+```
+
+
+```{r echo = 2:4, eval = FALSE}
+par(cex = 1.25)
+#plot(florenckie_graf, vertex.size = closeness(florenckie_graf) * 1000,
+     main = "Closeness")
+plot(florenckie_graf, vertex.size = betweenness(florenckie_graf),
+     main = "Betweenness")
+```
+
+
+
+
+
+
+
+```{r include=FALSE, purl=FALSE}
+## setting the ggplot theme
+theme_set(theme_classic(base_size = 12))
+```
+
+## tidygraph
+
+Tidygraph jest biblioteką, która ułatwia manipulację obiektami typu graf.
+
+```{r}
+
+library(tidygraph)
+
+```
+
+```{r}
+?as_tbl_graph()
+```
+
+
+
+
+```{r}
+
+florence_tidy <- as_tbl_graph(florenckie_graf)
+  
+```
+
+
+```{r}
+?activate
+```
+
+
+```{r}
+florence_tidy %>%
+  activate(nodes) %>%
+  mutate(node_weights = centrality_pagerank()) #można dodać własość wierzchołków na przykład ich centralność według algorytmu pagerank
+
+```
+
+
+```{r}
+
+
+
+```
+
+
+## ggraph
+
+
+```{r} 
+
+library(ggraph)
+
+```
+
+
+Rysujemy graf używając biblioteki ggraph
+
+```{r}
+
+ggraph(florence_tidy) +
+  geom_edge_link() +
+  geom_node_point()
+  
+```
+
+
+
+Do  dajemy etykiety i wagi
+
+```{r}
+
+florence_tidy %>%
+  activate(nodes) %>%
+  mutate(node_weights = centrality_pagerank()) %>%
+ggraph() +
+  geom_edge_link() +
+  geom_node_point(aes(size = node_weights), alpha = 0.4) +
+  geom_node_text(aes(label = name))
+  
+
+```
+
+
+```{r}
+
+
+florence_tidy %>%
+  activate(nodes) %>%
+  mutate(node_weights = centrality_pagerank()) %>%
+ggraph() +
+  geom_edge_link() +
+  geom_node_point(aes(size = node_weights)) + # mapujemy centralność mierzoną pagerank na wielkość punktu wierzchołka
+  geom_node_text(aes(label = name, size = node_weights*4),  # mapujemy centralność mierzoną pagerank na rozmiar czcionki etykiety  wierzchołka
+                 hjust = 1.2,
+                 repel = TRUE)
+
+
+```
+
+
+
+```{r}
+florence_tidy %>%
+  activate(nodes) %>%
+  mutate(node_weights = centrality_pagerank()) %>%
+ggraph() +
+  geom_edge_link(alpha = 0.6) +
+  geom_node_point(aes(size = node_weights)) + 
+  geom_node_text(aes(label = name), 
+                 hjust = 1.2)
+
+```
+
+
+
+```{r}
+
+florence_tidy %>%
+  activate(nodes) %>%
+  mutate(node_weights = centrality_pagerank()) %>%
+ggraph(layout = "linear", circular = TRUE) +
+  geom_edge_link(alpha = 0.6) +
+  geom_node_point(aes(size = node_weights)) +
+  geom_node_text(aes(label = name), 
+                 hjust = 1.2) +
+  guides(size = "none")
+
+
+```
+
+
+```{r}
+
+florence_tidy %>%
+  activate(nodes) %>%
+  mutate(node_weights = centrality_pagerank()) %>%
+ggraph(layout = "fr") + # różne typy layoutó∑ sieci
+  geom_edge_link(alpha = 0.6) +
+  geom_node_point(aes(size = node_weights)) +
+  geom_node_text(aes(label = name), 
+                 hjust = 1.2) +
+  guides(size = "none")
+
+
+```
+
+#### Krawędzie
+
+
+lista krawędzi (edgelist):
+
+```{r}
+
+glimpse(highschool)
+head(highschool)
+
+```
+
+
+
+
+```{r}
+
+set_graph_style(plot_margin = margin(1,1,1,1))
+
+graph <- as_tbl_graph(highschool)
+
+
+ggraph(graph) + 
+  geom_edge_link(aes(colour = factor(year))) + 
+  geom_node_point()
+```
+
+
+
+
+
+### kwetie marginesów i wychodzenia poza marginesy
+
+
+
+```{r fig.asp=4}
+set_graph_style(plot_margin = margin(10,10,10,10))
+
+ florence_tidy %>%
+  activate(nodes) %>%
+  mutate(node_weights = centrality_pagerank()) %>%
+ggraph(layout = "fr") +
+  geom_edge_link(alpha = 0.6) +
+  geom_node_point(aes(size = node_weights)) +
+  geom_node_text(aes(label = name), 
+                 hjust = 1.2) +
+  guides(size = "none") 
+```
+
+
+# Dendrogramy w ggraph
+
+```{r}
+
+
+data(USArrests)
+
+dd <- dist(scale(USArrests), method = "euclidean")
+
+hc <- hclust(dd, method = "ward.D2")
+
+```
+
+
+
+```{r}
+
+hc_tidy <- as_tbl_graph(hc)
+
+
+```
+
+
+```{r}
+ggraph(hc_tidy, layout = "fr") +
+  geom_edge_link(alpha = 0.6) +
+  geom_node_point() +
+  guides(size = "none")
+```
+
+```{r}
+glimpse(hc_tidy)
+```
+
+
+```{r}
+
+ggraph(hc_tidy, layout = "fr") +
+  geom_edge_link(alpha = 0.6) +
+  geom_node_point() +
+  geom_node_text(aes(label = label), repel=TRUE)
+
+
+```
+
+
+
+```{r}
+
+ggraph(hc_tidy, layout = "dendrogram") +
+  geom_edge_link(alpha = 0.6) +
+  geom_node_point() +
+  geom_node_text(aes(label = label), repel=TRUE,
+                 hjust = 1) +
+  coord_flip() +
+ theme(plot.margin = unit(c(1,1,1,6), "lines"))
+```
+
+
+```{r}
+ggraph(hc_tidy, layout = "dendrogram") +
+  geom_edge_link(alpha = 0.6) +
+  geom_node_point() +
+  geom_node_text(aes(label = label), hjust = 1) +
+  coord_fixed(ratio = 4
+              
+              
+              )
+```
+
+
+
+```{r}
+
+ggraph(hc_tidy, layout = "dendrogram") +
+  geom_edge_link(alpha = 0.6) +
+  geom_node_point() 
+  
+
+
+```
+
+
+
+```{r}
+ggraph(hc_tidy, layout = "dendrogram", circular = TRUE) +
+geom_edge_diagonal() + 
+  geom_node_point(aes(filter = leaf)) + 
+  coord_fixed() 
+```
+
+
+```{r}
+
+ggraph(hc_tidy, layout = "dendrogram", circular = TRUE) +
+geom_edge_diagonal() + 
+  geom_node_point(aes(filter = leaf)) + 
+  geom_node_text(aes(label = label), repel=TRUE) +
+  coord_fixed() 
+
+```
+
+
+
+```{r}
+ggraph(hc_tidy, layout = 'circlepack') + 
+  geom_node_circle(aes(fill = depth), size = 0.25, n = 50) + 
+  coord_fixed()
+```
+
+
+```{r}
+ggraph(hc_tidy, layout = 'partition') + 
+  geom_node_tile(aes(y = -y, fill = depth)) 
+```
+
+
+
+```{r}
+ggraph(hc_tidy, layout = 'partition', circular = TRUE) +
+  geom_node_arc_bar(aes(fill = depth)) +
+  coord_fixed(
