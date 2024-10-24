@@ -1,5 +1,5 @@
 ---
-title: "Sieci i grafy"
+title: "Sieci i grafy 1 "
 author: "Tomasz Olczyk"
 date: "10/2/2024"
 output: html_document
@@ -18,6 +18,241 @@ library(igraph) #biblioteka igraph jest popularną biblioteką do przetwarzania 
 
 ```
 
+
+## Igraph
+
+```{r}
+g1 <- graph(edges=c(1,2, 2,3, 3, 1), n=3, directed=F )
+
+```
+
+```{r}
+?graph()
+
+```
+
+```{r}
+
+plot(g1)
+
+```
+
+
+
+```{r}
+g1 <- graph(edges=c(1,2, 2,3, 3, 1), n=3,
+            directed=T )
+plot(g1)
+
+```
+
+
+```{r}
+g3 <- graph( c("John", "Jim", "Jim", "Jill", "Jill", "John"))
+plot(g3)
+```
+
+```{r}
+write_graph(g3, "graf.dot", 
+            format = "dot")
+
+plot(g3)
+```
+
+```{r}
+?write_graph
+```
+
+
+```{r}
+g4 <- graph( c("John", "Jim", "Jim", "Jack", "Jim", "Jack", "John", "John"), isolates=c("Jesse", "Janis", "Jennifer", "Justin") )
+# można wyszczególnić izolowane
+plot(g4)
+```
+
+
+
+### dostęp do krawędzi obiektu
+
+
+```{r}
+E(g4)
+```
+
+
+
+
+### dostęp do wierzchoków obiektu
+
+```{r}
+V(g4)
+```
+
+### bezpośrenie manipulowanie matrycą
+
+```{r}
+g4[]
+```
+
+
+### dodawanie atrybutów do sieci, wierzchołków i krawędzi
+
+```{r}
+V(g4)$gender <- c("male", "male", "male", "male", "female", "female", "male")
+```
+
+
+
+##  pozwala dodać arybuty do wierzchołków sieci a potem np mapować na  nie np kolory ()
+
+```{r}
+edge_attr(g4)
+
+```
+
+```{r}
+vertex_attr(g4)
+
+```
+
+```{r}
+
+graph_attr(g4)
+```
+
+
+```{r}
+?set_graph_attr
+```
+
+```{r}
+g4 <- set_graph_attr(g4, "name", "Email Network")
+```
+
+```{r}
+
+graph_attr_names(g4)
+
+```
+
+```{r}
+plot(g4)
+```
+
+
+
+```{r}
+plot(g4, edge.arrow.size=.5, 
+     vertex.label.color="black", 
+     vertex.label.dist=1.5, 
+     vertex.color=c( "pink", "skyblue")[1+(V(g4)$gender=="male")] )
+```
+
+```{r}
+plot(g4, edge.arrow.size=.5, 
+     vertex.label.color="black", 
+     vertex.label.dist=1.5, 
+     vertex.color=c( "pink", "skyblue")[1+(V(g4)$gender=="male")] )
+```
+
+
+
+
+```{r}
+simplify?
+```
+
+```{r}
+g4s <- simplify(g4, 
+                 remove.multiple = T, 
+                 remove.loops = T, 
+                 edge.attr.comb=c(weight="sum", 
+                                  type="ignore") )
+plot(g4s)
+```
+
+```{r}
+nodes2 <- read.csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/refs/heads/main/sieci/Dataset2-Media-User-Example-NODES.csv", header=T, as.is=T) 
+
+links2 <- read.csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/refs/heads/main/sieci/Dataset2-Media-User-Example-EDGES.csv", header=T, row.names=1)
+
+```
+
+```{r}
+
+nodes <- read.csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/refs/heads/main/sieci/Dataset1-Media-Example-NODES.csv", header=T, as.is=T)
+
+links <- read.csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/refs/heads/main/sieci/Dataset1-Media-Example-EDGES.csv", header=T, as.is=T)
+
+
+```
+
+
+```{r}
+net <- graph_from_data_frame(d=links, 
+                             vertices=nodes, 
+                             directed=T) 
+
+```
+
+
+
+```{r}
+class(net)
+```
+
+```{r}
+# Get an edge list or a matrix:
+as_edgelist(net, names=T) 
+```
+
+```{r}
+as_adjacency_matrix(net, attr="weight") 
+```
+
+# Or data frames describing nodes and edges: 
+
+```{r}
+as_data_frame(net, what="edges") 
+
+```
+
+
+```{r}
+as_data_frame(net, what="vertices")
+```
+
+
+
+
+
+```{r}
+plot(net, edge.arrow.size=.4,
+     vertex.label=NA)
+```
+
+```{r}
+net <- simplify(net, 
+                remove.multiple = F, 
+                remove.loops = T)
+```
+
+
+```{r}
+net2 <- graph_from_incidence_matrix(links2)
+
+```
+
+```{r}
+plot(net2, edge.arrow.size=.4,vertex.label=NA)
+
+```
+
+
+
+
+
+
 ## Dane
 
 Plik z relacjami małżeńskimi między rodzinami florenckimi z okresu średniowiecza/renesansu:
@@ -25,6 +260,7 @@ Plik z relacjami małżeńskimi między rodzinami florenckimi z okresu średniow
 ```{r}
 
 florenckie <- read_csv("https://raw.githubusercontent.com/kosukeimai/qss/master/DISCOVERY/florentine.csv")
+
 
 
 ```
@@ -39,6 +275,7 @@ Florencja <- florenckie %>%
   as.matrix() #zamienia w macierz
 
 ## graph.adjacency zamienia w macierz adjacency
+
 
 ```
 
@@ -55,17 +292,33 @@ florenckie_graf <- graph.adjacency(Florencja,
                                    diag = FALSE)
 
 
-plot(florenckie_graf) # rysuje graf
+plot(florenckie_graf,
+     vertex.color = "skyblue",
+     vertex.label.font = 4) # rysuje graf
+
 
 ```
 
 
+Funkcja degree
+ 
+ 
+```{r}
+?degree
 
+
+```
+ 
+ 
+ 
 ```{r, warning=FALSE}
 degree(florenckie_graf)
+
 ```
 
+
 ```{r, warning=FALSE}
+
 closeness(florenckie_graf)
 ```
 
@@ -84,10 +337,16 @@ betweenness(florenckie_graf)
 par(cex = 1.25)
 #plot(florenckie_graf, vertex.size = closeness(florenckie_graf) * 1000,
      main = "Closeness")
-plot(florenckie_graf, vertex.size = betweenness(florenckie_graf),
-     main = "Betweenness")
+plot(florenckie_graf, 
+vertex.shape = "none",
+vertex.label.cex= degree(florenckie_graf)/4,
+     main = "Degree")
+
 ```
 
+```{r}
+?plot
+```
 
 
 
