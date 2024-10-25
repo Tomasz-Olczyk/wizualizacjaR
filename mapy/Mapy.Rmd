@@ -438,11 +438,7 @@ library(geojsonio)
 
 Wczytać bibliotekę
 
-```{r}
-library(geojsonio)
-
-```
-
+`
 
 Następnie można zaimportować dane bezpośrednio do formatu simple feature:
 
@@ -461,6 +457,18 @@ powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualiza
 
 ```{r}
 powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_2.json")
+```
+
+
+
+```{r}
+województwa <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_1.json")
+```
+
+
+
+```{r}
+pkw_woj <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/pkw_woj.csv")
 ```
 
 Rysujemy powiaty:
@@ -529,13 +537,47 @@ województwa_s <- województwa %>%
 ```
 
 ```{r}
-
-wybory_g <- left_join(województwa_s, pkw_woj)
+class(województwa)
 ```
 
 
 
 
+```{r}
+województwa_s <- województwa %>%
+  select(NAME_1, geometry) %>%
+  mutate(wojewodztwo = tolower(NAME_1))
+
+
+```
+
+
+```{r}
+wybory_1<- left_join(pkw_woj, województwa_s)
+```
+
+```{r}
+
+wybory_2 <- left_join(województwa_s, pkw_woj)
+```
+
+
+
+```{r}
+wybory_long <- wybory_2 %>%
+  pivot_longer(cols = c("frekwencja",  "PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "wyniki")
+```
+
+
+
+```{r}
+ggplot(wybory_long) +
+  geom_sf(aes(fill = value, geometry = geometry)) +
+  coord_sf()  +
+  theme_void() +
+ scale_fill_gradient(low = "grey90", high = "red3") +
+ facet_wrap(~wyniki)
+```
 
 
 ## Wykres-mapa z przeskalowanych danych
@@ -545,64 +587,30 @@ wybory_23_woj_s <- pkw_woj %>% mutate_at(c(2,3,4,5,6,7), scale)
 ```
 
 
-```{r}
-wybory_23_woj_2s <- pkw_woj %>% mutate_at((2:7), scale)
-```
-
-
-```{r}
-wybory_g1 <- left_join(pkw_woj,  wybory_23_woj_2s)
-```
-
-
-```{r}
-wybory2 <- left_join(województwa_s, wybory_23_woj_2s,
-                  by = "wojewodztwo")
-```
-
-
-
-```{r}
-ggplot(wybory_g) +
-  geom_sf(aes(fill = frekwencja)) +
-  coord_sf()
-```
-
-
 
 
 ```{r}
 
-wybory_long <- wybory_g %>%
-  select(-frekwencja) %>%
-  pivot_longer(cols = c("PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "partie", values_to = "wyniki") 
-
-
-```
-
-
-```{r}
-
-wybory_long2 <- wybory2 %>%
+wybory_long2 <- wybory_23_woj_s %>%
   pivot_longer(cols = c("frekwencja",  "PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "partie")
 
 ```
 
+
 ```{r}
-
-ggplot(wybory_long2) + 
-  geom_sf(aes(fill = value)) + 
-  theme_void() +
-  coord_sf()+
- scale_fill_gradient(low = "white", high = "red3") +
- facet_wrap(~partie)
-
+wybory_ls <- full_join(województwa_s, wybory_long2, 
+                  by = "wojewodztwo")
 ```
 
 
-
-
-
+```{r}
+ggplot(wybory_ls) + 
+  geom_sf(aes(fill = value, geometry = geometry)) + 
+  coord_sf()  +
+  theme_void() +
+ scale_fill_gradient(low = "grey90", high = "red") +
+ facet_wrap(~partie)
+```
 
 
 ## Wykres-mapa z nieprzeskalowanych danych
@@ -672,7 +680,7 @@ geom_point(data = Polska, aes(x= LON, y = LAT, colour = gender, size = AverageVi
 
 
 ```{r}
-kor <- wybory_23_woj_2s %>%
+kor <- wybory_23_woj_s %>%
   select(2:7) 
 ```
 
@@ -704,6 +712,23 @@ col <- colorRampPalette(c("blue", "white", "red"))(20)
 heatmap(x = corr, col = col, symm = TRUE)
 
 
+```{r}
+
+kor <- wybory_23_woj_s %>%
+  select(2:7) 
+
+```
+
+```{r}
+korr <- round(cor(kor), 5)
+```
+
+```{r}
+korrr <- t(korr)
+```
+
+
+
 
 ```{r}
 
@@ -715,10 +740,14 @@ heatmap(x = as.matrix(korr), symm = FALSE)
 ```
 
 
+```{r}
+heatmap(korr, symm = TRUE)
+```
+
 
 ```{r}
 
-library(ggdendro) #wymaga ggplot
+#library(ggdendro) #wymaga ggplot
 
 ```
 
@@ -727,7 +756,11 @@ library(ggdendro) #wymaga ggplot
 
 ```{r}
 
-klastry <- hclust(dist(korrr))
+klastry <- hclust(dist(korr))
+
+```
+
+```{r}
 
 ```
 

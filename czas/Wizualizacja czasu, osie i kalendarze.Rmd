@@ -15,7 +15,7 @@ Poniższy kod działa tylko na mac os i ma sens jedynie gdy mamy niepolskie usta
 
 ```{r include=FALSE}
 
-#Sys.setlocale("LC_TIME","pl_PL.UTF-8")
+Sys.setlocale("LC_TIME","pl_PL.UTF-8")
 
 ```
 
@@ -48,6 +48,11 @@ fantasy <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 
 
 ```{r}
+fantasy <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/fantasy.csv")
+```
+
+
+```{r}
 
 head(fantasy)
 
@@ -57,6 +62,55 @@ head(fantasy)
 
 Poniższy wykres jest połączeniem wykresu [lizakowego](https://r-graph-gallery.com/lollipop-plot.html)
 (lollypop chart) z osią czasu. Lizaki - słupki a właściwie odcinki zakończone punktem - oznaczać będą daty kolejnych książek
+
+
+```{r}
+fantasy %>% filter(author == "Martin") %>% 
+  # dodaje zmienną disloc, której użyję do mapowania wysokości lizaków
+  mutate(disloc = c(0.5, 1, -0.5, -1, 2, 1.5, 0.5)) %>%
+ggplot() +
+    geom_segment(aes(x = 1990,
+                     y = 0, 
+                     xend = 2020,
+                     yend = 0),
+                 arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'open'))  +
+   geom_segment(aes(x = rok,
+                     y = words,
+                     xend = rok),
+                 yend = 0) +
+  geom_point(aes(x = rok,
+                   y = words)) +
+  geom_text(aes(x = rok,
+                  y = words,
+                  label = title),
+              hjust = 1.0,vjust = 1.0,
+              size  = 4) +
+  scale_x_continuous(breaks = c(1996, 1999, 2000, 2005, 2011)) +
+  theme_minimal() +
+    theme(axis.title.x = element_blank(), #usuwa tytuł
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          text = element_text(size = 10))
+```
+
+
+
+
+```{r}
+fantasy %>% filter(author == "Martin") %>% 
+  # dodaje zmienną disloc, której użyję do mapowania wysokości lizaków
+  mutate(disloc = c(0.5, 1, -0.5, -1, 2, 1.5, 0.5)) %>%
+ggplot() +
+    geom_segment(aes(x = 1990,
+                     y = 0, 
+                     xend = 2020,
+                     yend = 0),
+                 arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'closed')) +
+  geom_segment(aes(x = rok, 
+                     y = disloc, 
+                     xend = rok), 
+                 yend = 0) 
+```
 
 
 ```{r}
@@ -92,7 +146,40 @@ ggplot() +
 ```
 
 
+```{r}
+
+fantasy %>% filter(author == "Martin") %>% 
+  # wysokość lizaków = liczba słow
+ggplot() +
+    geom_segment(aes(x = rok, 
+                     y = words, 
+                     xend = rok), 
+                 yend = 0) + 
+  #rysuję oś czasu
+    geom_segment(aes(x = 1990,
+                     y = 0, 
+                     xend = 2020,
+                     yend = 0),
+                 arrow = arrow(length = unit(x = 0.2,units = 'cm'),type = 'closed')) +
+    geom_text(aes(x = rok,
+                  y = words,
+                  label = title), 
+              hjust = 1.0,vjust = 1.0,
+              size  = 4) +
+    geom_point(aes(x = rok,
+                   y = words)) +
+  # kontroluję etykiety na skali ręcznie wybierając tylko lata publikacji książek
+    scale_x_continuous(breaks = c(1996, 1999, 2000, 2005, 2011)) +
+    theme_minimal() +
+    theme(axis.title.x = element_blank(), #usuwa tytuł
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          text = element_text(size = 10))
+```
+
 Etykiety na skali można także wybrać na podstawie danych:
+
+
 
 
 ```{r}
@@ -172,6 +259,36 @@ ggplot() +
 ```
 
 
+
+```{r, fig.width = 20, fig.height= 5}
+
+fantasy %>% 
+ggplot() +
+    geom_segment(aes(x = rok, y = words,xend = rok, color = author),yend = 0) + # data = data trzeba ustawić globalnie
+    geom_segment(aes(x = 1990,
+                     y = 0,
+                     xend = 2020,
+                     yend = 0), 
+                 arrow = arrow(length = unit(x = 0.2,
+                                             units = 'cm'),
+                               type = 'closed')) +
+    geom_text(aes(x = rok,y = words,
+                  label = title),
+              hjust = 1.0,
+              vjust = 1.0,
+              size  = 4) +
+    geom_point(aes(x = rok,
+                   y = words,
+                   color = author)) +
+    theme_minimal() +
+    theme(axis.title.x = element_blank(), # element_blank() usuwa dany element motywu
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          text = element_text(size = 10))
+```
+
+
+
 Wykres panelowy.
 
 
@@ -202,6 +319,7 @@ fantasy %>%
 Prosty przykład ramki danych z datami w formie znakowej.
 
 ```{r}
+
 timeline_data <- data.frame(event = c("Event 1", "Event 2"),
                             start = c("2020-06-06", "2020-10-01"), 
                             end   = c("2020-10-01", "2020-12-31"),
@@ -256,9 +374,18 @@ timeline_data %>%
   geom_segment(aes(y = event, 
                    xend = end, 
                    x= start, 
-                   yend = event)) +
+                   yend = event,
+                   color= event), linewidth = 15) +
   theme_bw()
 ```
+
+
+```{r}
+time <- timeline_data %>%
+  mutate(start = as.Date(start),
+         end = as.Date(end))
+```
+
 
 
 Gantt w jednej linii
@@ -297,6 +424,10 @@ premierzyIIIRP <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizu
 ```
 
 
+```{r}
+premierzyIIIRP <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/premierzyIIIRP.csv")
+```
+
 
 ```{r}
 View(premierzyIIIRP)
@@ -305,6 +436,8 @@ View(premierzyIIIRP)
 Jak widać w ostatniej komórce brakuje daty.
 
 Dla uniknięcia problemów z rysowaniem linii można uzupełnić końcową komórkę w zmiennej end datą systemową funkcją Sys.Date, wewnątrz funkcji ymd z biblioteki lubridate. Komórka znajduje się w 7 kolumnie, w 22 wierszu więc robimy to tak:
+
+
 
 
 ```{r}
@@ -323,7 +456,8 @@ ggplot(premierzyIIIRP) +
                    xend = end, 
                    x= start,
                    yend = stronnictwo, 
-                   colour = stronnictwo)) +
+                   colour = stronnictwo),
+               linewidth = 10) +
   scale_x_date() +
   theme_bw()
 
@@ -341,12 +475,26 @@ ggplot(premierzyIIIRP) +
                    xend = end, 
                    x= start,
                    yend = stronnictwo, 
-                   colour = stronnictwo)) +
+                   colour = stronnictwo,
+                   text = paste("",nazwisko,
+                  "<br>",stronnictwo,
+                  "<br>objęcie urzędu:",start,
+                  "<br>złożenie urzędu:",end),
+                  linewidth = 15)) +
   scale_x_date() +
-  theme_bw()
+  theme_bw() -> wykres
 
 ```
 
+
+```{r}
+library(plotly)
+```
+
+```{r}
+ggplotly(wykres, tooltip = "text")
+```
+plotly::ggplotly(z, tooltip = "text")
 
 Ustalmy etykiety na osi y na zakończenia kadencji (premierzyIIIRP$end).
 
@@ -358,7 +506,7 @@ ggplot(premierzyIIIRP) +
                    x= start,
                    yend = stronnictwo, 
                    colour = stronnictwo)) +
-  scale_x_date(breaks = (premierzyIIIRP$end), # ustawiamy daty na osi x na koniec danego rządu
+scale_x_date(breaks = (premierzyIIIRP$end), # ustawiamy daty na osi x na koniec danego rządu
                date_labels = "%Y") + #date_labels ustawione na rok
   theme_bw() +
   guides(colour = "none") # wyłączamy legendę
@@ -639,7 +787,7 @@ oryx %>%
 ```
 
 ```{r}
-(x1 <- df1 %>% 
+x1 <- df1 %>% 
   ggplot(aes(x = wday, y = week, text = paste('straty: ', change_3))) + 
   geom_tile(aes(fill = change_3), color = "black", size = .5) +
   geom_text(aes(label = day)) + 
@@ -659,12 +807,15 @@ oryx %>%
         panel.grid.minor = element_blank(), 
         axis.text.y = element_blank(), 
         axis.ticks.y = element_blank(),
-        axis.ticks.x = element_blank())) +
+        axis.ticks.x = element_blank()) +
     guides(color = "none") 
 
 ```
 
 
+```{r}
+x1
+```
 
 Epiweek - tydzień zaczyna się od niedzieli:
 
@@ -713,7 +864,7 @@ levels(df2$wday)
 
 ```{r}
 
-(x <- df2 %>% 
+x <- df2 %>% 
   ggplot(aes(x = wday, y = week, text = paste('straty: ', change_3))) + 
   geom_tile(aes(fill = change_3), color = "black", size = .5) +
   geom_text(aes(label = day)) + 
@@ -733,9 +884,14 @@ levels(df2$wday)
         panel.grid.minor = element_blank(), 
         axis.text.y = element_blank(), 
         axis.ticks.y = element_blank(),
-        axis.ticks.x = element_blank())) +
-    guides(color = "none") 
+        axis.ticks.x = element_blank()) +
+    guides(color = "none")
 
+```
+
+
+```{r}
+x
 ```
 
 ```{r}
@@ -888,10 +1044,20 @@ Dane dotyczące ataków powietrznych na Ukrainę z [Kaggle](https://www.kaggle.c
 
 ataki_rakietowe <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/missile_attacks_daily.csv")
 
+```
 
+```{r}
 #zbiór missiles_and_uav 
 środki <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/missiles_and_uav.csv")
 
+```
+
+
+
+```{r}
+ataki_rakietowe <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/missile_attacks_daily.csv")
+
+środki <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/missiles_and_uav.csv")
 ```
 
 
@@ -951,6 +1117,7 @@ ataki_cat <- ataki_środki %>%
 
 
 ```{r}
+
 manewrujące <- ataki_cat %>%
   filter(category == "cruise missile") %>%
   select(date, wystrzelone)
@@ -989,7 +1156,7 @@ manewrujące %>%
                       na.value = "gray88") + # wygląda na to że w 2024 nie ma na value
   #poniższa funkcja sprawia że rysują się kwadraty a nie prostokąty
   coord_equal() + 
-  scale_x_continuous(breaks = seq(from =1.5, to = 52, by = 4.333), labels = miesiące$Var1,
+  scale_x_continuous(breaks = seq(from =1.5, to = 52, by = 4.333), labels = c("sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"), 
                      position = "bottom") +
   theme_minimal() +
   facet_wrap(~year, ncol = 1) +
@@ -1102,9 +1269,313 @@ b <- ggplot(bdf, aes(y = fct_rev(wday),
 ```
 
 
+```{r}
+b
+```
 
 
 ```{r}
 ggplotly(b)
 ```
 
+
+### Kalendarz z danych o rakietach
+
+```{r}
+bdf %>% 
+  ggplot(aes(x = wday, y = week)) + 
+  geom_tile(aes(fill = wystrzelone), color = "black", size = .5) +
+  geom_text(aes(label = day)) + 
+  labs(title = "Rakiety balistyczne wystrzelone przez Rosję", 
+       x = "", 
+       y = "") + 
+  scale_fill_continuous(low = "grey90", 
+                       high = "black", 
+                     name = "straty dzienne", 
+                     na.value = 'white') +
+  scale_x_discrete(position = "top") +
+  scale_y_continuous(trans = "reverse") + 
+  scale_color_manual(values = c("black", "grey")) + 
+  facet_grid(year~month) +
+     theme_grey() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank()) +
+    guides(color = "none") 
+```
+
+
+```{r}
+levels(bdf$wday)
+```
+
+
+
+```{r}
+
+
+balistyczne %>%
+   complete(date = seq.Date(as.Date("2022-09-28"), as.Date("2024-03-30"), by="day")) %>% 
+  mutate(year = year(date),
+         month = month(date, label = TRUE),
+         months = month(date, label = FALSE),
+         wday = wday(date, label = TRUE),
+         day = day(date), 
+         week = lubridate::isoweek(date))  -> bdf_iso
+
+
+```
+
+
+```{r}
+
+bdf %>% 
+  filter(year == 2023) %>%
+  ggplot(aes(x = wday, y = week)) + 
+  geom_tile(aes(fill = wystrzelone), color = "black", size = .5) +
+  geom_text(aes(label = day)) + 
+  labs(title = "Rakiety balistyczne wystrzelone przez Rosję", 
+       x = "", 
+       y = "") + 
+  scale_fill_continuous(low = "grey90", 
+                       high = "black", 
+                     name = "straty dzienne", 
+                     na.value = 'white') +
+  scale_x_discrete(position = "top") +
+  scale_y_continuous(trans = "reverse") + 
+  scale_color_manual(values = c("black", "grey")) + 
+  facet_wrap(~month, scales="free_y") +
+     theme_grey() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank()) +
+    guides(color = "none") 
+```
+
+
+```{r}
+
+bdf_iso$wday <- factor(bdf_iso$wday, levels = c("pon", "wto", "śro", "czw", "ptk", "sob", "ndz"))
+```
+
+
+
+```{r}
+bdf_iso$week[bdf_iso$month=="sty" & bdf_iso$week ==52] = 0
+```
+
+```{r}
+
+
+bdf_iso %>% 
+  filter(year == 2023) %>%
+  ggplot(aes(x = wday, y = week)) + 
+  geom_tile(aes(fill = wystrzelone), color = "black", size = .5) +
+  geom_text(aes(label = day)) + 
+  labs(title = "Rakiety balistyczne wystrzelone przez Rosję", 
+       x = "", 
+       y = "") + 
+  scale_fill_continuous(low = "grey90", 
+                       high = "black", 
+                     name = "straty dzienne", 
+                     na.value = 'white') +
+  scale_x_discrete(position = "top") +
+  scale_y_continuous(trans = "reverse") + 
+  scale_color_manual(values = c("black", "grey")) + 
+  facet_wrap(~month, scales="free_y") +
+     theme_grey() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank()) 
+```
+
+
+
+```{r}
+test <- bdf_iso %>% 
+  filter(year == 2023,
+         months == 1)
+```
+
+
+```{r}
+test3 <- bdf %>% 
+  filter(year == 2023,
+         months == 12)
+```
+
+
+```{r}
+
+test4 <- df2 %>% 
+  filter(year == 2023,
+         months == 1)
+```
+
+
+
+```{r}
+
+epiweek(ymd("2022-01-01"))
+
+
+```
+
+
+
+```{r}
+#install.packages("calendR")
+```
+
+
+```{r}
+library(calendR)
+
+# Data
+set.seed(2)
+data <- rnorm(365)
+```
+
+
+
+```{r}
+dat <- bdf %>% 
+  filter(year == 2023) %>%
+  select(wystrzelone) 
+```
+
+
+
+```{r}
+dat[is.na(dat)] <- 0
+```
+
+```{r}
+
+# Calendar
+calendR(year = 2023,
+        special.days = dat$wystrzelone,
+        gradient = TRUE,
+        low.col = "#FCFFDD",
+        special.col = "#00AAAE",
+        legend.pos = "right",
+        legend.title = "Title")
+```
+
+
+
+```{r}
+
+```
+
+
+```{r}
+stock.data <- transform(bdf,
+  tydz = as.POSIXlt(date)$yday %/% 7 + 1,
+  dz = as.POSIXlt(date)$wday,
+  yrok = as.POSIXlt(date)$year)
+```
+
+
+
+library(ggplot2)
+
+```{r}
+ggplot(stock.data, aes(tydz, dz, fill = wystrzelone)) + 
+geom_tile(colour = "white") + 
+scale_fill_gradientn(colours = c("#D61818","#FFAE63","#FFFFBD","#B5E384")) + 
+ facet_wrap(~ year, ncol = 1) +
+  coord_equal()
+```
+
+
+```{r}
+stock.data %>% 
+  ggplot(aes(x = dz, y = tydz)) + 
+  geom_tile(aes(fill = wystrzelone), color = "black", size = .5) +
+  geom_text(aes(label = dz)) + 
+  labs(title = "Rakiety balistyczne wystrzelone przez Rosję", 
+       x = "", 
+       y = "") + 
+  scale_fill_continuous(low = "grey90", 
+                       high = "black", 
+                     name = "straty dzienne", 
+                     na.value = 'white') +
+  scale_x_discrete(position = "top") +
+  scale_y_continuous(trans = "reverse") + 
+  scale_color_manual(values = c("black", "grey")) + 
+  facet_grid(year~month, scales="free_y") +
+     theme_grey() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank()) 
+```
+
+
+
+  
+  qplot(week, Adj.Close, data = stock.data, colour = factor(wday), geom = "line") + 
+  facet_wrap(~ year, ncol = 1)
+  
+  
+```{r}
+df  <-  tibble(
+  DateCol = seq(
+    dmy("01/01/2022"),
+    dmy("31/12/2022"),
+    "days"
+  ),
+  ValueCol = runif(365)
+)
+```
+  
+  
+```{r}
+dfPlot <- df %>% 
+  mutate(weekday = wday(DateCol, label = T, week_start = 7), # can put week_start = 1 to start week on Monday
+         month = month(DateCol, label = T),
+         date = yday(DateCol),
+         week = epiweek(DateCol))
+
+# isoweek makes the last week of the year as week 1, so need to change that to week 53 for the plot
+dfPlot$week[dfPlot$month=="sty" & dfPlot$week ==52] = 0 
+
+dfPlot <- dfPlot %>% 
+  group_by(month) %>% 
+  mutate(monthweek = 1 + week - min(week))
+```
+
+
+
+```{r}
+dfPlot %>%  
+  ggplot(aes(weekday,-week, fill = ValueCol)) +
+  geom_tile(colour = "white")  + 
+  theme(aspect.ratio = 1/5,
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        panel.grid = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold", size = 15),
+        panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  facet_wrap(~month, nrow = 4, ncol = 3, scales = "free") 
+```
+
+  
+  
+```{r}
+sty <- dfPlot %>% filter(month == "sty")
+```
+  
+  
