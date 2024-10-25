@@ -1,0 +1,56 @@
+---
+title: "mapy 2"
+author: "Tomasz Olczyk"
+date: "4/25/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+województwa <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_1.json")
+```
+
+```{r}
+pkw_woj <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/pkw_woj.csv")
+```
+
+
+```{r}
+województwa_s <- województwa %>%
+  select(NAME_1, geometry) %>%
+  mutate(wojewodztwo = tolower(NAME_1))
+
+wybory_1 <- left_join(pkw_woj, województwa_s)
+```
+
+```{r}
+wybory_2 <- left_join(województwa_s, pkw_woj)
+
+class(wybory_2)
+```
+
+
+```{r}
+wybory_long <- wybory_2 %>%
+  pivot_longer(cols = c("frekwencja", "PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "partie", values_to = "wynik")
+```
+
+
+```{r}
+ggplot(wybory_long) +
+  geom_sf(aes(fill = wynik, geometry = geometry)) +
+  coord_sf()  +
+  theme_void() +
+ scale_fill_gradient(low = "white", high = "red3") +
+ facet_wrap(~partie)
+```
+
+
+
+```{r}
+fantasy <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/fantasy.csv")
+```
+
