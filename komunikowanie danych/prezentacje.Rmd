@@ -1,0 +1,66 @@
+---
+title: "prezentacja"
+output: 
+  slidy_presentation:
+    incremental: yes
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(plotly)
+library(gapminder)
+```
+
+## funkcja ggplotly =  transformacja ggplot w wykres interakwyny
+
+```{r}
+w <- ggplot(mpg, aes(displ,
+                     hwy)) + 
+  geom_point()
+```
+
+## standardowy wykres
+```{r}
+w
+```
+
+
+## wykres interaktywny plotly
+```{r}
+
+ggplotly(w)
+
+```
+
+## wykres interaktywny plotly z danymi gapmminder
+
+```{r}
+wykres <- 
+  ggplot(gapminder, 
+         aes(y = lifeExp, 
+             x = gdpPercap)) +
+  geom_point()
+
+```
+
+``` {r}
+
+x <- ggplotly(wykres)
+x
+```
+
+## kontrolowanie wyświetlanego tekstu
+
+```{r}
+y <- ggplotly(wykres)
+
+style(y, 
+      text = gapminder$country)
+
+```
