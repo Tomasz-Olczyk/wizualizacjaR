@@ -9,7 +9,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
+library(ggthemes)
 ```
+
 
 # legendy, guide i skale
 
@@ -687,7 +689,9 @@ scale_fill_viridis(discrete = TRUE)
 Użyjemy danych ze zbioru ToothGrowth
 
 ```{r}
+
 glimpse(ToothGrowth)
+
 ```
 
 

@@ -29,7 +29,7 @@ panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 ```
 
 
-# Wybór kolumn(zmiennych) - select
+## Wybór kolumn(zmiennych) - select
 
 
 Select wyodorębnia przydatny podzbiór danych, korzystając z operacji opartych na nazwach zmiennych inaczej  mówiąc selekcjonuje kolumny
@@ -57,20 +57,28 @@ kolumny <- panteon %>%
 ```
 
 
+
 ```{r}
 kolumny2 <- select(panteon, gender, name)
 ```
 
 
-## Inne przydatne funkcje selekcjonujące dla kolumn
+### Inne przydatne funkcje selekcjonujące dla kolumn
 
 
-??starts_with() #zaczyna się od ciągu znaków
+starts_with() #zaczyna się od ciągu znaków
 ends_with() # kończy się na ciągu znaków
 contains() ##zawiera
 matches() ##zawiera
 
-## minus stawiamy przed zmienną która ma zostać usunięta z ramki danych 
+
+
+minus stawiamy przed zmienną która ma zostać usunięta z ramki danych 
+
+
+```{r}
+glimpse(mtcars)
+```
 
 ```{r}
 mtcars_bez_kolumn_zaczynających_się_od_d <-select(mtcars, -starts_with("d"))
@@ -95,7 +103,7 @@ names(mtcars_bez_kolumn_zaczynających_się_od_d) #funkcja names() zwraca nazwy 
 
 ```
 
-## funkcje pomocnicze funkcji select
+### funkcje pomocnicze funkcji select
 
 
 starts_with("abc") # wybiera nazwy rozpoczynające się od „abc”
@@ -120,7 +128,7 @@ num_range("x", 1:3) #  pasuje do x1, x2 i x3
 
 
 
-## rename
+### Zmiana nazw kolumn: rename
 
 selekcjonując kolumny możemy od razu zmienić ich nazwy
 
@@ -147,7 +155,7 @@ panteon <- panteon %>%
   rename(płeć = gender)
 ```
 
-## Filter - podzbiory obserwacji
+##  Podzbiory obserwacji: funkcja filter()
 
 Funkcja filter  umożliwia tworzenie podzbioru obserwacji na podstawie ich wartości
 
@@ -208,14 +216,43 @@ kobiety_pow_śr <- filter(panteon, płeć == "Female", AverageViews > mean(Avera
 ```
 
 
-### zadanie stwórzmy ramkę danych kobiet z Polski ze zbioru Panteon - użyjmy zmiennej countryCode3
+### użycie operatora %in%
+
+
+x  %in% y - zostanie wybrany każdy wiersz, w którym x jest jedną z wartości w y
+ 
+```{r}
+
+urodzeni_w_roku_wojny <- filter(panteon, birthyear %in% c(1914, 1918, 1939, 1945))
+
+```
+
+### Zadanie stwórzmy ramkę danych kobiet z Polski ze zbioru Panteon - użyjmy zmiennej countryCode3
+
+
+### funkcja between jako część filtrowania 
+
+
+```{r}
+
+?between() # dla wektora liczb
+
+```
 
 
 
-## filtrowanie wierszy na podstawie ciągów znaków
+```{r}
+
+boomerzy <-   filter(panteon, between(birthyear, 1945, 1960))
+
+```
 
 
-## jak wyszukać te postacie z gwiezdnych wojen, które mają częściowo zieloną skórę?
+
+### filtrowanie wierszy na podstawie ciągów znaków
+
+
+#### jak wyszukać te postacie z gwiezdnych wojen, które mają częściowo zieloną skórę?
 
 
 ```{r}
@@ -282,17 +319,11 @@ Green_and_stringr <-  filter(starwars,
 ```
 
 
-## zadanie Marie
-
-
-
-
+#### zadanie Marie
 
 ```{r}
 marie <- filter(panteon, str_detect(name, "Mari"))
 ```
-
-
 
 
 ```{r}
@@ -301,13 +332,7 @@ marie_kob <- filter(panteon,
 ```
 
 
-
-
-
-
-
-
-# funkcja group_by i funkcja count
+## Grupowanie obserwacji i podsumowania, funkcje group_by i summarise
 
 
 ```{r}
@@ -319,25 +344,85 @@ kraje_marie <- marie %>%
 ```
 
 
-  
+## Podsumowanie - summarise() summarize() - podsumowania 
+
+funkcja zwija ramkę danych do jednego wiersza
 
 
-## użycie operatora %in%
+### group_by
+
+summarize najczęściej w towarzystwie group_by, która pozwala porównywać grupy inaczej mówiąc tworzyć zgrupowane podsumowania
+
+Np. gdybyśmy chcieli zsumować sławy  ze zbioru panteon 1.0 według kontynentów
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+```
 
 
-x  %in% y - zostanie wybrany każdy wiersz, w którym x jest jedną z wartości w y
- 
 ```{r}
 
-urodzeni_w_roku_wojny <- filter(panteon, birthyear %in% c(1914, 1918, 1939, 1945))
+panteon %>% 
+  group_by(continentName) %>%
+  summarise(sławni = n()) 
 
 ```
- 
+
+Możemy grupować na wielu zmiennych 
+
 ```{r}
-ron <- c("POL", )
-```
- 
 
+panteon %>% 
+  group_by(continentName, gender) %>%
+  summarise(sławni = n()) 
+
+```
+
+
+
+
+
+```{r}
+panteon %>% 
+  group_by(continentName, gender) %>%
+  summarise(sławni = n()) %>%
+  ggplot() +
+  geom_col(aes(x = gender, 
+               y = sławni,
+               fill = gender)) +
+  facet_wrap(~continentName)
+```
+
+Summarie może dotyczyć wielu typów podsumowań np. średnich
+
+```{r}
+panteon %>%
+  group_by(continentName, płeć) %>%
+  summarise(średnie_wyś = mean(AverageViews)) %>%
+  ggplot() +
+  geom_col(aes(x =płeć, 
+               średnie_wyś,
+               fill = płeć)) +
+  facet_wrap(~continentName)
+```
+
+
+
+```{r}
+
+ggplot(panteon) +
+  geom_boxplot(aes(x = gender, y = AverageViews, fill = gender)) +
+  scale_y_log10() +
+  facet_wrap(~continentName)
+
+```
+
+
+ 
 
 ## Wartości brakujące
 
@@ -360,7 +445,7 @@ is.na(starwars)
 
 
 
-## Odfiltrowywaanie wartości brakujących
+### Odfiltrowywaanie wartości brakujących
 
 
 
@@ -426,23 +511,6 @@ GW_na.omit <- na.omit(starwars)
 ```
 
 
-## funkcja between jako część filtrowania 
-
-
-```{r}
-
-?between() # dla wektora liczb
-
-```
-
-
-
-```{r}
-
-boomerzy <-   filter(panteon, between(birthyear, 1945, 1960))
-
-```
-
 
 
 
@@ -477,7 +545,7 @@ wg_wzrostu <-  arrange(starwars, height)
 
 
 
-## potoki
+## Operator %>% i potoki
 
 
 ```{r}
@@ -515,97 +583,10 @@ panteon %>%
 ```
 
 
-## Podsumowanie - summarise() summarize() - podsumowania 
-
-funkcja zwija ramkę danych do jednego wiersza
-
-
-## group_by
-
-summarize najczęściej w towarzystwie group_by, która pozwala porównywać grupy inaczej mówiąc tworzyć zgrupowane podsumowania
-
-Np. gdybyśmy chcieli zsumować sławy  ze zbioru panteon 1.0 według kontynentów
-
-```{r}
-library(tidyverse)
-```
-
-```{r}
-panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
-```
-
-
-```{r}
-
-panteon %>% 
-  group_by(continentName) %>%
-  summarise(sławni = n()) 
-
-```
-
-Możemy grupować na wielu zmiennych 
-
-```{r}
-
-panteon %>% 
-  group_by(continentName, gender) %>%
-  summarise(sławni = n()) 
-
-```
 
 
 
-
-
-```{r}
-panteon %>% 
-  group_by(continentName, gender) %>%
-  summarise(sławni = n()) %>%
-  ggplot() +
-  geom_col(aes(x = gender, 
-               y = sławni,
-               fill = gender)) +
-  facet_wrap(~continentName)
-```
-
-Summarie może dotyczyć wielu typów podsumowań np. średnich
-
-```{r}
-panteon %>%
-  group_by(continentName, płeć) %>%
-  summarise(średnie_wyś = mean(AverageViews)) %>%
-  ggplot() +
-  geom_col(aes(x =płeć, 
-               średnie_wyś,
-               fill = płeć)) +
-  facet_wrap(~continentName)
-```
-
-
-```{r}
-%>%
-  ggplot() +
-  geom_col(aes(x = domain, 
-               y = średnie)) +
-  coord_flip() +
-  facet_wrap(~continentName)
-
-```
-
-
-```{r}
-
-ggplot(panteon) +
-  geom_boxplot(aes(x = gender, y = AverageViews, fill = gender)) +
-  scale_y_log10() +
-  facet_wrap(~continentName)
-
-```
-
-
-
-
-## mutate() - nowe zmienne
+### Tworzenie nowych zmiennych (kolumn): mutate() 
 
 dodawanie nowych kolumn, powstałych w wyniku wykonania funkcji na już istniejących kolumnach
 
@@ -863,6 +844,7 @@ union() # Zwraca unikatowe obserwacje z x i y.
 
 
 setdiff(x, y) # Zwraca obserwacje znajdujące się w x, ale nie w y.
+
 
 
 

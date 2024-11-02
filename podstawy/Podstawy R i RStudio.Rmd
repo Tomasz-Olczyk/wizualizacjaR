@@ -26,7 +26,10 @@ Konsola
 Pakiet R jest kolekcją funkcji, danych i dokumentacji, która rozszerza
 możliwości bazowego R
 
-Poniższy segment jest nazywany code chunk. Pliki R markdown składają się z nagłówka, segmentów tekstu i specjalnie oznaczonych segmentów kodu. Skrypty składają się z kodu i komentarzy poprzedzonych #.
+Poniższy segment jest nazywany code chunk. Pliki R markdown składają się z nagłówka, segmentów tekstu i specjalnie oznaczonych segmentów kodu. Skrypty składają się z kodu i komentarzy poprzedzonych #. W markdown "domyślną" treścią jest tekst "do czytania", kod jest dodatkiem, dlatego znajduje się w specjalnie zaznaczonych segmentach. Raportom w R markdown poświęcimy oddzielne zajęcia.
+
+W skryptach jest na odwrót, dlatego tekst trzeba poprzedzać # żeby program nie uznał go za kod.
+
 
 ```{r}
 
@@ -39,7 +42,7 @@ Poniższy segment jest nazywany code chunk. Pliki R markdown składają się z n
 ## Wczytywanie pakietów (bibliotek)
 
 
-Biblioteki dobrze jest wczytywać na początku analizy
+Pakiety wczytujemy funkcją library(). Biblioteki dobrze jest wczytywać na początku analizy. Biblioteka powinna być wczytana przed użyciem funkcji w niej zawartej. Można użyć funkcji bez wczytywania używając składni biblioteka::funkcja
 
 ```{r}
 
@@ -57,16 +60,17 @@ library(gapminder)
 
 # Obiekty i funkcje
 
-Nazwy obiektów muszą rozpocznać się od litery i mogą zawierać tylko litery, cyfry znak _ oraz . .
+Nazwy obiektów muszą rozpoczynać się od litery i mogą zawierać tylko litery, cyfry znak _ oraz . .
 
+### Liczby
 
 ```{r}
-
 class(1)
 
 ```
 
 
+### Znaki
 
 ```{r}
 
@@ -75,18 +79,21 @@ class("1")
 ```
 
 
+### Logiczne
+
 ```{r}
 
-two <- 2 # strzałka jest operatorem przypisania
+two <- 2 # strzałka jest operatorem przypisania, przypisuje obiekt do nazwy
 
-Two <- 2.2
+Two <- 2.2 #wielkie litery mają znaczenie
 
 ```
 
 
+### Operatory 
 ```{r}
 
-logiczne <- two == Two
+logiczne <- two == Two # podwójny znak = oznacza w R równa się
 
 logiczne
 
@@ -109,6 +116,7 @@ gapminder
 data <- (gapminder)
 
 ```
+
 
 ```{r}
 
@@ -177,7 +185,9 @@ partie
 Wektor napisów
 
 ```{r}
+
 typeof(partie)
+
 ```
 
 ```{r}
@@ -303,6 +313,7 @@ Jak połączyć wektory nierównych długości w ramkę danych:
 ?read.table
 ```
 
+## Funkcje mają zazwyczaj długą listę argumentów, z których większość ma domyślne wartości. 
 
 ```{r eval = FALSE}
 
@@ -311,14 +322,23 @@ read.table(file,
            sep = "", 
            quote = "\"'",
            dec = ".", numerals = c("allow.loss", "warn.loss", "no.loss"),
-           row.names, col.names, as.is = !stringsAsFactors,
-           na.strings = "NA", colClasses = NA, nrows = -1,
-           skip = 0, check.names = TRUE, fill = !blank.lines.skip,
-           strip.white = FALSE, blank.lines.skip = TRUE,
+           row.names, col.names, 
+           as.is = !stringsAsFactors,
+           na.strings = "NA", 
+           colClasses = NA, 
+           nrows = -1,
+           skip = 0, 
+           check.names = TRUE, 
+           fill = !blank.lines.skip,
+           strip.white = FALSE, 
+           blank.lines.skip = TRUE,
            comment.char = "#",
            allowEscapes = FALSE, flush = FALSE,
            stringsAsFactors = FALSE,
-           fileEncoding = "", encoding = "unknown", text, skipNul = FALSE)
+           fileEncoding = "", 
+           encoding = "unknown", 
+           text, 
+           skipNul = FALSE)
 
 ```
 
@@ -486,7 +506,8 @@ Do wczytywania plików excela można wykorzystać bibliotekę readxl
 library(readxl)
 ```
 
-Biblioteka ta ma kilka funkcji wczytujących pliki excelowskie np read_excel która sama ustala czy plik ma rozszerzenie xls czy xlsx ale także funkcje read_xls, i read_xlsx, których możemy użyć jeśli  znamy rozszenie
+
+Biblioteka ta ma kilka funkcji wczytujących pliki excelowskie np read_excel która sama ustala czy plik ma rozszerzenie xls czy xlsx ale także funkcje read_xls, i read_xlsx, których możemy użyć jeśli  znamy rozszerzenie pliku
 
 ```{r eval = FALSE}
 read_excel(
@@ -537,7 +558,78 @@ dplyr::glimpse(podatki)
 podatki$...1 <- as.numeric(podatki$...1)
 ```
 
+```{r}
 
+dplyr::glimpse(podatki)
+
+
+```
+Dobrą ale nieco wolniejszą biblioteką jest openxlsx
+
+
+```{r}
+#install.packages(openxlsx)
+library(openxlsx)
+
+```
+
+
+```{r, eval = FALSE}
+read.xlsx(
+xlsxFile,
+sheet,
+startRow = 1,
+colNames = TRUE,
+rowNames = FALSE,
+detectDates = FALSE,
+skipEmptyRows = TRUE, # pominie puste wiersze
+skipEmptyCols = TRUE, # pominie puste kolumny
+rows = NULL,
+cols = NULL,
+check.names = FALSE,
+sep.names = ".",
+namedRegion = NULL,
+na.strings = "NA",
+fillMergedCells = FALSE
+)
+
+```
+
+
+```{r}
+podatki_open <- read.xlsx("podstawy/Chapter14TablesFigures.xlsx",
+                          sheet = "TS14.1",
+                          startRow = 4)
+```
+
+```{r}
+plot(y =podatki_open$U.S.,
+     x = podatki_open$X1,
+     type = "l",
+     col = "steelblue",
+     ylim = c(0,1))
+
+lines(y =podatki_open$U.K.,
+     x = podatki_open$X1,
+     col = "orange")
+```
+
+
+Raczej potrzebujemy schodków bo podatek pozostaje na takim samym poziomie przez jakiś czas
+
+```{r}
+plot(y =podatki_open$U.S.,
+     x = podatki_open$X1,
+     type = "s",
+     col = "steelblue",
+     ylim = c(0,1))
+
+lines(y =podatki_open$U.K.,
+     x = podatki_open$X1,
+     col = "orange",
+     type = "s")
+
+```
 ## Indeksowanie C.D.
 
 ```{r}
