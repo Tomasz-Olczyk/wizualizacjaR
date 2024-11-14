@@ -83,7 +83,7 @@ library(tidytext)
 
 
 ```{r}
-text_df <- tibble(text = paski$V1)
+text_df <- tibble(text = debata[[text]])
 
 #zmiana na wektor znaków
 
@@ -92,7 +92,7 @@ text_df <- tibble(text = paski$V1)
 Tokenizujemy zbiór używają funkcji unnest_tokens:
 
 ```{r}
-tokeny <- text_df %>%
+tokeny <- debata[[text]] %>%
   unnest_tokens(word, text,  token = "words")
 ```
 
