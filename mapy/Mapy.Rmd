@@ -29,7 +29,6 @@ library(tidyverse)
 panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv')
 
 
-
 ```
 
 
