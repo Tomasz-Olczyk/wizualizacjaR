@@ -849,7 +849,7 @@ lines(y =podatki_open$U.K.,
 
 ### Zadanie 1. 
 
-Stwórzmy wykres podat
+Stwórzmy wykres na podstawie ramki danych podatki obejmujący USA, Niemcy, Francję i Wielką Brytanię, każdy kraj oddzielnym kolorem 
 
 
 #### Funkcje w zastosowaniu do zbioru panteon
