@@ -1,27 +1,72 @@
 ---
 title: "Podstawy R i RStudio"
 author: "Tomasz Olczyk"
-output: html_document
-editor_options: 
-  markdown: 
-    wrap: 72
+output:
+  html_document:
+    toc: true
+
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      error = TRUE,
+                      warning = FALSE)
 ```
 
 
 
+## Założenia
+
+### Reprodukowalność i literate programming
+
+Wszystkie wyniki (tabele, wykresy itp) powinny byc procedualnie i reprodukowalnie generowane z zapisanego kodu, zapisane w prostym formacie opartym na tekście. Możliwość reprodukowania własnej pacy jest kluczowa w nauce, ale także ze względów czysto pragmatycznych. Osobą, która będzie najczęściej reprodukować Twoje wyniki jesteś Ty za sześć miesięcy.
+
+Celem jest maksymalnie programatyczne tworzenie grafiki. Staramy się nie używać sposobów które nie są programatycznie reprodukowalne.
+
+Zadania:
+
+1. pisanie kodu
+2. analiza wyników
+3 notatki
+
+Dlatego używamy RMakdown. Jest to czysto tekstowy dokument, któy umożliwia robienie tych wszystkich rzeczy, w sposób reprodukowalny i zapisany w możliwie odporny sposób.
+
+### Projekt elementy podstawowe
+
+File > New project
+
+File > New File > Rmarkdown
+
+znak `#` oznacza komentarz wewnętrz segmentu kodu w Rmakdown odnosi się do poziomu nagłówka
+
+### Pozwalajmy sobie na błędy
+
+R zawsze robi to co mu każemy zrobić, ale nie zawsze to, co chcemy żeby zrobił.
+Inaczej mówiąc R traktuje wszystkie polecenia literalnie.
+
+Będziemy popełniać błędy i będzie ich mnóstwo. Błędy pomagają nauczyć się programowania w R.
+
+Typowe błędy: 
+niedomknięty nawias, 
+niekompletne wyrażanie (+ w konsoli, kursor + Esc)
+częsty błąd ggplot to + w niewłaściwm miejscy
+
+
+
+#### skróty klawiszowe
+
+Ctrl+Alt+ I - nowy segment kodu w Windowsie
+Cmd+Alt + I =   nowy segment kodu w Mac os
+
 ## RStudio podstawwowe informacje
 
-Panele
-Pliki
-Skrypty
-RMarkdown
-Konsola
+- Panele
+- Pliki
+- Skrypty
+- RMarkdown
+ - Konsola
 
-# Instalacja pakietów
+## Instalacja pakietów
 
 Pakiet R jest kolekcją funkcji, danych i dokumentacji, która rozszerza
 możliwości bazowego R
@@ -31,7 +76,10 @@ Poniższy segment jest nazywany code chunk. Pliki R markdown składają się z n
 W skryptach jest na odwrót, dlatego tekst trzeba poprzedzać # żeby program nie uznał go za kod.
 
 
+Biblioteki instalujmy funkcją install.packages() której argumentem jest nazwa biblioteki w cudzysłowie. Bibliotekę wystarczy zainstalować raz.
+
 ```{r}
+# kod w tym segmencie instaluje bibliotekę tidyverse
 
 #install.packages("tidyverse") 
 
@@ -60,11 +108,152 @@ library(gapminder)
 
 # Obiekty i funkcje
 
+W R wszystko jest obiektem.
+
 Nazwy obiektów muszą rozpoczynać się od litery i mogą zawierać tylko litery, cyfry znak _ oraz . .
+
+Wszystko ma nazwę:
+
+zmienne, dane, funkcje. Do nadawania nazw nie wolno używać m.in FALSE, TRUE, Inf, for, else, break, function. Lepiej nie używać we własnych nazwach nazw funkcji, szczególnie z pakiety podstawowego jak c() - konkatentacja, q(), mean(), var(), range() i podobnych
+
+
+Wszystko jest obiektem:
+
+```{r}
+# przypisuje kolekcję liczb do nazwy  moje liczby
+# operator przypisania <- można uzyskać skrótem Alt - na Windowsie, Opt - na mac 
+
+moje_liczby  <- c(1, 2, 3, 5, 25) # funkcja c() tworzy wektor czyli uporządkowaną kolekcję elementów jednego rodzaju
+```
+
+Operator przypisania skróty:
+-mac os: Opt + -
+-Win: Alt + -
+
+Po przypisaniu i wykonaniu kodu obiekt pojawi się w przestrzeni roboczej: okno environment
+
+Operator przypisania łączy obiekt z nazwą
+
+Działania wykonuje się za pomocą funkcji:
+
+Kiedy chcemy żeby funkcja wykonała jakieś działanie wywołujemy ją. Funkcje mają nawiasy na końcu swojej nazwy. Funkcje wykonują działania na podstawie wartości przyjmowanych przez ich argumenty
+
+nazwa_funkcji(argument1 = <wartosć1>,
+              argument2 = <wartosć2>,
+               argument2 = <wartosć3>)
+
+
+Argumenty zawsze oddzielone są przecinkami
+
+### Pomoc
+
+```{r}
+
+?help()
+
+```
+
+
+```{r}
+
+help(ggplot)
+
+```
+
+### Przykładowe funkcje
+
+
+```{r}
+# funkcja licząca średnią
+mean()
+```
+
+Komunikat o błędzie: **Error in mean.default() : argument "x" is missing, with no default**
+W tym wypadku infomuje o tym, że wartosć argumentu x nie została podana
+Ogólnie jeśli wartość argumentu nie jest liczbą, obiektem istniejącym w przestrzeni roboczej albo wartością logiczną to jest podawana w cudzysłowie (por instalowanie biblioteki versus wczytywanie biblioteki)
+
+```{r}
+# najczęście nie trzeba podawać nazw argumentów, wystarczy podanie ich wartości w odpowiedniej kolejności
+mean(moje_liczby)
+```
+
+Rezultaty działania funkcji można przypisać do obiektów
+
+```{r}
+podsumowanie <- summary(moje_liczby)
+podsumowanie # wyświetla obiekt w konsoli
+```
+
+
+Funkcje zawarte są w pakietach (bibliotekach)
+
+Żeby użyć funkcji musimy mieć zainstalowaną i wczytaną bibliotekę (package) z której pochodzi funkcja. Wczytywanie funkcją library można pominąć wskazując bibliotekę i funkcję w ten sposób `nazwa_biblioteki::nazwa_funkcji`
+
+W R działamy na obiektach.Obiektami manipulujemy pzekazując informacje o nich do funkcji. Funkcje wykonują operacje na obiektach i zwracają wyniki.
+
+np.
+
+```{r}
+# zwraca tabelę liczności elementów
+
+table(moje_liczby)
+```
+
+
+```{r}
+# zwraca odchylenie standardowe
+
+sd(moje_liczby)
+```
+
+
+```{r}
+# mnoży każdy element przez 5
+
+moje_liczby * 5
+
+```
+
+```{r}
+# dodaje  5 do każdego elementu
+
+moje_liczby + 5
+```
+
+```{r}
+# operacja wektoryzowana, kolejne elementy jednego wektora dodane do kolejnych elementów drugiego wyktora
+moje_liczby + moje_liczby
+```
+
+
+Każdy obiekt ma klasę, którą możemy spawdzic funkcją `class()`
+
+```{r}
+class(moje_liczby)
+```
+
+```{r}
+podsumowanie <- summary(moje_liczby)
+class(podsumowanie)
+```
+
+```{r}
+class(summary)
+```
+
+Operacje wykonywane na obiektach mogą skutkować zmianą ich klasy:
+
+```{r}
+nowy_wektor <- c(moje_liczby, "jabłko")
+class(nowy_wektor)
+```
+
+Zbiory danych zaimportowane do  też są obiektami. W R jest kilka typów obiektów służących do przechowywania danych ale najbadziej typowym jest ramka danych: data frame. Ramka danych to prostokątna tabela zlożona z wierszy (obserwacji) i kolumn (zmiennych). Kolumny w ramce danych mogą być różnej klasy.
 
 ### Liczby
 
 ```{r}
+
 class(1)
 
 ```
@@ -85,7 +274,7 @@ class("1")
 
 two <- 2 # strzałka jest operatorem przypisania, przypisuje obiekt do nazwy
 
-Two <- 2.2 #wielkie litery mają znaczenie
+Two <- 2 #wielkie litery mają znaczenie
 
 ```
 
@@ -118,13 +307,8 @@ data <- (gapminder)
 ```
 
 
-```{r}
 
-data("gapminder")
-
-```
-
-## Wgląd w dane w ramce
+### Wgląd w dane w ramce
 
 ```{r}
 
@@ -168,7 +352,7 @@ dplyr::glimpse(data)
 
 ```
 
-## Wektory
+### Wektory
 
 
 Tworzenie wektorów
@@ -184,11 +368,6 @@ partie
 
 Wektor napisów
 
-```{r}
-
-typeof(partie)
-
-```
 
 ```{r}
 
@@ -207,12 +386,16 @@ sondaż <- c(29, 35, 10, 10, 10)
 ```{r}
 
 typeof(sondaż)
+# w języku R klasa double reprezentuje liczby zmiennoprzecinkowe o podwójnej precyzji (double precision)
+```
+
+```{r}
+class(sondaż)
 
 ```
 
 
 Indeksowanie
-
 
 
 ```{r}
@@ -254,7 +437,7 @@ LETTERS[co_drugi]
 
 
 
-## Ramki danych
+### Ramki danych
 
 Matryca z dwóch wektorów
 
@@ -264,11 +447,6 @@ matryca <- cbind(partie, sondaż)
 matryca
 ```
 
-```{r}
-
-sondaż_2 <-  c(12, 23, 11)
-
-```
 
 ```{r}
 
@@ -276,10 +454,6 @@ glimpse(matryca)
 
 ```
 
-```{r}
-#matryca <- cbind(partie, sondaż_2)
-#matryca
-```
 
 ```{r}
 
@@ -293,16 +467,25 @@ glimpse(ramka_danych)
 
 ```
 
-```{r}
 
-#ramka_danych_2 <- data.frame(partie, sondaż_2)
-
-```
 
 Jak połączyć wektory nierównych długości w ramkę danych:
 [link](https://www.geeksforgeeks.org/create-dataframe-of-unequal-length-in-r/)
 
-## Wczytywanie danych
+```{r}
+
+str(ramka_danych)
+
+```
+
+```{r}
+
+barplot(ramka_danych$sondaż
+        ~ ramka_danych$partie)
+```
+
+
+# Wczytywanie danych
 
 
 ```{r}
@@ -313,7 +496,7 @@ Jak połączyć wektory nierównych długości w ramkę danych:
 ?read.table
 ```
 
-## Funkcje mają zazwyczaj długą listę argumentów, z których większość ma domyślne wartości. 
+Funkcje mają zazwyczaj długą listę argumentów, z których większość ma domyślne wartości. 
 
 ```{r eval = FALSE}
 
@@ -477,27 +660,11 @@ panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 
 ```
 
-## Zapisywanie danych
 
 
-analogicznie funkcjami write*
+### Inne niż csv typy plików wejściowych
 
-```{r}
-?write.table
-```
-
-
-```{r eval = FALSE}
-
-write.table(x, file = "", append = FALSE, quote = TRUE, sep = " ",
-            eol = "\n", na = "NA", dec = ".", row.names = TRUE,
-            col.names = TRUE, qmethod = c("escape", "double"),
-            fileEncoding = "")
-
-```
-
-## Inne typy plików wejściowych
-
+Praktycznie każde działanie w R można wykonać co najmniej na kilka sposobów za pomocą różnych funkcji różnych pakietów. Dotyczy to zarówno grafiki jak i wczytywania plików.
 
 Do wczytywania plików excela można wykorzystać bibliotekę readxl
 
@@ -505,6 +672,8 @@ Do wczytywania plików excela można wykorzystać bibliotekę readxl
 #install.packages("readxl")
 library(readxl)
 ```
+
+
 
 
 Biblioteka ta ma kilka funkcji wczytujących pliki excelowskie np read_excel która sama ustala czy plik ma rozszerzenie xls czy xlsx ale także funkcje read_xls, i read_xlsx, których możemy użyć jeśli  znamy rozszerzenie pliku
@@ -532,7 +701,7 @@ read_excel(
 ```{r}
 
 podatki <- read_excel(
-  "podstawy/Chapter14TablesFigures.xlsx", #uwaga musimy być we właściwym katalogu roboczym, żeby ta linia kodu zadziałała
+  "../podstawy/Chapter14TablesFigures.xlsx", #uwaga musimy być we właściwym katalogu roboczym, żeby ta linia kodu zadziałała
   sheet = "TS14.1", #wybieramy arkusz z pliku
   skip = 3 # usuwamy trzy pierwsze wiersze
   )
@@ -564,6 +733,8 @@ dplyr::glimpse(podatki)
 
 
 ```
+
+
 Dobrą ale nieco wolniejszą biblioteką jest openxlsx
 
 
@@ -596,11 +767,56 @@ fillMergedCells = FALSE
 ```
 
 
+### Ścieżki relatywne i katalog roboczy
+
+### Katalog roboczy
+
+Zasadniczo lepiej operować używając rproj w RStudio niż katalogu roboczego.
+
+Informacja o katalogu roboczym:
+
 ```{r}
-podatki_open <- read.xlsx("podstawy/Chapter14TablesFigures.xlsx",
+
+getwd()
+
+```
+
+Ustawianie katalogu roboczego
+
+```{r}
+
+
+setwd() # argumentem jest ścieżka dostępu do katalogu roboczego w cudzysłowie
+
+
+```
+
+
+
+Jeśli nasz kod ma zadziałąć na dowolnym komputerze wczytując i zapisując pliki musimy stosować ścieżki relatywne
+
+```{r}
+podatki_open <- read.xlsx("../podstawy/Chapter14TablesFigures.xlsx", #ścieżki relatywne
                           sheet = "TS14.1",
                           startRow = 4)
 ```
+
+Problem ścieżek relatywnych najwygodniej rozwiązuje biblioteka here:
+
+```{r}
+#install.packages("here")
+library(here)
+```
+
+
+```{r}
+here()
+```
+
+```{r}
+panteon_lokalnie <- read_csv(here("podstawy", "panteon_s.csv"))
+```
+
 
 ```{r}
 plot(y =podatki_open$U.S.,
@@ -615,7 +831,7 @@ lines(y =podatki_open$U.K.,
 ```
 
 
-Raczej potrzebujemy schodków bo podatek pozostaje na takim samym poziomie przez jakiś czas
+Potrzebujemy raczej schodków bo podatek pozostaje na takim samym poziomie przez jakiś czas
 
 ```{r}
 plot(y =podatki_open$U.S.,
@@ -630,68 +846,13 @@ lines(y =podatki_open$U.K.,
      type = "s")
 
 ```
-## Indeksowanie C.D.
 
-```{r}
+### Zadanie 1. 
 
-pięć_kolumn <- panteon[,1:5]
-
-```
+Stwórzmy wykres podat
 
 
-
-```{r}
-
-sześć_wierszy <- panteon[2,2]
-
-```
-
-
-```{r}
-
-sześć_wierszy_pięciu_kolumn <- panteon[1:6, 1:5]
-
-sześć_wierszy_pięciu_kolumn
-```
-
-
-
-```{r}
-
-
-panteon$gender
-
-```
-
-
-Indeksowanie wektora
-
-```{r}
-
-panteon$countryName[1:6]
-
-
-```
-
-
-
-```{r}
-
-piąta_kolumna <- panteon[,5]
-
-
-```
-
-
-Czwarty element z piątej kolumny
-
-```{r}
-
-piąta_kolumna[4,]
-
-```
-
-Zakres
+#### Funkcje w zastosowaniu do zbioru panteon
 
 
 ```{r}
@@ -705,7 +866,7 @@ range(panteon$HPI)
 
 ```{r}
 
-mean(HPI)
+mean(panteon$HPI)
 
 ```
 
@@ -726,17 +887,40 @@ class(panteon$domain)
 ```
 
 
+
 ```{r}
 
 table(panteon$gender)
 
 ```
 
+## Zapisywanie danych
+
+
+analogicznie funkcjami write*
+
+```{r}
+?write.table
+```
+
+
+```{r eval = FALSE}
+
+write.table(x, file = "", append = FALSE, quote = TRUE, sep = " ",
+            eol = "\n", na = "NA", dec = ".", row.names = TRUE,
+            col.names = TRUE, qmethod = c("escape", "double"),
+            fileEncoding = "")
+
+```
+
+
+
 
 ## Przykłady wykresów  w bazowym R
 
+Na zajęciach będziemy głównie tworzyć wykresy w ggplot, który daje większe możliwosci i jest wygodniejszy w użyciu niż bazowy pakiet graficzny R, niemnniej już bazowy R dostarcza sporo możliwości tworzenia wykresów.
 
-histogram
+### Histogram
 
 ```{r}
 
@@ -745,17 +929,17 @@ hist(panteon$HPI)
 ```
 
 
-wykres pudełkowy
+### Wykres pudełkowy
 
 ```{r}
 
-boxplot(panteon$HPI)
+boxplot(panteon$HPI ~ panteon$gender)
 
 
 ```
 
 
-wykres pudełkowy według kategorii
+### Wykres pudełkowy według kategorii
 
 ```{r}
 
@@ -764,7 +948,7 @@ boxplot(HPI~gender, data = panteon)
 ```
 
 
-## Zadanie: boxplot HPI według kontynentów
+ Zadanie: boxplot HPI według kontynentów
 
 Wykres słupkowy.
 
@@ -786,11 +970,6 @@ barplot(domeny,
 
 ```
 
-```{r}
-
-?barplot
-
-```
 
 
 elemnty dodatkowe
@@ -811,7 +990,7 @@ legend("topright",
 ```
 
 
-marginesy
+### Korekta margimesów w bazowym R
 
 ```{r}
 
@@ -850,20 +1029,56 @@ legend("topright",
 ```
 
 
-## Zadanie barplot według płci i kontynentów
+
 
 ```{r}
-dev.off()
+
+par(mar=c(5,12,3,3)) # marginesy w kolejności par(mar = c(bottom, left, top, right))
+#czyli dół, lewy, góra, prawy
+
+barplot(domeny_gender,
+        las = 1, 
+        beside = TRUE,
+        horiz = TRUE,
+        xlab = "liczba biografii",
+        main = "Biografie w zbiorze Panteon 1.0 \nwedług dziedziny działalności i płci")
+
+legend("topright",
+       c("mężczyzna", "kobieta"),
+       fill = c("lightgrey", "gray39"))
+
 ```
-barplot(sort(data$num, decreasing = TRUE))
 
 ```{r}
-?dev.off()
+par(mar=c(5,12,3,3))
+
+#  Sortowanie według sum w kolumnach
+sorted_indices <- order(colSums(domeny_gender), decreasing = TRUE)
+
+# Zastosowanie sortowania do kolumn
+domeny_gender_sorted <- domeny_gender[, sorted_indices]
+
+# Tworzenie wykresu z posortowanymi danymi
+barplot(
+  domeny_gender_sorted,
+  las = 1,
+  beside = TRUE,
+  horiz = TRUE,
+  col = c("lightgrey", "gray39")
+)
+
+# Dodanie legendy
+legend(
+  "topright",
+  c("kobieta", "mężczyzna"),
+  fill = c("lightgrey", "gray39")
+)
 ```
 
 
 
-Wykres mozaikowy
+
+### Wykres mozaikowy
 
 
 ```{r}
@@ -902,39 +1117,6 @@ mosaicplot(~domain + gender,
 
 ```
 
-kolejność
-
-
-```{r}
-
-
-(domeny_ko <- as.data.frame(table(panteon$domain)))
-
-
-```
-
-Zmienne typu factor i ustalanie ich porządku funkcją faktor
-
-```{r}
-
-panteon$domain <- factor(panteon$domain, levels = c("INSTITUTIONS", 
-                                                    "ARTS", 
-                                                    "SPORTS", 
-                                                    "SCIENCE & TECHNOLOGY",
-                                                    "HUMANITIES", 
-                                                    "PUBLIC FIGURE", 
-                                                    "BUSINESS & LAW", 
-                                                    "EXPLORATION"))
-
-```
-
-
-```{r}
-
-panteon$domain <- factor(panteon$domain, levels = domeny_ko$Var1)
-                           
-```
-
 
 
 
@@ -943,7 +1125,7 @@ panteon$domain <- factor(panteon$domain, levels = domeny_ko$Var1)
 mosaicplot(~domain + gender, 
            data = panteon,
            color = TRUE,
-           las = 3)
+           las = 3) #zmienia orientację etykiet
 
 
 ```
@@ -955,12 +1137,13 @@ mosaicplot(~domain + gender,
 
 mosaicplot(~continentName + gender, 
            data = panteon,
-           color = TRUE)
+           color = TRUE,
+           las = 3)
 
 
 ```
 
-wykres gęstości
+### Wykres gęstości
 
 ```{r}
 
@@ -970,48 +1153,8 @@ plot(density(panteon$HPI))
 
 
 
-```{r}
 
-mężczyźni <- filter(panteon, gender == "Male")  
-kobiety <- filter(panteon, gender == "Female")
-
-```
-
-
-
-
-```{r}
-plot(density(mężczyźni$HPI))
- 
- par(new = TRUE)
- plot(density(kobiety$HPI), 
-     col = "red")
-```
-
-
-
-Usuniemy nakładające się elementy
-
-```{r}
-?par()
-```
-
-
-```{r}
-plot(density(mężczyźni$HPI))
-
-par(new = TRUE)
-plot(density(kobiety$HPI),
-     col = "red",
-     xlab = "",
-     main = "",
-     xaxt = "n",
-     yaxt = "n")
-```
-
-
-
-ecdf - dystrybuanta empiryczna
+### ecdf - dystrybuanta empiryczna
 
 Jaki procent obserwacji przyjmuje wartość mniejszą niż x
 
@@ -1031,59 +1174,123 @@ plot(ecdf(panteon$HPI))
 
 
 
-## Pomoc
+
+
+### Zapisywanie pliku z wykresem w bazowym R
 
 ```{r}
+# Otwiera urządzenie do zapisywania w tym wypadku cairo_pdf
+cairo_pdf("ecdf.pdf")
 
-?help()
+plot(ecdf(panteon$HPI))
 
-```
-
-
-```{r}
-
-help(ggplot)
-
-```
-
-
-
-
-
-## Katalog roboczy
-
-Zasadniczo lepiej operować używając rproj w RStudio niż katalogu roboczego.
-
-Informacja o katalogu roboczym:
-
-```{r}
-
-getwd()
-
-```
-
-Ustawianie katalogu roboczego
-
-```{r}
-
-
-setwd() # argumentem jest ścieżka dostępu do katalogu roboczego w cudzysłowie
+# Zamyka urządzenie graficzne
+dev.off()
 
 
 ```
 
 
 
-## Skrypty
 
 
-## Skróty: 
+# Skrypty
+
+
+## Skróty przydatne w skryptach: 
 
 ctrl enter - uruchamia zaznaczony fragment kodu
 ctrl shift enter - uruchamia cały skrypt
 
-## Pliki R Markdown
+## Indeksowanie
+
+```{r}
+
+pięć_kolumn <- panteon[,1:5]
+
+```
 
 
 
-Poświęcimy im oddzielne zajęcia
+```{r}
+
+sześć_wierszy <- panteon[1:6,]
+
+```
+
+
+```{r}
+
+sześć_wierszy_pięciu_kolumn <- panteon[1:6, 1:5]
+
+sześć_wierszy_pięciu_kolumn
+
+```
+
+
+Indeksowanie wektora
+
+```{r}
+
+panteon$countryName[1:6]
+
+
+```
+
+
+
+```{r}
+
+piąta_kolumna <- panteon[,5]
+
+
+```
+
+
+Czwarty element z piątej kolumny
+
+```{r}
+
+piąta_kolumna[4,]
+
+```
+
+# Praca domowa:
+
+- tworzymy nowy projekt
+- umieszczamy w nim plik z danymi
+- tworzymy w nim plik r markdown który wczytuje potrzebne biblioteki, wczytuje dane i rysuje na ich podstawie wykres
+- kompresujemy folder projektu
+- wysyłamy na t.olczyk@uw.edu.pl
+- notujemy wszelkie problemy, pytania i trudności jakie pojawią się w tym procesie
+
+# Co po zajęciach
+
+Plan minimum: 
+
+[Ściągawka Rstudio](https://rstudio.github.io/cheatsheets/rstudio-ide.pdf)
+
+Plan dla ambitnych
+
+Rozdział 1-3 Long, J. D.  (2020). Język R: Receptury: analiza danych, statystyka i przetwarzanie grafiki, (K. Sawka, Tłum.). Helion SA.
+
+[online po angielsku](https://rc2e.com/gettingstarted)
+
+
+# Co przed następnymi zajęciami?:
+
+Plan minimum: 
+
+[Ściągawka ggplot](https://rstudio.github.io/cheatsheets/data-visualization.pdf)
+
+
+Plan dla ambitnych:
+
+rozdział 1 z  Wickham, H., & Grolemund, G. (2020). Język R: Kompletny zestaw narzędzi dla analityków danych (J. Zatorska, Tłum.). Wydawnictwo Helion.
+
+
+[online po angielsku](https://r4ds.had.co.nz/data-visualisation.html)
+
+
+
+

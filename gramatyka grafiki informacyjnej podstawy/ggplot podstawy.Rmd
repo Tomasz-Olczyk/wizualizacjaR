@@ -33,6 +33,16 @@ uruchamianie dokumentacji na temat funkcji lub zbioru danych
 
 ## Funkcja ggplot()  warstwy wykresu
 
+### Jak działa ggplot?
+
+Istnieje struktalna relacja, mapowanie między zmiennymi w danych a reprezentacją wizualną. W języku ggplota te logiczne połączenia między danymi a elementami wykresu nazywa się mapowaniami estetycznymi (aesthetic mappings). 
+
+Tworzenie wykresu zaczyna się od wskazania ggplotowi: danych, które posłużą do stworzenia wykresu i jak zmienne z tych danych logicznie łączą się (mapują) z estetykami wykresu. 
+
+Nazwa typu wykresu w ggplot zaczyna się od geom_ i kończy nazwą konkretnego typu np. geom_point dla wykresu punktowego, geom_bar da słupkowego, geom_boxplot dla skrzynkowego itd.
+
+Geometrię , podobnie jak inne warstwy dodajemy + 
+
 Funkcja generuje układ współrzędnych, pierwszym argumentem jest zbiór danych na podstawie którego tworzymy wykres:
 
 ```{r}
@@ -75,7 +85,17 @@ geom_point()
 
 ```
 
+### Struktura w ggplot
 
+ggplot(data = <dane>),
+      mapping = aes(<estetyka1> = <zmienna1>,
+                    <estetyka2> = <zmienna2>)) +
+                    geom_<typ>(<...>) +
+                    scale_<mapping>_<typ>(<...>)+
+                    coord_<typ>(<...>) +
+                    labs(<...>)
+                  
+Argumenty nie muszą być wywoływane jawnie, R w przeważającej liczbie przypadków zrozumie zapis po kolejności argumentów 
 
 #### zadanie - stwórzmy, opierająć się na danych mpgwykres punktowy zależności między zmiennymi hwy i cyl
 
@@ -151,6 +171,139 @@ ggplot(data = mpg) +
              color = "blue")
 
 ```
+
+```{r}
+p <- ggplot(data = gapminder)
+p
+```
+
+```{r}
+p <- ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap, #łączy oś x ze zmienną gdpPercap, inaczej położenia na osi x reprezentuje wartosć zmiennej gdpPercap
+                y = lifeExp)) #łączy oś y ze zmienną lifeExp, inaczej położenia na osi y reprezentuje wartosć zmiennej lifeExp
+p
+```
+
+```{r}
+p + geom_point() # dodaje warstwę z geometrią
+```
+
+
+
+```{r}
+p + geom_point() +  # dodaje warstwę z punktami
+  geom_smooth() # dodaje kolejną warstwę z linią trendu
+```
+
+
+Krok po kroku
+1. Przekazujemy funkcji ggplot dane do narysowania wykresu
+2. Przekazujemy funkcji ggplot jakie relacje chcemy zobaczyc na wykresie
+3. Przekazujemy funkcji ggplot jak chcemy zobaczyć relacje na wykresie
+4. Potrzebujemy warstwy z geometrią
+5. Używamy dodatkowych funkcji żeby dopasować skale, etykiety, tytuły itp.
+
+Geometrie dziedziczą informacje przekazane funkcji ggplot.
+
+```{r}
+ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                y = lifeExp)) +
+  geom_point() +
+  geom_smooth() +
+  scale_x_log10()
+```
+
+Estetyki wiążą dane z elementami graficznymi dlatego jeśli chcemy ustalić elementy graficzne nie wiążąc ich z danymi musimy to zrobić poza funkcją aes()
+```{r}
+ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                y = lifeExp,
+                color = continent)) +
+  geom_point() +
+  geom_smooth() +
+  scale_x_log10()
+```
+
+
+Funjcja aes() służy wyłącznie do mapowania czyli wiązania elementów graficznych z danymi. Nie należy jej używać do ustalania konkretnych wartosci.
+
+
+```{r}
+
+ggplot(data = gapminder,
+            mapping = aes(x = gdpPercap,
+                y = lifeExp,
+                color = "blue")) +
+  geom_point() +
+  geom_smooth() +
+  scale_x_log10()
+```
+
+```{r}
+
+ggplot(data = gapminder,
+        mapping = aes(x = gdpPercap,
+                      y = lifeExp),
+                  color = "orange") + # być może coś się zmieniło bo funkcje geom zdają się już nie dziedziczyć sztywno ustawionej wartości atrybutu wizualnego poza aes
+  geom_point(color = "purple") +
+  geom_smooth() +
+  scale_x_log10()
+```
+
+
+
+Użycie alpha i scales
+
+```{r}
+p <- ggplot(data = gapminder,
+       mapping = aes(x = gdpPercap, 
+                     y = lifeExp))
+
+p + geom_point(alpha = 0.3) +
+  geom_smooth(method = "gam") +
+  scale_x_log10(labels = scales::dollar) + # modyfikuje skalę na logaytmiczną a etykiedy na dolary amerykańskie
+  labs(x = "GDP per capita",
+       y = "przeciętne dalsze trwanie życia",
+       title = "Wzrost ekonomiczny i przeciętne dalsze trwanie życia",
+       subtitle = "punkt danych to kraj-rok",
+       caption = "źródło: Gapminder") 
+  
+
+```
+
+
+```{r}
+p <- ggplot(data = gapminder,
+       mapping = aes(x = gdpPercap, 
+                     y = lifeExp))
+
+p + geom_point(alpha = 0.3) +
+  scale_x_log10(labels = scales::dollar) +
+   geom_smooth(method = "lm") +
+  labs(x = "GDP per capita",
+       y = "przeciętne dalsze trwanie życia",
+       title = "Wzrost ekonomiczny i przeciętne dalsze trwanie życia",
+       subtitle = "punkt danych to kraj-rok",
+       caption = "źródło: Gapminder") 
+```
+
+W przypadku geom_smooth Estetyka fill kontroluje kolor obszaru błędu tandardowego
+
+```{r}
+p <- ggplot(gapminder,
+            aes(x = gdpPercap,
+                y= lifeExp,
+                color = continent,
+                fill = continent)) 
+
+p <- p + geom_point() +
+  geom_smooth() +
+  scale_x_log10(labels = scales::dollar)
+```
+
+
+Każda mapowana zmienna ma swoją skalę. Ggplot automatycznie dodaje legendy dla mapowań.
 
 
 
@@ -263,7 +416,7 @@ bar + coord_polar()
 
 ```{r}
 
-ggplot( map_data("world", region = 'Russia'), 
+ggplot(map_data("world", region = 'Russia'), 
         aes(long, lat, group = group)) +
   geom_polygon(fill = "white", 
                color = "black")
@@ -299,7 +452,7 @@ RColorBrewer::display.brewer.all()
 
 ggplot(data = mpg) + 
   geom_point( mapping = aes(x = displ, y = hwy, color = class)) +
-  scale_color_brewer(palette ="Set3") # zmienia z domyślnego koloru na wybraną skalę  paletę 
+  scale_color_brewer(palette ="Set3") # zmienia z domyślnego koloru na wybraną paletę 
 
 ```
 
@@ -423,9 +576,7 @@ ggsave("rys 1.pdf",
 
 
 
-getwd() # zwraca aktualny katalog roboczy (working directory)
 
-setwd() # determinuje aktualny katalog roboczy (working directory)
 
 ## themes  - layouty
 

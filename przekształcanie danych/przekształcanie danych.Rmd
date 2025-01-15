@@ -24,8 +24,13 @@ library(tidyverse)
 
 ```{r}
 
-panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+panteon <- read_csv("../podstawy/panteon_s.csv")
 
+```
+Te same dane na githubie w razie kłopotów
+
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
 ```
 
 
@@ -73,7 +78,7 @@ matches() ##zawiera
 
 
 
-minus stawiamy przed zmienną która ma zostać usunięta z ramki danych 
+Minus stawiamy przed zmienną która ma zostać usunięta z ramki danych 
 
 
 ```{r}
@@ -106,11 +111,11 @@ names(mtcars_bez_kolumn_zaczynających_się_od_d) #funkcja names() zwraca nazwy 
 ### funkcje pomocnicze funkcji select
 
 
-starts_with("abc") # wybiera nazwy rozpoczynające się od „abc”
+starts_with("abc") -  wybiera nazwy rozpoczynające się od „abc”
 
-ends_with("xyz") # wybiera nazwy kończące się na „xyz”
+ends_with("xyz"-wybiera nazwy kończące się na „xyz”
 
-contains("ijk") # wybiera nazwy zawierające „ijk”.
+contains("ijk") _ wybiera nazwy zawierające „ijk”.
 
 matches("(.)\\1") # wybiera zmienne pasujące do wyrażenia regularnego
 
@@ -130,14 +135,16 @@ num_range("x", 1:3) #  pasuje do x1, x2 i x3
 
 ### Zmiana nazw kolumn: rename
 
-selekcjonując kolumny możemy od razu zmienić ich nazwy
+Selekcjonując kolumny możemy od razu zmienić ich nazwy
 
+Schemat: select(ramka_danych, nowa_nazwa = stara_nazwa)
 
 ```{r}
 wzrost_waga <- select(starwars, wzrost = height, masa = mass)
 ```
 
 
+Do bezpośedniej zmiany służy funcja rename. Schemat zmiany anzwy jak w przypadku select.
 
 rename()  zachowuje wszystkie zmienne, które nie zostały podane jawnie
 
@@ -151,7 +158,7 @@ starwars_pl <- rename(starwars,
 
 
 ```{r}
-panteon <- panteon %>%
+panteon_pl <- panteon %>%
   rename(płeć = gender)
 ```
 
@@ -171,14 +178,16 @@ View(starwars)
 
 
 ```{r}
+
 glimpse(starwars)
+
 ```
 
 
 
 ```{r}
 
-dwumetrowcy_GW <- filter(starwars, height >= 200) 
+dwumetrowcy_GW <- filter(starwars, height > 200) 
 
 ```
 
@@ -207,11 +216,11 @@ mean(starwars$mass, na.rm = TRUE)
 
 
 Funkcje z pakietu dplyr nigdy nie modyfikują danych wejściowych dlatego 
-trzeba je zapisać do nowej ramki danych
+trzeba je zapisać do nowej ramki danych. 
 
 
 ```{r}
-kobiety_pow_śr <- filter(panteon, płeć == "Female", AverageViews > mean(AverageViews, na.rm = TRUE))
+kobiety_pow_śr <- filter(panteon, gender == "Female", AverageViews > mean(AverageViews, na.rm = TRUE))
 
 ```
 
@@ -221,11 +230,23 @@ kobiety_pow_śr <- filter(panteon, płeć == "Female", AverageViews > mean(Avera
 
 x  %in% y - zostanie wybrany każdy wiersz, w którym x jest jedną z wartości w y
  
+
+
 ```{r}
 
-urodzeni_w_roku_wojny <- filter(panteon, birthyear %in% c(1914, 1918, 1939, 1945))
+urodzeni_w_czasie_wś <- filter(panteon, birthyear %in% c(1914:1918, 1939:1945))
 
 ```
+
+```{r}
+table(urodzeni_w_czasie_wś$birthyear)
+```
+
+```{r}
+barplot(table(urodzeni_w_czasie_wś$birthyear))
+```
+
+
 
 ### Zadanie stwórzmy ramkę danych kobiet z Polski ze zbioru Panteon - użyjmy zmiennej countryCode3
 
@@ -252,7 +273,7 @@ boomerzy <-   filter(panteon, between(birthyear, 1945, 1960))
 ### filtrowanie wierszy na podstawie ciągów znaków
 
 
-#### jak wyszukać te postacie z gwiezdnych wojen, które mają częściowo zieloną skórę?
+#### Jak wyszukać te postacie z Gwiezdnych Wojen, które mają częściowo zieloną skórę?
 
 
 ```{r}
@@ -260,13 +281,20 @@ zieloni <- starwars %>%
   filter(skin_color == "green")
 ```
 
+
 ```{r}
 bez_zielonych <- starwars %>%
   filter(skin_color != "green")
 ```
 
 
+```{r}
+bez_zielonych_t <- starwars %>%
+  filter(!skin_color == "green")
+```
 
+
+Filtrowanie przez ciagi znaków.
 
 ```{r}
 
@@ -349,26 +377,18 @@ kraje_marie <- marie %>%
 funkcja zwija ramkę danych do jednego wiersza
 
 
-### group_by
+### group_by i summarize
 
-summarize najczęściej w towarzystwie group_by, która pozwala porównywać grupy inaczej mówiąc tworzyć zgrupowane podsumowania
+summarize występuje najczęściej w towarzystwie group_by, która pozwala porównywać grupy inaczej mówiąc tworzyć zgrupowane podsumowania
 
 Np. gdybyśmy chcieli zsumować sławy  ze zbioru panteon 1.0 według kontynentów
-
-```{r}
-library(tidyverse)
-```
-
-```{r}
-panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
-```
 
 
 ```{r}
 
 panteon %>% 
   group_by(continentName) %>%
-  summarise(sławni = n()) 
+  summarise(sławni = n()) # funkcja n() sumuje liczbę obserwacji
 
 ```
 
@@ -404,7 +424,7 @@ panteon %>%
   group_by(continentName, płeć) %>%
   summarise(średnie_wyś = mean(AverageViews)) %>%
   ggplot() +
-  geom_col(aes(x =płeć, 
+  geom_col(aes(x =gender, 
                średnie_wyś,
                fill = płeć)) +
   facet_wrap(~continentName)
@@ -447,6 +467,7 @@ is.na(starwars)
 
 ### Odfiltrowywaanie wartości brakujących
 
+różnica między is.na a drop.na
 
 
 ```{r}
@@ -462,8 +483,6 @@ wzrost_GW_bez_brakujących <- filter(starwars,
                                    !is.na(height))
 
 ```
-
-
 
 
 ```{r}
@@ -511,6 +530,13 @@ GW_na.omit <- na.omit(starwars)
 ```
 
 
+### Imputowanie
+
+```{r}
+library(missForest)
+imputed_starwars <- starwars %>%
+  mutate(mass = missForest(mass))
+```
 
 
 
@@ -533,7 +559,7 @@ arrange(starwars, desc(height))
 
 ```{r}
 
-wg_masy <- arrange(starwars, mass)
+wg_masy <- arrange(starwars, desc(mass))
 
 ```
 
@@ -605,7 +631,7 @@ wzrost w calach
 ```{r}
 
 starwars <- starwars %>%
-  mutate(wfuntach = mass/2,
+  mutate(wfuntach = mass/2.204,
          wcalach = height/2.5)
 
 ```
@@ -631,7 +657,7 @@ rząd <- starwars %>%
 
 ```{r}
 
-masa_rangowanie %>%
+wg_masy %>%
   slice_max(n =5, order_by = mass) %>%
   ggplot() +
   geom_col(aes(x = reorder(name, mass), y = mass)) +
