@@ -10,10 +10,29 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(ggthemes)
+library(here)
+```
+
+## Dane
+
+#### Dane csv
+
+Z użyciem here::here by uniknąć problemów z relatywnymi linkami
+
+```{r}
+panteon <- read_csv(here("podstawy", "panteon_s.csv"))
 ```
 
 
-# legendy, guide i skale
+
+Na wszelki wypadek, gdybyśmy mieli poblemy z here dane z internetu:
+
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+```
+
+## Legendy i funkcja guide
+
 
 ```{r}
 ToothGrowth$dose <- as.factor(ToothGrowth$dose)
@@ -48,11 +67,11 @@ Usiwanie legendy
 p + theme(legend.position="none")
 ```
 
-## zmiana kolejności etykiet w legendzie z użyciem faktorów
+## Zmiana kolejności etykiet w legendzie z użyciem faktorów
 
 Zmiana poprzez zmianę kolejności faktorów
 
-## funkcja levels
+### Funkcja levels
 
 ```{r}
 
@@ -92,7 +111,7 @@ wykres
 
 
 
-## zmiana kolejności etykiet w legendzie z użyciem guides
+### Zmiana kolejności etykiet w legendzie z użyciem guides
 
 
 Żeby zmienić kolejność w legendzie trzeba dodać guides() i guide_legend()  do geom_point(). W
@@ -135,7 +154,7 @@ ggplot(iris, aes(x = Species, y = Sepal.Length)) +
 ```
 
 
-## usuwanie legendy przy pomocy guide
+### Usuwanie legendy przy pomocy guide
 
 ```{r}
 # usuwa leendę kształu
@@ -187,7 +206,7 @@ p + scale_fill_manual(values=c('#999999','#E69F00','#56B4E9'),
                        guide = "none") #
 ```
 
-## inne zmiene np keywidth czy label 
+### inne zmiene np keywidth czy label 
 
 
 ``` {r, eval = FALSE}
@@ -201,7 +220,7 @@ p + scale_fill_manual(values=c('#999999','#E69F00','#56B4E9'),
 ```
 
 
-# skale
+## Skale
 
 ```{r}
 
@@ -306,7 +325,7 @@ w1 <- panteon %>%
 
 
 
-# adnotacje geom_text i geom_label
+## Adnotacje geom_text i geom_label
 
 ```{r}
 
@@ -447,9 +466,9 @@ panteon %>%
 ```
 
 
-# Kolory
+## Kolory
 
-## Sposoby operowania kolorami w R
+### Sposoby operowania kolorami w R
 
 -   rgb
 -   kody
@@ -473,7 +492,7 @@ więcej na ten temat na ciekawej stronie [R Graph Gallery](https://r-graph-galle
 
 ```{r}
 
-kolor1 <- rgb(144, 26, 40, maxColorValue = 255) # domyślnie jest na skali intensywności 0-1
+kolor1 <- rgb(144, 26, 40, maxColorValue = 255) # domyślnie jest na skali intensywności 0-1 dlatego przy skali 0-255 trzeba ustalić argument maxColorValue na 255
 
 kolor2 <- rgb(200, 131, 84, maxColorValue = 255)
   
@@ -492,7 +511,7 @@ ggplot(mtcars, aes(x=drat)) +
 
 ```
 
-### bezpośrednie podawanie kolorów
+### Bezpośrednie podawanie kolorów
 
 ```{r}
 
@@ -505,8 +524,10 @@ ggplot(mtcars, aes(x=drat)) +
 
 ```
 
+Powyższy przykłąd to zapis  zapis heksadecymalny, który jest często używany w grafice komputerowej i web designie. Składa się on z sześciu znaków, przy czym każdy parzysty zestaw dwóch znaków reprezentuje jedną z trzech podstawowych składowych koloru: czerwony (R), zielony (G) i niebieski (B). Każdy zestaw może przyjmować wartość od 00 do FF w systemie szesnastkowym, co odpowiada wartościom od 0 do 255 w systemie dziesiętnym.
 
-### funkcja rgb jako wartość argumentu mapującego kolor
+
+### Funkcja rgb jako wartość argumentu mapującego kolor
 
 ```{r}
 ggplot(mtcars, aes(x=drat)) + 
@@ -521,7 +542,7 @@ ggplot(mtcars, aes(x=drat)) +
 
 
 ```{r}
-
+#20 pierwszych nazw kolrów
 r_color <- colors()
 head(r_color, 20)
 
@@ -535,6 +556,7 @@ head(r_color, 20)
 
 ```{r, fig.dim= c(8, 8)}
 
+## przykłdowa lista nazw kolorów:
 
 plot(0, 0, type = "n", xlim = c(0, 1), ylim = c(0, 1), axes = FALSE, xlab = "", ylab = "")
 # Settings
@@ -713,6 +735,15 @@ bp + geom_boxplot(fill = "steelblue", color = "red")
 
 ```
 
+
+### Biblioteka paletteer
+
+
+
+
+https://r-graph-gallery.com/color-palette-finder
+
+
 ### box plot
 
 ```{r}
@@ -748,7 +779,7 @@ sp + scale_color_hue(l=40, c=35)
 ```
 
 
-## scale manual
+### scale_* manual
 
 
 ```{r}
@@ -764,7 +795,7 @@ sp + scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9"))
 
 
 
-## RcolorBrewer
+### RcolorBrewer
 
 ```{r}
 sp + scale_color_brewer(palette="Dark2")
@@ -772,9 +803,11 @@ sp + scale_color_brewer(palette="Dark2")
 ```
 
 
-## palety z filmów Wesa Andersona
-```{r}
+### palety z filmów Wesa Andersona
 
+Wymaa instalacji pakietu wesanderson
+
+```{r}
 #install.packages("wesanderson") 
 
 library(wesanderson)
@@ -859,7 +892,7 @@ sp3 + theme(legend.position = "bottom")
 
 
 ```{r}
-w1 +
+sp3 +
   theme(plot.title = element_text(size = rel(0.9)),
         plot.subtitle = element_text(size = rel(0.4)))
 
@@ -868,7 +901,7 @@ w1 +
 
 ```{r}
 
-w1 +
+sp3 +
   theme(plot.title = element_text(size = rel(0.9),
                                   family = "Times",
                                   face = "bold.italic",
@@ -877,5 +910,176 @@ w1 +
 
 
 ```
+
+## Przykład z wykresem pasków klimatycznych
+
+Dodatkowe biblioteki, doinstalujmy jeśli nie mamy i wczytajmy
+
+```{r}
+library(scales)
+library(RColorBrewer)
+```
+
+
+
+Dane:
+
+
+```{r}
+
+# dane dla stacji Okęcie od 1880 roku
+
+temp_okęcie <- read_csv(here("komunikowanie danych", "okecie_temp.csv"))
+```
+
+### Wykres średnich temperatur Okęcie
+
+ustawianie skali z wykorzystaniem RColorBrewer
+
+```{r}
+col_strip <- brewer.pal(11, "RdBu")
+```
+
+```{r}
+
+ggplot(temp_okęcie,
+             aes(x = date, y = 1, fill = ta))+
+        geom_tile() +
+           scale_x_date(date_breaks = "10 years",
+                     date_labels = "%Y",
+                     expand = c(0, 0))+
+           scale_y_continuous(expand = c(0, 0)) +
+           scale_fill_gradientn(colors = rev(col_strip)) +
+             guides(fill = guide_colorbar(barwidth = 1)) +
+            labs(title = "Okęcie 1880-2024",
+                caption = "Dane: GISS Surface Temperature Analysis") +
+              theme_minimal()
+
+ggsave("ocieplenie_okęcie.png", width=8, height=4.5)
+
+```
+
+
+
+
+
+#### ustawianie motywu
+
+Ustawimy motyw
+
+```{r}
+theme_strip <- theme_minimal()+
+                 theme(axis.text.y = element_blank(),
+                       axis.line.y = element_blank(),
+                       axis.title = element_blank(),
+                       panel.grid.major = element_blank(),
+                       legend.title = element_blank(),
+                       axis.text.x = element_text(vjust = 3),
+                       panel.grid.minor = element_blank(),
+                        plot.title = element_text(size = 14, face = "bold")
+                       )
+
+
+
+```
+
+```{r}
+
+o <- ggplot(temp_okęcie,
+             aes(x = YEAR, y = 1, fill = ta)) +
+        geom_tile() +
+           scale_x_continuous(breaks=seq(1890, 2020, 30))+
+           scale_y_continuous(expand = c(0, 0)) +
+           scale_fill_gradientn(colors = rev(col_strip)) +
+             guides(fill = "none") +
+            labs(title = "Okęcie 1880-2024",
+                caption = "Dane: GISS Surface Temperature Analysis") +
+              theme_strip
+```
+
+
+
+
+
+
+```{r}
+
+ggplot(temp_okęcie,
+             aes(x = date, y = 1, fill = ta)) +
+        geom_tile() +
+           scale_x_date(date_breaks = "20 years",
+                     date_labels = "%Y",
+                     expand = c(0, 0))+
+           scale_y_continuous(expand = c(0, 0)) +
+           scale_fill_gradientn(colors = rev(col_strip)) +
+             guides(fill = "none") +
+            labs(title = "Okęcie 1880-2024",
+                caption = "Dane: GISS Surface Temperature Analysis") +
+              theme_strip
+```
+
+### Inna wersja wykresu z danych dotczących Okęcia, tym razem zmiana w stosunku do poprzedniego roku
+
+```{r}
+
+
+(o <- temp_okęcie %>%
+  ggplot(aes(x = YEAR, y = 1, fill = td)) +
+  geom_tile(show.legend = FALSE) +
+  scale_fill_stepsn(colors=c("#08306B", "white", "#67000D"),
+                    values = rescale(c(min(temp_okęcie$td, na.rm = TRUE), 0, max(temp_okęcie$td, na.rm = TRUE))),
+                    n.breaks = 12) +
+  coord_cartesian(expand=FALSE) +
+  scale_x_continuous(breaks=seq(1890, 2020, 30)) +
+  #labs(title= glue("Global temperature change ({min(t_data$year)}-{max(t_data$year)})")) +
+  theme_void() +
+  theme(
+    axis.text.x = element_text(color="white",
+                               margin =margin(t=5, b=10, unit="pt")),
+    plot.title = element_text(color="white",
+                               margin =margin(b=5, t=10, unit="pt"),
+                              hjust= 0.05),
+    plot.background = element_rect(fill="black")
+))
+```
+
+#### Szybki sposób na wykres interaktwny
+
+```{r}
+#install.packages("plotly")
+```
+
+```{r}
+plotly::ggplotly(o)
+```
+
+
+## Co po zajęciach?
+
+Plan minimum: 
+
+[Ściągawka ggplot](https://rstudio.github.io/cheatsheets/html/data-visualization.html) 
+
+Plan dla ambitnych:
+
+[więcej o kolorach](https://r-graph-gallery.com/ggplot2-color.html)
+
+Rozdział 10 Grafika w: Long, J. D.  (2020). Język R: Receptury: analiza danych, statystyka i przetwarzanie grafiki, (K. Sawka, Tłum.). Helion SA.
+
+[to samo online po angielsku](https://rc2e.com/graphics) 
+
+# Co przed następnymi zajęciami?
+
+Plan minimum: 
+
+[Ściągawka dplyr](https://nyu-cdsc.github.io/learningr/assets/data-transformation.pdf) 
+
+
+Plan dla ambitnych:
+
+Rozdział 3 Przekształcanie danych za pomocą pakieu dplyr w:  Wickham, H., & Grolemund, G. (2020). Język R: Kompletny zestaw narzędzi dla analityków danych (J. Zatorska, Tłum.). Wydawnictwo Helion.
+
+
+[to samo online po angielsku](https://r4ds.hadley.nz/transform) 
 
  
