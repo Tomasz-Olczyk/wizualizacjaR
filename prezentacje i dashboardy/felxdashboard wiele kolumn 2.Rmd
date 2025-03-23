@@ -1,0 +1,40 @@
+---
+title: "Multiple Columns"
+output:
+  flexdashboard::flex_dashboard
+---
+    
+Column {data-width=600}
+-------------------------------------
+    
+### Chart 1
+    
+```{r}
+
+library(plotly)
+ 
+m <- highlight_key(mpg) # co to jest highlight key trzeba przepatrzyć te funkcje
+ 
+p <- ggplot(m, aes(displ, hwy)) + geom_point()
+ 
+gg <- highlight(ggplotly(p), "plotly_selected")
+
+crosstalk::bscols(gg, DT::datatable(m)) #bscols
+
+```
+   
+Column {data-width=400}
+-------------------------------------
+   
+### Chart 2
+
+```{r}
+plot(mtcars)
+```   
+ 
+### Chart 3
+    
+```{r}
+plot(mtcars)
+```
+

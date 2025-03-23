@@ -1,22 +1,108 @@
 ---
 title: "Podstawy ggplot"
 output: html_document
+author: "Tomasz Olczyk"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Przypomnienie i dokończenie z poprzednich zajęć:
+
+
+### Biblioteki
+
+Biblioteki dobrze jest wczytywać na początku analizy. Jeśli biblioteka nie jest wczytana próba użycia funkcji należącej do niej zwróci błąd.
+
+Dzisiaj na początek przydadzą nam się poniższe biblioteki.
+
 ```{r}
 
 library(tidyverse)
+library(gapminder)
+library(here)
+library(openxlsx)
+library(readxl)
 
+
+```
+
+### Wczytywywanie danych
+
+
+
+#### Dane csv
+
+Z użyciem here::here by uniknąć problemów z relatywnymi linkami
+
+```{r}
+panteon <- read_csv(here("podstawy", "panteon_s.csv"))
+```
+
+
+
+Na wszelki wypadek:
+
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+```
+
+
+#### Dane excel
+
+Do R można wczytać wiele różncych formatów plików (m. in. Excel, SPSS, Stata, SAS, json, itd. itp.)  wykorzystując biblioteki takie jakL openxlsx, readxl, haven i foreign). Biblioteki te mają również funkcje pozwalające zapisać dane w tych formatach.
+
+
+
+Dane xlsx są problematyczne:
+
+```{r}
+
+podatki <- read_excel(
+  "./podstawy/Chapter14TablesFigures.xlsx",
+  sheet = "TS14.1", #wybieramy arkusz z pliku
+ )
+
+```
+
+```{r}
+
+podatki <- read_excel(
+  "./podstawy/Chapter14TablesFigures.xlsx", #uwaga musimy być we właściwym katalogu roboczym, żeby ta linia kodu zadziałała
+  sheet = "TS14.1", #wybieramy arkusz z pliku
+  skip = 3,
+  n_max = 114# usuwamy trzy pierwsze wiersze
+  )
+
+```
+
+
+```{r}
+podatki <- select(podatki, 1:4)
+```
+
+
+```{r}
+podatki %>%
+  rename(rok = "...1" )
+```
+
+Lub z użyciem biblioteki here 
+
+```{r}
+podatki2 <- read_excel(here("podstawy", "Chapter14TablesFigures.xlsx"), #uwaga musimy być we właściwym katalogu roboczym, żeby ta linia kodu zadziałała
+  sheet = "TS14.1", #wybieramy arkusz z pliku
+  skip = 3 # usuwamy trzy pierwsze wiersze
+  )
 ```
 
 
 
 
-Przywoływanie funkcji lub zbioru danych z konkretnej biblioteki opratorem ::
+#### Przywoływanie funkcji lub zbioru danych z konkretnej biblioteki operatorem ::
 
 ```{r}
 ggplot2::mpg
@@ -37,11 +123,11 @@ uruchamianie dokumentacji na temat funkcji lub zbioru danych
 
 Istnieje struktalna relacja, mapowanie między zmiennymi w danych a reprezentacją wizualną. W języku ggplota te logiczne połączenia między danymi a elementami wykresu nazywa się mapowaniami estetycznymi (aesthetic mappings). 
 
-Tworzenie wykresu zaczyna się od wskazania ggplotowi: danych, które posłużą do stworzenia wykresu i jak zmienne z tych danych logicznie łączą się (mapują) z estetykami wykresu. 
+Tworzenie wykresu zaczyna się od wskazania ggplotowi danych, które posłużą do stworzenia wykresu i jak zmienne z tych danych logicznie łączą się (mapują) z estetykami wykresu. 
 
-Nazwa typu wykresu w ggplot zaczyna się od geom_ i kończy nazwą konkretnego typu np. geom_point dla wykresu punktowego, geom_bar da słupkowego, geom_boxplot dla skrzynkowego itd.
+Nazwa typu wykresu (dokładniej obiektu geometrycznegoe) w ggplot zaczyna się od geom_ i kończy nazwą konkretnego typu np. geom_point dla wykresu punktowego, geom_bar da słupkowego, geom_boxplot dla skrzynkowego itd.
 
-Geometrię , podobnie jak inne warstwy dodajemy + 
+Geometrię, podobnie jak inne warstwy dodajemy + 
 
 Funkcja generuje układ współrzędnych, pierwszym argumentem jest zbiór danych na podstawie którego tworzymy wykres:
 
@@ -60,14 +146,20 @@ Argument mapping zawsze wystepuje z funkcją aes().
 
 ```{r, eval = FALSE}
 
-ggplot(mpg) +
-  geom_point()
+ggplot(mpg,  (aes(x = cty, 
+                  y = hwy))) +
+  geom_point() +
+  geom_smooth() +
+  geom_rug() +
+  geom_text(aes(label = model)) +
+  theme_minimal() +
+  coord_equal()
 
 ```
 
 ```{r}
 
-ggplot(mpg, aes(x = cty, y = hwy)) +
+ggplot(mpg, mapping = aes(x = cty, y = hwy)) +
   geom_point() +
   geom_smooth()
 
@@ -78,14 +170,20 @@ Kolejność warstw ma znaczenie
 
 ```{r}
 
-ggplot(mpg, aes(x = cty, y = hwy)) +
-  geom_smooth() +
-geom_point()
+ggplot(mpg, aes(x = cty, 
+                y = hwy,
+                )) +
+geom_point(aes(size = displ,
+               colour = manufacturer),
+           alpha = 0.6) +
+   geom_smooth() 
   
 
 ```
 
 ### Struktura w ggplot
+
+```{r, eval = FALSE}
 
 ggplot(data = <dane>),
       mapping = aes(<estetyka1> = <zmienna1>,
@@ -94,41 +192,108 @@ ggplot(data = <dane>),
                     scale_<mapping>_<typ>(<...>)+
                     coord_<typ>(<...>) +
                     labs(<...>)
+
+```
+
                   
 Argumenty nie muszą być wywoływane jawnie, R w przeważającej liczbie przypadków zrozumie zapis po kolejności argumentów 
 
-#### zadanie - stwórzmy, opierająć się na danych mpgwykres punktowy zależności między zmiennymi hwy i cyl
+
+#### Terminologia
+
+
+Funkcje obiektów geometrycznych
+
+Są to obiekty geometryczne opisujące typ tworzonego wykresu. Ich nazwy zawierają przedrostek geom. Wśród nich znajdziemy takie, jak geom_line geom_boxplot czy geom_point, a także dziesiątki innych. 
+
+Mapy estetyk 
+
+Mapy estetyk (aesthetic mappings) służą do wyznaczania funkcji ggplot pól danych źródłowych, na które mają być rzutowane poszczególne elementy wizualne. Odpowiedzialny za to jest wiersz aes w wywołaniu funkcji ggplot. 
+
+Statystyki 
+
+Statystykami (ang. stats) nazywane są przekształcenia statystyczne przeprowadzane przed wyświetleniem danych. Nie wszystkie wykresy zawierają statystyki; wśród najpowszechniejszych funkcji związanych ze statystykami są takie, jak stat_edcf, która oblicza dystrybuantę empiryczną, i stat_identity, która sprawia, że dane są przekazywane bez obliczania jakichkolwiek statystyk. 
+
+Funkcje fasetowe 
+
+Fasetami (ang. facets) to wykresy podrzędne (panelowe, małych wielokrotnosci), prezentujące podzbiór danych. Do funkcjifasetowych należą facet_wrap i facet_grid. 
+
+Motywy 
+
+Motywami (ang. themes) to elementy wizualne wykresu niepowiązane z danymi. Należą do nich tytuły, marginesy, położenie spisów elementów czy  użyte czcionki. 
+
+Warstwa 
+
+Warstwa (ang. layer) to połączenie danych, map estetyki, obiektu geometrycznego, statysty i innych ustawień tworzących warstwę wizualną wykresu ggplot. 
+
+
 
 
 
 Można zmapować więcej zmiennych używając innych estetyk, np. koloru lub kształtu albo rozmiaru, przroczystości, 
 
 ```{r}
-ggplot(mpg) +
-  geom_point(aes(x = cty, 
-                 y = hwy, 
-                 alpha = class,
-                 color = class,
-                 size = class))
+ggplot(mpg, aes(x = cty, 
+                 y = hwy),
+       color = "blue") +
+  geom_point(aes(size = displ)) +
+  geom_smooth() +
+  facet_grid(manufacturer~cyl)
 
 ```
 
 
 
+#### Zadanie Panteon wykres punktowy
 
-#### zadanie -  zmapujmy wybraną zmienną na estetykę shape
+Weźmy poniższe dane
 
+```{r}
+
+#funkcja subset tworzy podzbiór danych 
+polska <- subset(panteon, countryCode3 == "POL")
+```
+
+Stwórzmy wykres punktowy wykorzystujac dwie wybrane zmienne ilosciowe, na trzecią zmapujmy rozmiar, niech punkty różnią się kolorem w zależności od płci
+
+
+```{r}
+ggplot(polska, aes(x = HPI,
+                   y = L_star,
+                   color = gender,
+                   size = AverageViews)) +
+  geom_point(show.legend = FALSE,
+             alpha = 0.7) +
+  geom_text(data = subset(polska, AverageViews > 100880.3), aes(label = name)) +
+  labs(title = "Osoby znane z Polski",
+       x = "Wskaźnik HPI",
+       caption = "dane: Pantheon 1.0") +
+  facet_wrap(~domain,
+             ncol = 2) #+
+  #coord_polar()
+```
+
+
+### ZAdanie 2 podpowiedź
+
+```{r}
+
+ggplot(panteon) +
+  geom_bar(aes(x = gender,
+    fill = gender)) 
+```
 
 
 ```{r}
 
 ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = displ, y = hwy, size = class))
+  geom_point(mapping = aes(x = displ, 
+                           y = hwy,
+                           stroke = displ))
 
 ```
 
 
-Size oczekuje uporządkowanej zmiennej kategorycznej (factor) a zmienna  class jest nieuporządkowana
 
 
 ```{r}
@@ -142,7 +307,7 @@ ggplot(data = mpg) +
 ```{r}
 
 ggplot(data = mpg) +
-  geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+  geom_point(mapping = aes(x = displ, y = hwy))
 
 ```
 
@@ -155,7 +320,7 @@ ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, 
                            y = hwy, 
                            alpha = 0.3,
-                           color = "blue"))
+                           color = "yellow"))
 
 ```
 
@@ -168,7 +333,7 @@ ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, 
                            y = hwy), 
              alpha = 0.3,
-             color = "blue")
+             color = "yellow")
 
 ```
 
@@ -226,7 +391,7 @@ ggplot(data = gapminder,
 ```
 
 
-Funjcja aes() służy wyłącznie do mapowania czyli wiązania elementów graficznych z danymi. Nie należy jej używać do ustalania konkretnych wartosci.
+Funkcja aes() służy wyłącznie do mapowania czyli wiązania elementów graficznych z danymi. Nie należy jej używać do ustalania konkretnych wartosci.
 
 
 ```{r}
@@ -288,7 +453,7 @@ p + geom_point(alpha = 0.3) +
        caption = "źródło: Gapminder") 
 ```
 
-W przypadku geom_smooth Estetyka fill kontroluje kolor obszaru błędu tandardowego
+W przypadku geom_smooth Estetyka fill kontroluje kolor obszaru błędu standardowego
 
 ```{r}
 p <- ggplot(gapminder,
@@ -304,11 +469,6 @@ p <- p + geom_point() +
 
 
 Każda mapowana zmienna ma swoją skalę. Ggplot automatycznie dodaje legendy dla mapowań.
-
-
-
-#### zadanie - zmieńmy w poniższym wykresie kółka na  lekko transparentne trójkąty
-
 
 
 
@@ -381,12 +541,14 @@ stroke
 
 
 ```{r}
-bar <- ggplot(data = diamonds) + 
+(bar <- ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, fill = cut), 
            show.legend = FALSE, 
            width = 1 ) + 
   theme(aspect.ratio = 1) + 
-  labs(x = NULL, y = NULL) 
+  labs(x = NULL, y = NULL) +
+  coord_polar())
+
 ```
 
 
@@ -411,17 +573,47 @@ bar + coord_polar()
 ```
 
 
-## współrzędne w kontekscie map
+### Współrzędne w kontekscie map
+
+UWAGA MOŻE WYMAGAĆ INSTALACJI DODATKOWEJ BIBLIOTEKI
+
+```{r}
+polska <- map_data("world", region = 'Poland')
+```
+
+
+```{r}
+pol <- subset(panteon, countryCode3 == "POL")
+```
 
 
 ```{r}
 
-ggplot(map_data("world", region = 'Russia'), 
-        aes(long, lat, group = group)) +
+ggplot(map_data("world", region = 'Poland'), 
+        aes(x=long, y=lat, group = group)) +
   geom_polygon(fill = "white", 
-               color = "black")
+               color = "black") +
+  geom_point(data=pol, aes(x = LON, y = LAT, group = name, size = AverageViews)) +
+  geom_text(data=subset(pol, LON >24), aes(x = LON, y = LAT, label = name, group = name)) +
+  coord_quickmap() + 
+  facet_wrap(~gender)
 
 ```
+
+```{r}
++
+  geom_point(data = polska, aes(x = LON, y = LAT, group = name))+
+  geom_label(data = subset(polska, LON >24), aes(label = name,
+                                x = LON, y = LAT, group = name)) +
+  coord_quickmap()
+
+
+```
+
+  geom_point(data = polska, aes(x = LON, y = LAT, group = name)) +
+  geom_label(data = polska, aes(x = LON, y = LAT, group = name, label = name)) +
+coord_quickmap()
+
 
 
 ```{r}
@@ -437,9 +629,9 @@ ggplot(map_data("world",
 
 ```
 
-## skale
+## Skale
 
-### kolor
+### skale kolorów
 
 Kolorom poświęcimy więcej miejsca w przyszłości, w tym momencie tylko kilka przykładów
 
@@ -466,17 +658,38 @@ ggplot(data = mpg) +
 ```{r}
 
 ggplot(mpg) + 
+  geom_point(aes(x = displ, 
+                 y = hwy, 
+                 color = class)) +
+  scale_color_brewer(palette ="Set3") +
+  scale_x_continuous(breaks = (c(2, 5.5, 7)), labels = c("a", "b", "c")
+                     ) # ustalamy własne przedziały tworząc wektor liczb funkcją c()
+
+```
+
+
+```{r}
+
+ggplot(mpg) + 
   geom_point(aes(x = displ, y = hwy, color = class)) +
   scale_color_brewer(palette ="BrBG") +
-  scale_x_continuous(breaks = (c(2, 5.5, 7))) # ustalamy własne przedziały tworząc wektor liczb funkcją c()
+  scale_x_continuous(breaks =seq(from = 0, to = 10, by = 0.5)) # ustalamy własne przedziały tworząc wektor liczb funkcją c()
 
 ```
 
 
 
+```{r}
+ggplot(panteon) +
+  geom_boxplot(aes(x = gender, 
+                   y = AverageViews,
+                   color = gender)) +
+  scale_y_log10() +
+  theme(axis.ticks = element_blank()) +
+  theme_wsj()
+```
 
-
-#### zadanie - zastosujmy scale_x_discrete do danych mpg
+### zadanie - zastosujmy scale_x_discrete do danych mpg
 
 ?scale_x_discrete()
 
@@ -490,7 +703,9 @@ porównajmy:
 ```{r}
 
 ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = displ, y = hwy, colour = class))
+  geom_point(mapping = aes(x = displ, 
+                           y = hwy, 
+                           colour = class))
 
 ```
   
@@ -501,7 +716,7 @@ z poniższym wykresem:
 
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy)) +
-  facet_wrap(~ class)
+  facet_wrap(~class)
 
 ```
 
@@ -522,9 +737,23 @@ ggplot(data = mpg) +
 
 ```
 
-  
+#### Zadanie PAnteon wykres fasetowany
+
+Weźmy dane panteon i stwórzmy wykres panelowy prezentujacy liczbę kobiet i mężczyzn z każdego kontynentu. Niech płci różnią się kolorem a każdy panel reprezentuje jeden kontynet.
  
-## etykiety
+ 
+```{r}
+
+ggplot(panteon, aes(x =,
+                    y = ,
+                    fill = gender)) +
+  geom_bar() +
+facet_wrap(~continentName) +
+  theme(axis.ticks.x = element_blank())
+
+```
+ 
+## Etykiety
 
 3etykiety dodajemy funkcją labs
 
@@ -541,7 +770,7 @@ Dodajmy tytuł i podpis pod wykresem:
 
 ```{r}
 
-ggplot(data = mpg) + 
+wykres <- ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy)) +
   labs(title = "Wydajność na autostradzie a pojemność",
        caption = "źródło: dane mpg",
@@ -554,7 +783,7 @@ ggplot(data = mpg) +
 
 
   
-# zapisywanie
+# Zapisywanie wykresów funkcją ggsave
 
 
 ggsave("my-plot.pdf") # > zapisue 6 x 3.71 cali
@@ -562,28 +791,32 @@ ggsave("my-plot.pdf") # > zapisue 6 x 3.71 cali
 
 ?ggsave # charakterystki wykresu w pliku docelowym i miejsce zapisania wykresu można ustalić
 
-```{r, eval = FALSE}
+```{r, eval = FALSE} 
+#ustawienie eval = FALSE oznacza że ten segment nie zostanie wykonany przy renderowaniu będziemy o tym mówić więcej na zajęciach  o rmarkdown
 
-ggsave("rys 1.pdf", 
+ggsave("rys 1.png", 
        plot = wykres, 
-       device=cairo_pdf, #cairo_pdf jest jednym z urządzeń (device) zapisujących wykres do właściwego formatu, zapewnia właściwe wyświetlenie polskich znaków
-       width = 6,
-       height=6,
-       dpi = 300,
-       units = "in",  
+       device=png, #cairo_pdf jest jednym z urządzeń (device) zapisujących wykres do właściwego formatu, inaczej niż pdf cairo_pdf zapewnia właściwe wyświetlenie polskich znaków można użyć różnych urzadzeń sprawdźmy funkcją ?device
+       width = 6, #szerokość w calach
+       height=6, # wysokość w calach
+       dpi = 300, # ten paramter może być istotny jeśli wykres ma być drukowany
+       units = "in")
+#,  
        #path = ) # tu podajemy ścieżkę do folderu gdzie ma zostać zapisany plik
+       #ścieżkę można ustawić globalnie dla całego pliku rmd tak że wszystkie wykresy zapiszą się automatycznie w wybranym folderze
+       #będziemy będziemy o tym mówić więcej na zajęciach  o rmarkdown
 ```
 
 
 
 
 
-## themes  - layouty
+## Themes  - layouty
 
 ggplot zawiera  wiele własnych szablonów istnieją także pakiety zawierające dodatkowe layouty jak ggthemes
 
 ```{r}
-
+#
 #install.packages("ggthemes")
 library(ggthemes)
 
@@ -599,9 +832,53 @@ ggplot(data = mpg) +
        x = "pojemność", 
        y = "wydajność na autostradzie",
        colour = "klasa") + # theme jest kolejną warstwą którą dodajemy plusem
-       theme_economist()
+       theme_few()
 
 ```
+
+
+# Praca domowa:
+
+- weźmy dane podatki z książki Thomasa Piketty wczytane na początku tego pliku
+- wersja prostsza: stwórzmy wykres prezentujacy stopę podatkową dla każdego z krajów  (USA, UK, France, Germany) na osi y dane dotyczące podatków na osi x, na osi y lata
+- niech każdy kraj ma swój kolor
+- podpowiedź: trzeba użyć funkcji geom_step, oraz ustawić estetykę group na 1 (group = 1), powtarzając ją dla każdegoo kraju
+- wersja trudniejsza: stwórzmy wykres fasetowany (wielopanelowy) złożony z czterech wykresów każdy, dla jednego kraju (USA, UK, France, Germany)
+- uwaga do wersji trudniejszej: żeby użyć facet_wrap na tych danych trzeba zamienić dane podatki na format long funkcją tidyr::gather 
+- zapiszmy wykres funkcją ggsave
+- wyślijmy plik markdown generujacy wykres na t.olczyk@.uw.edu.pl
+- w pliku opiszmy  także ewentualne nierozwiązane problemy, na które napotkaliśmy
+
+# Co po zajęciach?
+
+Plan minimum: 
+
+[Ściągawka ggplot](https://rstudio.github.io/cheatsheets/html/data-visualization.html) 
+
+Plan dla ambitnych:
+
+Rozdział 10 Grafika w: Long, J. D.  (2020). Język R: Receptury: analiza danych, statystyka i przetwarzanie grafiki, (K. Sawka, Tłum.). Helion SA.
+
+[to samo online po angielsku](https://rc2e.com/graphics) 
+
+# Co przed następnymi zajęciami?
+
+Plan minimum: 
+
+[Ściągawka dplyr](https://nyu-cdsc.github.io/learningr/assets/data-transformation.pdf) 
+
+
+Plan dla ambitnych:
+
+Rozdział 3 Przekształcanie danych za pomocą pakieu dplyr w:  Wickham, H., & Grolemund, G. (2020). Język R: Kompletny zestaw narzędzi dla analityków danych (J. Zatorska, Tłum.). Wydawnictwo Helion.
+
+
+[to samo online po angielsku](https://r4ds.hadley.nz/transform) 
+
+
+
+
+
 
 
 

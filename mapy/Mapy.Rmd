@@ -2,6 +2,8 @@
 title: "Mapy"
 output: html_document
 author: Tomasz Olczyk
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -57,23 +59,19 @@ germany <- map_data('world', region = 'Germany')
 
 ```{r}
 
-ggplot(germany, aes(x = long, 
-                   y = lat, 
+ggplot(poland, aes(x = long, 
+                   y = lat,
                    group = group)) + 
-  geom_polygon(fill = 'red', 
-               colour = 'white') +
+  geom_polygon(fill = 'red',
+               colour = "white") +
   coord_map()
 
 ```
 
 
 
-```{r}
-panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv')
-```
 
-
-Francja miejsca urodzenia znanych osób po 1945
+Niemcy miejsca urodzenia znanych osób po 1945
 
 ```{r}
 
@@ -104,25 +102,28 @@ polska <- panteon %>%
 
 ```{r}
 
-p <-  ggplot(poland, aes(x = long, y = lat, group = group)) + 
+(p <-  ggplot(germany, aes(x = long, y = lat, group = group)) + 
   geom_polygon(fill = 'white', colour = 'black')  +
-  geom_point(data = polska, aes(x= LON, 
+  geom_jitter(data = niemcy, aes(x= LON, 
                                 y = LAT, 
                                  colour = gender,
                                  size = AverageViews*10, 
                                  group = name), alpha = 0.5) +
-  ggrepel::geom_text_repel(data = polska, aes(x= LON, 
+  ggrepel::geom_text_repel(data = niemcy, aes(x= LON, 
                                                y = LAT, 
                                                label = name, 
                                                group = name), size =3) +
-  #coord_map() +
-  theme_void()
+  coord_quickmap() +
+  theme_void())
 
 
   
 
 ```
 
+```{r}
+p
+```
 
 
 ```{r}
@@ -134,7 +135,12 @@ ggplotly(p)
 ```
 
 
+```{r}
 
+poland <- map_data('world', region = 'Poland') 
+
+
+```
 
 ```{r}
 
@@ -245,40 +251,27 @@ ggplot(polska, aes(x = long,
 
 
 
-## Panteon ale cały świat:
+## Zadanie: Panteon ale cały świat:
+
+
+Stwórzmy wykres punktowy dla zbioru Panteon ale na mapie całego świata. Dla zmniejszenia liczby punktów ustawmy filtr roku urodzenia np na 1980
+
+```{r}
+świat <- map_data("world")
+```
 
 
 
 ```{r}
-
-world =  map_data('world') 
-
-(świat_p <- ggplot(world, aes(x = long, y = lat, group = group)) + 
-    geom_polygon(fill = 'white', colour = 'black') +
-  geom_point(data = panteon %>% filter(birthyear < 1000),
-             aes(x= LON, 
-                 y = LAT, 
-                 colour = gender,
-                 size = AverageViews/10000, 
-                 group = name, 
-                 alpha = 0.1)) +
-  theme_void() 
-)
-
-
+ggplot(data = map_data("world"), aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = "blue") +
+geom_point(data = po80, aes(x = LON, y = LAT, group = name), alpha = 0.5) 
+  
 ```
 
 
-Z wykorzystaniem plotly
 
-
-```{r}
-
-ggplotly(świat_p)
-
-```
-
-Panteon próba łączenie ramek danych
+### Kartogram z danych Panteon próba łączenie ramek danych
 
 
 ```{r}
@@ -286,6 +279,9 @@ Panteon próba łączenie ramek danych
 widoczność <- panteon %>%
   mutate(region = toupper(countryName)) 
   
+```
+
+```{r}
 widoczność <- widoczność %>%
   filter(countryCode3 != "unknown") %>%
   group_by(region) %>%
@@ -294,6 +290,9 @@ widoczność <- widoczność %>%
 
 ```
 
+```{r}
+world <- map_data("world")
+```
 
 
 ```{r}
@@ -448,15 +447,6 @@ powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualiza
 ```
 
 
-```{r}
-powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_2.json")
-```
-
-
-
-```{r}
-powiaty <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_2.json")
-```
 
 
 
@@ -487,9 +477,6 @@ województwa <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizu
 ```
 
 
-```{r}
-województwa <- geojson_sf("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/gadm41_POL_1.json")
-```
 
 Rysujemy województwa:
 
@@ -501,6 +488,11 @@ ggplot(województwa) +
 ```
 
 
+```{r}
+ggplot(powiaty) +
+  geom_sf()
+```
+
 ## Dane PKW na poziomie województw
 
 
@@ -511,11 +503,6 @@ Dane PKW z poziomu województw  via Github
 
 pkw_woj <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/pkw_woj.csv")
 
-```
-
-
-```{r}
-pkw_woj <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/mapy/pkw_woj.csv")
 ```
 
 
@@ -567,14 +554,17 @@ wybory_long <- wybory_2 %>%
   pivot_longer(cols = c("frekwencja",  "PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "wyniki")
 ```
 
-
+```{r}
+wybory_long_2 <- wybory_1 %>%
+  pivot_longer(cols = c("frekwencja",  "PiS", "Konfederacja", "KO", "TD", "Lewica"), names_to = "wyniki")
+```
 
 ```{r}
 ggplot(wybory_long) +
   geom_sf(aes(fill = value, geometry = geometry)) +
   coord_sf()  +
   theme_void() +
- scale_fill_gradient(low = "grey90", high = "red3") +
+ scale_fill_gradient(low = "grey90", high = "red3") + 
  facet_wrap(~wyniki)
 ```
 
@@ -610,6 +600,7 @@ ggplot(wybory_ls) +
  scale_fill_gradient(low = "grey90", high = "red") +
  facet_wrap(~partie)
 ```
+
 
 
 ## Wykres-mapa z nieprzeskalowanych danych
@@ -665,12 +656,16 @@ ggplot(województwa) +
 
 
 ```{r}
+Polska <- panteon %>%
+  filter(countryCode3 == "POL")
+```
+
+```{r}
 
 ggplot(województwa) + 
   geom_sf() + 
   coord_sf() +
 geom_point(data = Polska, aes(x= LON, y = LAT, colour = gender, size = AverageViews*10, group = name), alpha = 0.5) +
-  ggrepel::geom_text_repel(data = Polska, aes(x= LON, y = LAT, label = name, group = name)) +
   theme_void()
 
 ```
@@ -678,217 +673,4 @@ geom_point(data = Polska, aes(x= LON, y = LAT, colour = gender, size = AverageVi
 
 
 
-```{r}
-kor <- wybory_23_woj_s %>%
-  select(2:7) 
-```
-
-```{r}
-korr <- round(cor(kor), 5)
-```
-
-```{r}
-korrr <- t(korr)
-```
-
-
-Biblioteka do korelacji
-
-
-```{r}
-#install.packages("lares")
-library(lares)
-
-```
-
-
-
-
-## Heatmap
-
-
-col <- colorRampPalette(c("blue", "white", "red"))(20)
-heatmap(x = corr, col = col, symm = TRUE)
-
-
-```{r}
-
-kor <- wybory_23_woj_s %>%
-  select(2:7) 
-
-```
-
-```{r}
-korr <- round(cor(kor), 5)
-```
-
-```{r}
-korrr <- t(korr)
-```
-
-
-
-
-```{r}
-
-#par(oma=c(6,3,3,3))
-#par(mar = c(2,2,2,2))
-
-heatmap(x = as.matrix(korr), symm = FALSE)
-
-```
-
-
-```{r}
-heatmap(korr, symm = TRUE)
-```
-
-
-```{r}
-
-#library(ggdendro) #wymaga ggplot
-
-```
-
-
-
-
-```{r}
-
-klastry <- hclust(dist(korr))
-
-```
-
-```{r}
-
-```
-
-
-```{r}
-plot(klastry)
-```
-
-
-```{r}
-
-plot(klastry, hang = -1, cex = 1) #argument hang na -1 lokuje wszystkie etykiety na jednym poziomie 
-#argument cex odpowiada z rozmiar czcionki
-```
-
-
-```{r}
-plot(klastry, 
-     #type = "triangle", # kształ trójkątny podaje jako obsolete
-     ylab = "wysokość",
-     hang = -1, 
-     cex = 1)
-```
-
-
-
-
-
-```{r}
-# Dane dotyczące aresztowań w USA
-
-data(USArrests)
-
-# zlicza dystanse
-
-dd <- dist(scale(USArrests), method = "euclidean")
-hc <- hclust(dd, method = "ward.D2")
-```
-
-
-
-## Phylogenetic trees - biblioteka ape
-
-
-```{r}
-
-#install.packages("ape")
-
-```
-
-
-
-```{r}
-library(ape)
-```
-
-### Funkcja ape::as.phylo
-
-```{r}
-plot(as.phylo(klastry), type = "cladogram", cex = 0.6, 
-     label.offset = 0.5)
-```
-
-
-```{r}
-plot(as.phylo(hc), type = "unrooted", cex = 0.6,
-     no.margin = TRUE)
-```
-
-
-```{r}
-plot(as.phylo(hc), type = "fan")
-```
-
-
-
-## Z wykorzystaniem biblioteki ggdendro
-
-
-```{r}
-#install.packages("ggdendro")
-library(ggdendro) #wymaga ggplot
-library(ggplot2)
-
-```
-
-### Funkcja ggdendrogram
-
-```{r}
-
-ggdendrogram(klastry, rotate = TRUE) 
-
-```
-
-### Funkcja ggdendro::dendro_data
-
-
-```{r}
-?ggdendro::dendro_data
-  
-```
-
-
-```{r}
-
-data <- dendro_data(hc, type = "triangle")
-
-```
-
-
-```{r}
-
-head(data$labels)
-
-```
-
-
-
-```{r}
-
-ggplot(segment(data)) + 
-  geom_segment(aes(x = x, y = y, xend = xend, yend = yend)) + 
-  scale_y_reverse(expand = c(0.2, 0)) +
- geom_text(data = data$labels, 
-             aes(x, y, label = label),
-            hjust = 0) +
-    theme_dendro() +
-      coord_flip() 
-
-  
-```
 

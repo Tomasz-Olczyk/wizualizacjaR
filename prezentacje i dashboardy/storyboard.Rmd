@@ -1,0 +1,41 @@
+---
+title: "Storyboard"
+output: 
+  flexdashboard::flex_dashboard:
+    storyboard: true
+    
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+
+
+
+### Piękny wykres punktowy
+
+```{r}
+plot(cars, pch = 20) 
+grid()
+
+```
+
+
+
+---
+
+Pudełko na komentarz
+Bardziej rozbudowany Komentarz do ramki 1
+
+### Piękny histogram
+
+```{r}
+hist(faithful$eruptions, col = 'gray', border = 'white', main = '')
+```
+
+
+---
+
+drugie pudełko na komentarz
+Komentarz do ramki 2

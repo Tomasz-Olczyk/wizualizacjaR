@@ -1,0 +1,51 @@
+---
+title: "Pola wartości"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+
+# these computing functions are only toy examples 
+computeArticles = function(...) return(45)
+computeComments = function(...) return(126) 
+computeSpam = function(...) return(15) 
+```
+
+
+
+### Dzienna liczba artykułów
+
+```{r}
+articles = computeArticles() 
+valueBox(articles, icon = "fa-pencil")
+
+```
+
+
+
+
+### Dzienna liczba komentarzy
+
+```{r}
+articles = computeComments() 
+valueBox(articles, icon = "fa-person-running")
+
+```
+
+### Dzienna ilosć spamu
+
+```{r}
+spam = computeSpam() 
+valueBox( spam, 
+          icon = "fa-trash", 
+          color = ifelse(spam > 10, "danger", "primary") #
+) 
+
+# Trzeci fragment kodu („Spam per Day”) sprawia, że kolor tła pola wartości staje się dynamiczny dzięki parametrowi color. Dostępne kolory to „primary”, „info”, „success”, „warning” i „danger” (domyślnie używany jest „primary”)
+
+```
+

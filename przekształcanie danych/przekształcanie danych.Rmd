@@ -2,6 +2,8 @@
 title: "Przekształcanie danych"
 output: html_document
 author: "Tomasz Olczyk"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -10,16 +12,96 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
-## Biblioteki
+## Biblioteki na dziś
 
 ```{r}
 
 library(tidyverse)
+library(readxl)
+library(here)
+
+```
+
+## Rozwiązanie zadania domowego:
+
+
+```{r}
+
+
+podatki <- read_excel(here( "podstawy", 
+  "Chapter14TablesFigures.xlsx"), # funkcja here wskazuje ścieżkę do pliku z poziomu katalogu roboczego do pliku Chapter14TablesFigures.xlsx w katalogy "podstawy
+  sheet = "TS14.1", #wybieramy arkusz z pliku
+  skip = 3 # usuwamy trzy pierwsze wiersze
+  ) %>%
+  janitor::clean_names()
+  
 
 ```
 
 
-## Dane
+```{r}
+ggplot(data = podatki) +
+  geom_step(aes(x = `...1`, y = `U.K.`, group = 1), color = "red") +
+  geom_step(aes(x = `...1`, y = `Germany`, group = 1), color = "blue") +
+  geom_step(aes(x = `...1`, y = `U.S.`, group = 1), color = "green") +
+  geom_step(aes(x = `...1`, y = `France`, group = 1), color = "orange") +
+  # ponniższy wiersz ustawia punkty na osi x na wybrane lata:
+ scale_x_discrete(breaks = c(1900, 1914, 1929, 1945, 1980, 1991, 2007)) + 
+  theme_minimal() +
+  labs(y = "Tax Rate", x = "Year", color = "Country")
+  
+  
+```
+
+
+```{r}
+ggplot(data = podatki2) +
+  geom_step(aes(x = rok, y = `U.K.`), color = "red") +
+  geom_step(aes(x = rok, y = France), color = "blue") +
+  theme_minimal()
+
+```
+
+
+```{r}
+
+
+# Przekształcenie danych do formatu długiego z użyciem gather
+podatki_long <- podatki %>%
+  select(`...1`, `U.S.`, `U.K.`, Germany, France) %>%
+  gather(key = "Country", value = "Tax", -`...1`)
+
+```
+
+```{r}
+# Przekształcenie danych do formatu długiego z użyciem pivot_longer
+podatki_long <- podatki %>%
+  select(`...1`, `U.S.`, `U.K.`, Germany, France) %>%
+  pivot_longer(cols = -`...1`, names_to = "Country", values_to = "Tax")
+```
+
+W tym przypadku:
+
+- cols = -...1 wskazuje, że kolumna ...1 nie ma być przekształcana (tak jak wcześniej było to w gather).
+- names_to = "Country" ustawia nazwę kolumny, która będzie zawierała nazwy krajów.
+- values_to = "Tax" ustawia nazwę kolumny, która będzie zawierała wartości podatków.
+
+Działa to bardzo podobnie do gather, ale pivot_longer jest nowszym i bardziej elastycznym podejściem.
+
+```{r}
+# Tworzenie wykresu
+ggplot(podatki_long, aes(x = `...1`, y = Tax, color = Country, group = Country)) +
+  geom_step() +
+  scale_color_manual(values = c("steelblue", "orange", "green", "red"), guide = "none") +
+  #ylim(0, 1) +
+  scale_x_discrete(breaks = c(1900, 1914, 1929, 1945, 1980, 1991, 2007)) +
+  theme_minimal() +
+  labs(y = "Tax Rate", x = "Year", color = "Country") +
+  facet_wrap(~Country)
+```
+
+
+## Dane na dziś
 
 
 ```{r}
@@ -27,6 +109,13 @@ library(tidyverse)
 panteon <- read_csv("../podstawy/panteon_s.csv")
 
 ```
+Te same dane używając here::here
+
+```{r}
+panteon <- read_csv(here("podstawy", "panteon_s.csv"))
+```
+
+
 Te same dane na githubie w razie kłopotów
 
 ```{r}
@@ -34,15 +123,17 @@ panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 ```
 
 
-## Wybór kolumn(zmiennych) - select
+## Wybór kolumn (zmiennych) - select
 
 
-Select wyodorębnia przydatny podzbiór danych, korzystając z operacji opartych na nazwach zmiennych inaczej  mówiąc selekcjonuje kolumny
+Select wyodorębnia przydatny podzbiór danych, korzystając z operacji opartych na nazwach zmiennych, inaczej  mówiąc selekcjonuje kolumny
 
 
 
 
 ```{r}
+
+# glimpse pozwala zajrzeć do struktury ramki danych podobnie jak bazowa funkcja str
 glimpse(panteon)
 ```
 
@@ -51,20 +142,14 @@ glimpse(panteon)
 dwie_kolumny <- select(panteon, name, gender)
 ```
 
-
 ```{r}
-
-
-kolumny <- panteon %>%
-  select(name, 
-         gender)
-
+od_3_5 <- select(panteon, 3:5)
 ```
 
 
 
 ```{r}
-kolumny2 <- select(panteon, gender, name)
+trzy_kolumny <- select(panteon, gender, name, domain)
 ```
 
 
@@ -82,11 +167,14 @@ Minus stawiamy przed zmienną która ma zostać usunięta z ramki danych
 
 
 ```{r}
+# mtcars należących do biblioteki datastes z bazowego R
+
 glimpse(mtcars)
+
 ```
 
 ```{r}
-mtcars_bez_kolumn_zaczynających_się_od_d <-select(mtcars, -starts_with("d"))
+mtcars_bez_kolumn_zaczynających_się_od_d <-select(mtcars, starts_-with("d"))
 ```
 
 
@@ -103,12 +191,20 @@ bez_c <- panteon %>%
 
 
 ```{r}
+bez_c <- select(panteon, -starts_with("c"))
+```
+
+```{r}
+losowo <- select(panteon, 3:7, 9:10)
+```
+
+```{r}
 
 names(mtcars_bez_kolumn_zaczynających_się_od_d) #funkcja names() zwraca nazwy kolumn(zmiennych) w ramce danych
 
 ```
 
-### funkcje pomocnicze funkcji select
+### Funkcje pomocnicze funkcji select
 
 
 starts_with("abc") -  wybiera nazwy rozpoczynające się od „abc”
@@ -122,14 +218,12 @@ matches("(.)\\1") # wybiera zmienne pasujące do wyrażenia regularnego
 subset_mtcars <- select(mtcars, matches("pg|gea")) 
 
 ```{r}
-en_lub_cou <- panteon  %>%
+
+# wybiera kolumny w których jest ciąg znaków en lub cou
+
+en_lub_cou_2 <- panteon  %>%
   select(matches("en|cou"))
 ```
-
-
-names(subset_mtcars)
-
-num_range("x", 1:3) #  pasuje do x1, x2 i x3
 
 
 
@@ -140,11 +234,15 @@ Selekcjonując kolumny możemy od razu zmienić ich nazwy
 Schemat: select(ramka_danych, nowa_nazwa = stara_nazwa)
 
 ```{r}
-wzrost_waga <- select(starwars, wzrost = height, masa = mass)
+starwars_waga_Wzrost <- select(starwars, wzrost = height, masa = mass)
 ```
 
+ 
+```{r}
+starwars <- rename(starwars, wzrost = height, masa = mass)
+```
 
-Do bezpośedniej zmiany służy funcja rename. Schemat zmiany anzwy jak w przypadku select.
+Do bezpośedniej zmiany służy funcja rename. Schemat zmiany nazwy jak w przypadku select.
 
 rename()  zachowuje wszystkie zmienne, które nie zostały podane jawnie
 
@@ -152,7 +250,7 @@ rename()  zachowuje wszystkie zmienne, które nie zostały podane jawnie
 
 starwars_pl <- rename(starwars,  
                       wzrost = height,
-                      waga = mass) # drugi argument jest nową nazwą kolumny/zmiennej
+                      masa = mass) # drugi argument jest nową nazwą kolumny/zmiennej
 
 ```
 
@@ -187,7 +285,7 @@ glimpse(starwars)
 
 ```{r}
 
-dwumetrowcy_GW <- filter(starwars, height > 200) 
+metalowcy <- filter(starwars, height >= 70 & skin_color == "white")
 
 ```
 
@@ -195,12 +293,13 @@ dwumetrowcy_GW <- filter(starwars, height > 200)
 Zadanie odfiltrujmy postacie o wzroście powyżej 150 cm i o masie poniżej średniej
 
 
-
 ```{r}
-
-median(starwars$mass, na.rm = TRUE)
+library(tidyverse)
 
 ```
+
+
+
 
 
 
@@ -215,6 +314,13 @@ mean(starwars$mass, na.rm = TRUE)
 
 
 
+```{r}
+tacy <- filter(starwars, wzrost > 200 & 
+           masa < mean(starwars$masa, na.rm = TRUE)
+                 ) 
+```
+
+
 Funkcje z pakietu dplyr nigdy nie modyfikują danych wejściowych dlatego 
 trzeba je zapisać do nowej ramki danych. 
 
@@ -227,29 +333,51 @@ kobiety_pow_śr <- filter(panteon, gender == "Female", AverageViews > mean(Avera
 
 ### użycie operatora %in%
 
+%in% stosujemy kiedy mamy zbiór warunków filtrujących
 
 x  %in% y - zostanie wybrany każdy wiersz, w którym x jest jedną z wartości w y
  
 
+Wybierzmy osoby ze zbioru Panteon urodzone w czasie wojen światowych
 
 ```{r}
 
-urodzeni_w_czasie_wś <- filter(panteon, birthyear %in% c(1914:1918, 1939:1945))
+urodzeni_w_czasie_wś <- filter(panteon, birthyear %in% c(1914:1918, 1937:1945))
 
 ```
 
+
 ```{r}
-table(urodzeni_w_czasie_wś$birthyear)
+RON <- filter(panteon,countryCode3 %in% c("POL", "UKR", "LTU", "BLR"))
+```
+
+Szybkie podsumowanie funkcją table:
+```{r}
+tabela <- table(urodzeni_w_czasie_wś$birthyear)
 ```
 
 ```{r}
 barplot(table(urodzeni_w_czasie_wś$birthyear))
 ```
 
+```{r}
+ggplot(data = data.frame(table(urodzeni_w_czasie_wś$birthyear))) +
+         geom_col(aes(x = Var1, y = Freq))
+```
 
 
-### Zadanie stwórzmy ramkę danych kobiet z Polski ze zbioru Panteon - użyjmy zmiennej countryCode3
 
+
+### Zadanie stwórzmy ramkę danych kobiet z Polski ze zbioru Panteon - użyjmy zmiennej countryCode3 wartość POL
+
+```{r}
+
+kobiety_z_pol <- filter(panteon, countryCode3 == "POL", gender == "Female")
+
+```
+
+
+gender
 
 ### funkcja between jako część filtrowania 
 
@@ -264,11 +392,14 @@ barplot(table(urodzeni_w_czasie_wś$birthyear))
 
 ```{r}
 
-boomerzy <-   filter(panteon, between(birthyear, 1945, 1960))
+boomerzy <- filter(panteon, between(birthyear, 1945, 1960))
 
 ```
 
 
+```{r}
+boomerzy2 <- filter(panteon, birthyear >= 1945 & birthyear <= 1960)
+```
 
 ### filtrowanie wierszy na podstawie ciągów znaków
 
@@ -347,30 +478,107 @@ Green_and_stringr <-  filter(starwars,
 ```
 
 
-#### zadanie Marie
+#### Zadanie Marie z XIX w.
+
+Wybierzmy ze zbioru panteon osoby płci żeńskiej o imieniu Maria lub Marie urodzone w XIX wieku.
+
 
 ```{r}
-marie <- filter(panteon, str_detect(name, "Mari"))
+bez_genderu <- filter(panteon, (str_detect(name, "Mari")), between(birthyear, 1800, 1900))
+```
+
+```{r}
+Ann <-  filter(panteon, str_detect(name, "Ann"), between(birthyear, 1801, 1900),  gender == 'Female')
+```
+
+
+## Potoki
+
+
+```{r}
+
+kobiety_po1900 <- panteon %>% 
+  filter(gender == "Female" & birthyear >= 1900) 
+
+```
+
+```{r}
+ggplot(kobiety_po1900, aes(x = HPI, y = L_star)) +
+  geom_point() +
+  geom_text(data = filter(kobiety_po1900, L_star > 50), aes(label = name)) + 
+ theme_classic()
+
 ```
 
 
 ```{r}
-marie_kob <- filter(panteon, 
-                    str_detect(name, "Mari") & gender != "Male")
+panteon %>% 
+  filter(gender == "Female" & birthyear >= 1900 & countryCode3 == "POL") %>% 
+  
 ```
 
+
+
+```{r}
+x<- panteon %>% 
+  filter(gender == "Female" & birthyear >= 1900 & countryCode3 == "POL")
+```
+
+```{r} 
+panteon %>% 
+  filter(gender == "Female" & birthyear >= 1900 & countryCode3 == "POL") %>% 
+  ggplot() +
+  geom_col(aes(x = reorder(name, AverageViews), y = AverageViews)) +
+  coord_flip() +
+  labs(title = "Średnia liczba wyświetleń kobiet z Polski w zbiorze Panteon 1.0") +
+  xlab("") +
+  ylab("wyświetlenia")
+```
+
+
+```{r}
+
+panteon %>% 
+  filter(gender == "Female" & birthyear >= 1900 & countryCode3 == "POL") %>%
+  ggplot() +
+  geom_col(aes(x = name, y = AverageViews)) +
+  coord_flip() +
+  labs(title = "Średnia liczba wyświetleń kobiet z Polski w zbiorze Panteon 1.0") +
+  xlab("") +
+  ylab("wyświetlenia")
+```
+
+|>
+
+
+```{r}
+
+
+panteon %>% 
+  filter(gender == "Female" & birthyear >= 1900 & countryCode3 == "POL") %>%
+  ggplot() +
+  geom_col(aes(x = reorder(name, AverageViews), y = AverageViews)) +
+  coord_flip() +
+  labs(title = "Średnia liczba wyświetleń kobiet z Polski w zbiorze Panteon 1.0") +
+  xlab("") +
+  ylab("wyświetlenia") 
+```
+
+```{r}
+
+ggplot(map_data("world", region = 'Poland'), 
+        aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", 
+               color = "black") +
+  geom_point(data = panteon %>% filter(countryCode3 == "POL"), aes(x = LON, y = LAT, group = name)) +
+  geom_label(data = panteon %>% filter(countryCode3 == "POL", 
+                                       LON > 25
+                                       )
+             , aes(x = LON, y = LAT, group = name, label = name)) +
+coord_quickmap()
+```
 
 ## Grupowanie obserwacji i podsumowania, funkcje group_by i summarise
-
-
-```{r}
-
-kraje_marie <- marie %>% 
-  group_by(countryName) %>% 
-  count()
-
-```
-
 
 ## Podsumowanie - summarise() summarize() - podsumowania 
 
@@ -379,17 +587,42 @@ funkcja zwija ramkę danych do jednego wiersza
 
 ### group_by i summarize
 
-summarize występuje najczęściej w towarzystwie group_by, która pozwala porównywać grupy inaczej mówiąc tworzyć zgrupowane podsumowania
+Summarize występuje najczęściej w towarzystwie group_by, która pozwala porównywać grupy inaczej mówiąc tworzyć zgrupowane podsumowania
 
 Np. gdybyśmy chcieli zsumować sławy  ze zbioru panteon 1.0 według kontynentów
 
 
 ```{r}
 
-panteon %>% 
+kontynenty <- panteon %>% 
   group_by(continentName) %>%
   summarise(sławni = n()) # funkcja n() sumuje liczbę obserwacji
 
+
+```
+
+```{r}
+panteon %>% 
+  group_by(continentName, gender) %>%
+  summarise(suma_w =sum(AverageViews)) %>%
+  ggplot() +
+ geom_col(aes(x = gender, y =  suma_w, fill = gender)) +
+  facet_wrap(~continentName)
+
+```
+
+```{r}
+z <- panteon %>% 
+  group_by(continentName, gender) %>%
+  summarise(średnia_w =mean(AverageViews))
+```
+
+
+
+```{r}
+panteon %>% 
+  group_by(continentName, gender, domain) %>%
+  count()
 ```
 
 Możemy grupować na wielu zmiennych 
@@ -397,8 +630,8 @@ Możemy grupować na wielu zmiennych
 ```{r}
 
 panteon %>% 
-  group_by(continentName, gender) %>%
-  summarise(sławni = n()) 
+  group_by(domain, gender, continentName) %>%
+  summarise(sławni = mean(AverageViews)) 
 
 ```
 
@@ -409,40 +642,45 @@ panteon %>%
 ```{r}
 panteon %>% 
   group_by(continentName, gender) %>%
-  summarise(sławni = n()) %>%
+  summarise(wyświetlenia= median(AverageViews)) %>%
   ggplot() +
   geom_col(aes(x = gender, 
-               y = sławni,
+               y = wyświetlenia,
                fill = gender)) +
   facet_wrap(~continentName)
 ```
 
-Summarie może dotyczyć wielu typów podsumowań np. średnich
+Summarsie może dotyczyć wielu typów podsumowań np. średnich
+
+
+```{r}
+ramka <- panteon %>%
+  group_by(continentName, gender) %>%
+  summarise(średnie_wyś = mean(AverageViews, na.rm = TRUE))
+```
+
+
+```{r}
+ggplot(ramka, aes(x = gender, 
+                  y = średnie_wyś, 
+                  fill = gender)) +
+  geom_col() +
+  facet_wrap(~continentName)
+```
+
 
 ```{r}
 panteon %>%
-  group_by(continentName, płeć) %>%
-  summarise(średnie_wyś = mean(AverageViews)) %>%
-  ggplot() +
-  geom_col(aes(x =gender, 
-               średnie_wyś,
-               fill = płeć)) +
+  group_by(continentName, gender) %>%
+  summarise(średnie_wyś = mean(AverageViews, na.rm = TRUE)) %>%
+  ggplot(aes(x = gender, y = średnie_wyś, fill = gender)) +
+  geom_col() +
   facet_wrap(~continentName)
 ```
 
 
 
-```{r}
 
-ggplot(panteon) +
-  geom_boxplot(aes(x = gender, y = AverageViews, fill = gender)) +
-  scale_y_log10() +
-  facet_wrap(~continentName)
-
-```
-
-
- 
 
 ## Wartości brakujące
 
@@ -532,30 +770,48 @@ GW_na.omit <- na.omit(starwars)
 
 ### Imputowanie
 
-```{r}
-library(missForest)
-imputed_starwars <- starwars %>%
-  mutate(mass = missForest(mass))
-```
-
-
-
-## arrange 
-
+Dygresja na temat impitowania: Prosty przykład imputowania.
 
 ```{r}
+library(mice)
+imputed_data <- mice(panteon, method = 'pmm', m =1)  # m = liczba imputowanych zestawów
+panteon_imputed <- complete(imputed_data)
 
-arrange(starwars, height) # 
 
 ```
 
-%in% 
+```{r}
+test <- panteon_imputed %>%
+  drop_na()
+```
+
+```{r}
+test1 <- panteon %>%
+  drop_na()
+```
+
+
+## Arrange 
+
+
+```{r}
+
+starwars <- arrange(starwars, height) # 
+
+```
+
+
 
 ```{r}
 
 arrange(starwars, desc(height))
 
 ```
+
+```{r}
+starwars <- arrange(starwars, desc(height))
+```
+
 
 ```{r}
 
@@ -571,62 +827,21 @@ wg_wzrostu <-  arrange(starwars, height)
 
 
 
-## Operator %>% i potoki
 
+## Tworzenie nowych zmiennych (kolumn): mutate() 
 
-```{r}
+Dodawanie nowych kolumn, powstałych w wyniku wykonania funkcji na już istniejących kolumnach
+- operacje różnego typu
+- zawsze  dodaje nowe kolumny na końcu
 
-kobiety_po1900 <- panteon %>% 
-  filter(gender == "Female" & birthyear >= 1900) 
-
-```
-
-
-```{r}
-panteon %>% 
-  filter(gender == "Female" & birthyear >= 1900 & countryCode3 == "POL") %>%
-  ggplot() +
-  geom_col(aes(x = reorder(name, AverageViews), y = AverageViews)) +
-  coord_flip() +
-  labs(title = "Średnia liczba wyświetleń kobiet z Polski w zbiorze Panteon 1.0") +
-  xlab("") +
-  ylab("wyświetlenia")
-```
-
-
-
-```{r}
-
-
-panteon %>% 
-  filter(gender == "Female" & birthyear >= 1900 & countryCode3 == "POL") %>%
-  ggplot() +
-  geom_col(aes(x = reorder(name, AverageViews), y = AverageViews)) +
-  coord_flip() +
-  labs(title = "Średnia liczba wyświetleń kobiet z Polski w zbiorze Panteon 1.0") +
-  xlab("") +
-  ylab("wyświetlenia") 
-```
-
-
-
-
-
-### Tworzenie nowych zmiennych (kolumn): mutate() 
-
-dodawanie nowych kolumn, powstałych w wyniku wykonania funkcji na już istniejących kolumnach
-
-operacje różnego typu
-zawsze  dodaje nowe kolumny na końcu
-
-zmieniamy kolumnę z nazwami 
+Zmieniamy kolumnę z nazwami krajów w zbiorze panteon:
 
 ```{r}
 panteon <- panteon %>%
   mutate(kraj = toupper(countryName))
 ```
 
-wzrost w calach
+Zmieniamy wzrost na cale i masę a funty w zbiorze starwars.
 
 ```{r}
 
@@ -638,7 +853,7 @@ starwars <- starwars %>%
 
 
 
-## rangowania
+## Rangowania
 
 ```{r}
 
@@ -647,6 +862,7 @@ starwars <- starwars %>%
          wiersz = row_number())
 
 ```
+
 
 ```{r}
 rząd <- starwars %>%
@@ -701,6 +917,16 @@ numer_wiersza <- starwars %>%
 ```{r}
 najwyżsi <- starwars %>%
   slice_max(n=10, height)
+```
+
+
+```{r}
+gw <- as_tibble(starwars)
+```
+
+
+```{r}
+gwd <- as.data.frame(starwars)
 ```
 
 
@@ -772,7 +998,7 @@ y <- starwars %>%
 
 
 ```{r}
-pełne <- full_join(x, y)
+pełne2 <- full_join(x, y)
 
 ```
 
@@ -806,7 +1032,7 @@ złączona <-  inner_join(x, y)
 
 
 
-## typy złączeń
+### Typy złączeń
 
 
 inner_join(x,y) dopasowuje te pary obserwacji, których klucze są jednakowe
@@ -828,8 +1054,7 @@ prawe <- right_join(x, y)
 ```
 
 
-
-# złączenie filtrujące
+### Złączenie filtrujące
 
 
 ```{r}
@@ -839,6 +1064,11 @@ semi <- semi_join(x, y)
 
 ```{r}
 anti <- anti_join(x, y)
+```
+
+
+```{r}
+anti2 <- anti_join(y, x)
 ```
 
 semi_join(x, y) # zachowuje wszystkie obserwacje w tabeli x, dla których istnieje dopasowanie w tabeli y
@@ -854,14 +1084,11 @@ sem <- semi_join(x,y)
 ```
 
 
-top_dest <- flights %>% count(dest, sort = TRUE) %>% head(10)
+```{r}
+wewn <- inner_join(x,y)
+```
 
-flights %>% filter(dest %in% top_dest$dest)
-
-flights %>% semi_join(top_dest)
-
-
-# operacje na zbiorach
+### Analogiczne operacje na zbiorach z użycue funkcji bazowego R
 
 intersect() # Zwraca tylko obserwacje znajdujące się zarówno w x, jak i w y.
 
@@ -873,6 +1100,17 @@ setdiff(x, y) # Zwraca obserwacje znajdujące się w x, ale nie w y.
 
 
 
+### Zadanie domowe 
+
+Ze zbioru Panteon wybierzmy kraje należace niegdyś do Rzeczypospolitej Obojga Narodów (Białoruś, Litwa, Polska, Ukraina), wybierzmy osoby urodzone pomiędzy Unią Lubelską a pierwszym rozbiorem, stwórzmy wykres panelowy porównujący liczbę sławnych kobiet i mężczyzn w każdym z tych krajów. Dodajmy tytuł, podtytuł, informację o źródle, sformatujmy wykres według wybranego biblioteki ggthemes. 
+
+### Co przed następnymi zajęciami?
+
+
+Rozdział 22 Grafika dla komunikacji z wykorzystaniem ggplot2:  Wickham, H., & Grolemund, G. (2020). Język R: Kompletny zestaw narzędzi dla analityków danych (J. Zatorska, Tłum.). Wydawnictwo Helion.
+
+
+[prawie to samo online po angielsku](https://r4ds.hadley.nz/communication) 
 
 
 

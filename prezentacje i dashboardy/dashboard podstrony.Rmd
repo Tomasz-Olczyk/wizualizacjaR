@@ -1,0 +1,47 @@
+---
+title: "dashboard wiele stron"
+output: flexdashboard::flex_dashboard
+---
+
+
+Wizualizacje {data-icon="fa-signal"}
+======================================
+
+kolumna
+--------------------------------------------
+
+### Wykres 1
+
+```{r}
+plot(cars)
+```
+
+kolumna 2
+--------------------------------------------
+
+### Wykres 2
+
+```{r}
+plot(cars)
+```
+
+
+Tabele {data-icon="fa-table"}
+====================================
+
+kolumna 3 {.tabset}
+-------------------------------------------
+
+### Tabela 1
+
+```{r}
+table(cars)
+```
+
+
+### Tabela 2
+
+```{r}
+summary(cars)
+```
+

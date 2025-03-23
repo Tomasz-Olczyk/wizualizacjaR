@@ -1,6 +1,8 @@
 ---
 title: "komunikowanie danych"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -15,9 +17,9 @@ library(here)
 
 ## Dane
 
-#### Dane csv
 
-Z użyciem here::here by uniknąć problemów z relatywnymi linkami
+
+Z użyciem here::here by uniknąć problemów z relatywnymi i absolutnymi ścieżkami
 
 ```{r}
 panteon <- read_csv(here("podstawy", "panteon_s.csv"))
@@ -31,83 +33,149 @@ Na wszelki wypadek, gdybyśmy mieli poblemy z here dane z internetu:
 panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
 ```
 
-## Legendy i funkcja guide
-
 
 ```{r}
-ToothGrowth$dose <- as.factor(ToothGrowth$dose)
-
+gdp <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/refs/heads/main/komunikowanie%20danych/gdp_percap.csv")
 ```
 
 
 ```{r}
-p <- ggplot(ToothGrowth, aes(x=dose, y=len, 
-                             color=dose
-                             )) +
+pop <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/refs/heads/main/komunikowanie%20danych/pop_total.csv")
+```
+
+
+## Dokończenie z zajęć o przekształcaniu danych: join i mutate
+
+Stworzymy wykres na podstawie połączenia danych panteon i danych banku świadowego o gdp.percap
+
+```{r}
+panteon_c <- panteon %>%
+  filter(!is.na(continentName), continentName != "Unknown")
+```
+
+
+```{r}
+panteon_c <- panteon %>%
+  filter(!is.na(continentName), continentName != "Unknown") %>%
+  group_by(countryCode3, continentName) %>%
+  summarise(sławni = n())  %>%
+  ungroup()
+```
+
+```{r, eval = FALSE}
+
+panteon_d <- panteon_c %>%
+  left_join(gdp)
+
+```
+
+
+
+```{r}
+panteon_d <- panteon_c %>%
+  left_join(gdp, by = c("countryCode3" = "country_code"))
+
+```
+
+```{r}
+panteon_d %>%
+  ggplot(aes(x = gdp_percap, y = sławni)) +
+  geom_jitter() +
+  geom_smooth() +
+  facet_wrap(~continentName)
+```
+
+
+```{r}
+panteon_d %>%
+  ggplot(aes(x = gdp_percap, y = sławni)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_jitter() +
+  geom_smooth() +
+  facet_wrap(~continentName)
+```
+
+
+
+
+
+### Zadanie:
+
+Stwórzmy wykres porównujący liczbę celebrytów per capita w danym kraju z pkb per capita w danym kraju na podstawie danych panteon, gdp i pop, 
+
+podpowiedź: użyjmy left_join i mutate
+
+```{r}
+
+panteon_e <- panteon_c %>%
+  left_join(pop, by = c("countryCode3" = "country_code")) %>%
+  mutate(sławni_percap = sławni/pop_total*10000)
+```
+
+
+```{r}
+panteon_e %>%
+  ggplot(aes(x = sławni, y = pop_total)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  geom_jitter() +
+  geom_smooth() +
+  facet_wrap(~continentName)
+```
+
+
+```{r}
+
+str(pop)
+```
+
+
+
+## Legendy i funkcja guide
+
+
+
+```{r}
+p <- ggplot(panteon_c, aes(x = reorder(continentName, sławni), 
+                            y = sławni, 
+                            color = continentName)) +
+  scale_y_log10() +
   geom_boxplot() +
-  ggtitle("boxplot")
+  geom_jitter() 
 
 p
 ```
 
 
 ```{r}
-p <- ggplot(Tooth)
+ p <- ggplot(panteon_c, aes(x = reorder(continentName, sławni, FUN = median), 
+                            y = sławni, 
+                            color = continentName,
+                            fill = continentName)) +
+  scale_y_log10() +
+  geom_boxplot()
+p
 ```
 
 
+
 ```{r}
-p + theme(legend.position="bottom")
+p + theme(legend.position="left", legend.title.position = "bottom")
 ```
 
 
-Usiwanie legendy 
+Usuwanie legendy 
 
 ```{r}
-p + theme(legend.position="none")
+p + theme(legend.position="none",
+        )
 ```
 
 ## Zmiana kolejności etykiet w legendzie z użyciem faktorów
 
 Zmiana poprzez zmianę kolejności faktorów
 
-### Funkcja levels
-
-```{r}
-
-levels(iris$Species)
-
-```
-
-
-odwrócenie funkcją levels = rev()
-
-```{r}
-levels(iris$Species)
-```
-
-
-```{r}
-
-iris$Species <- factor(iris$Species, levels = rev(levels(iris$Species)))
-
-```
-
-specyfikaccja ręczna
-
-```{r}
-
-iris$Species <- factor(iris$Species, levels = c("setosa", "versicolor","virginica"))
-
-```
-
-wykres
-
-```{r}
-(p1 <- ggplot(iris, aes(x = Species, y = Sepal.Length)) +
-  geom_boxplot(aes(color = Species)) +
-  scale_color_manual(values = c("#270C2E", "#2E9FDF", "#FC4E07")))
-```
 
 
 
@@ -117,52 +185,14 @@ wykres
 Żeby zmienić kolejność w legendzie trzeba dodać guides() i guide_legend()  do geom_point(). W
 
 ```{r}
-p1 +
-  guides(color = guide_legend(reverse = TRUE)) # 
-```
-
-
-```{r}
-
-ggplot(iris, aes(x = Species, y = Sepal.Length)) +
-  geom_boxplot(aes(color = Species)) +
-  scale_color_manual(values = c("#E7B800", "#2E9FDF", "#FC4E07"), guide = guide_legend(reverse=TRUE))
-
+p +
+  guides(color = guide_legend(reverse = TRUE),
+         fill = guide_legend(reverse = TRUE)) # 
 ```
 
 
 
-```{r}
 
-ggplot(iris, aes(x = Species, y = Sepal.Length)) +
-  geom_boxplot(aes(color = Species)) +
-  scale_color_manual(values = c("#E7B800", "#2E9FDF", "#FC4E07")) +
-  guides(color = guide_legend(reverse=TRUE))
-
-```
-
-
-
-```{r}
-
-
-ggplot(iris, aes(x = Species, y = Sepal.Length)) +
-  geom_boxplot(aes(color = Species)) +
-  scale_color_manual(values = c("#E7B800", "#2E9FDF", "#FC4E07")) +
-  guides(color = guide_legend(reverse=TRUE))
-
-```
-
-
-### Usuwanie legendy przy pomocy guide
-
-```{r}
-# usuwa leendę kształu
-p + scale_shape 
-# usuwa legendę rozmiaru
-p + scale_size(guide="none") 
-
-```
 
 narysujemy wykres według płci,AverageViews
 
@@ -181,52 +211,74 @@ panteon %>%
 ```
 
 
-```{r}
-#install.packages("ggthemes")
-library(ggthemes)
-```
-
-```{r}
-
-panteon %>%
-  ggplot() +
-  geom_histogram(aes(AverageViews))
-
-
-```
-
-
 
 
 ```{r}
 
 # usuwa legendę koloru wypełnienia
 
-p + scale_fill_manual(values=c('#999999','#E69F00','#56B4E9'), 
+p + scale_color_manual(values=c('pink','steelblue','#56B4E9', "red", "135", "gray56"), 
                        guide = "none") #
+
 ```
 
-### inne zmiene np keywidth czy label 
+### Zmiany układu legendy np keywidth czy label 
 
 
 ``` {r, eval = FALSE}
 
- p + guides(guides(fill = guide_legend(reverse = TRUE, 
-                                    title.position = "top", 
-                                    label.position = "bottom",
-                                    keywidth = 1,
-                                    nrow = 1))) 
+ p + guides(
+  color = guide_legend(
+    reverse = TRUE, 
+    title.position = "bottom", 
+    label.position = "bottom",
+    keywidth = 6,
+    nrow = 3
+  )
+)
+
                                     
 ```
 
+```{r}
+etykiety <- c("Afryka", "Azja", "Europa", "Ameryka Północna", "Oceania", "Ameryka Południowa")
+```
 
-## Skale
 
 ```{r}
 
-panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
-
+ t <- ggplot(panteon_c, aes(x = continentName, 
+                            y = sławni, 
+                            color = continentName)) +
+  #scale_color_manual(values=c('pink','steelblue','#56B4E9', "red", "135", "gray56"))+
+  scale_y_log10() +
+  scale_x_discrete(labels = etykiety) +
+  geom_boxplot()
 ```
+
+
+
+### Ręczna modyfikacja legendy
+
+
+```{r, eval = FALSE}
+t + 
+  scale_color_manual(
+    name = "Nowy tytuł legendy",  # Zmiana tytułu legendy
+    values = c('pink','steelblue','#56B4E9', "red", "135", "gray56"),  # Ręczne ustawienie kolorów
+    labels = etykiety) +
+  guides(
+    color = guide_legend(
+      reverse = TRUE, 
+      title.position = "bottom", 
+      label.position = "bottom",
+      keywidth = 6,
+      nrow = 3
+    )
+  )
+```
+
+## Skale
 
 
 
@@ -257,16 +309,10 @@ p1 <- panteon %>%
   geom_boxplot(aes(x = reorder(gender, AverageViews), y = AverageViews)) +
   scale_y_log10()
 
-
+p1
 ```
 
 
-Poniższy kod wyłącza notację naukową
-```{r}
-
-options(scipen =999)
-
-```
 
 
 Można ręcznie ustalać liczbę znaczników na skali
@@ -276,11 +322,11 @@ Można ręcznie ustalać liczbę znaczników na skali
 p1 + 
   labs(x = "płeć",
        y = "wyświetlenia",
-       title = "Rozkład wyświetleń\n według płci") +
+       title = "Rozkład wyświetleń\nwedług płci") +
   scale_x_discrete(labels = c("kobieta", "mężczyzna")) +
   scale_y_log10(breaks = c(0, 100000, 1000000), 
                 labels = c("0", "100 tys.", "1 mln.")) +
-  theme_economist()
+  theme_bw()
 ```
 
 
@@ -323,6 +369,9 @@ w1 <- panteon %>%
 ```
 
 
+```{r}
+w1
+```
 
 
 ## Adnotacje geom_text i geom_label
@@ -336,15 +385,30 @@ ggplot(mpg, aes(x = hwy, y = cty)) +
 
 ```
 
+```{r}
 
+ggplot(panteon, aes(x = HPI, y = L_star)) +
+  geom_point() +
+  geom_text(aes(label = name))
+
+
+```
+
+
+
+```{r}
+polki <- panteon %>%
+  filter(countryCode3 == "POL" & gender == "Female")
+```
 
 ```{r}
 
 panteon %>%
   filter(countryCode3 == "POL" & gender == "Female") %>%
-  ggplot(aes(x = L_star, y = HPI)) +
+  ggplot(aes(x = L_star, y = HPI, size = AverageViews)) +
   geom_point(aes(size = AverageViews)) +
-  geom_text(aes(label = name), hjust = 0)
+  geom_point(data = polki %>% filter(name == "Doda"), color= "red") +
+  geom_label(aes(label = name), nudge_y = 5, hjust = 1.5, vjust = 1.5)
 
 
 ```
@@ -353,7 +417,7 @@ Zastosowanie funkcji z biblioteki ggrepel
 
 ```{r}
 
-#install.packags("ggrepel")
+#install.packages("ggrepel")
 library(ggrepel)
 
 ```
@@ -370,7 +434,7 @@ panteon %>%
 
 ```
 
-## adnotacja funkcja annotate
+## Adnotacja funkcją annotate
 
 
 ```{r}
@@ -383,7 +447,7 @@ panteon %>%
   annotate(geom = "text", 
            x=8, 
            y=30, 
-           label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II")
+           label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II") #cudzysłów wewnętrz cudzysłowu musi się różnić od zewnętrznego
 
 
 ```
@@ -397,10 +461,27 @@ panteon %>%
   geom_text_repel(aes(label = name)) +
   annotate(geom = "text", x=8, y=30, label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II",) +
   
-  annotate(geom = "rect", xmin = 7.5, xmax = 11, ymin = 27, ymax = 29, fill = "red", alpha = 0.2)
+  annotate(geom = "rect", xmin = 7.5, xmax = 11, ymin = 27, ymax = 29, fill = "red", alpha = 0.2) #adnotacja w postaci prostokąta
 
 
 ```
+
+```{r}
+
+
+panteon %>%
+  filter(countryCode3 == "POL" & gender == "Female") %>%
+  ggplot(aes(x = L_star, y = HPI)) +
+  geom_point(aes(size = AverageViews)) +
+  geom_text_repel(aes(label = name)) +
+  annotate(geom = "text", x = 5, y = 30, label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II") +
+  geom_segment(aes(x = 6, xend = 9, y = 30, yend = 28),
+               arrow = arrow(type = "closed", length = unit(0.2, "inches")))  # Dodanie strzałki
+
+
+
+```
+
 
 
 Filtrowanie danych wewnątrz geometrii
@@ -492,20 +573,25 @@ więcej na ten temat na ciekawej stronie [R Graph Gallery](https://r-graph-galle
 
 ```{r}
 
-kolor1 <- rgb(144, 26, 40, maxColorValue = 255) # domyślnie jest na skali intensywności 0-1 dlatego przy skali 0-255 trzeba ustalić argument maxColorValue na 255
+kolor1 <- rgb(86, 28, 64, maxColorValue = 255) # domyślnie jest na skali intensywności 0-1 dlatego przy skali 0-255 trzeba ustalić argument maxColorValue na 255
 
-kolor2 <- rgb(200, 131, 84, maxColorValue = 255)
+kolor2 <- rgb(185, 195, 106, maxColorValue = 255)
   
 print(kolor1)
 print(kolor2)
 
 ```
 
+
+```{r}
+kolory <- c("#561C40", "#B9C36A")
+```
+
 ```{r}
 
 ggplot(mtcars, aes(x=drat)) +
-  geom_density(color= kolor2,
-               fill=kolor1, 
+  geom_density(color= "#561C40",
+               fill="#B9C36A", 
                linewidth=2 ) 
 
 
@@ -544,6 +630,7 @@ ggplot(mtcars, aes(x=drat)) +
 ```{r}
 #20 pierwszych nazw kolrów
 r_color <- colors()
+
 head(r_color, 20)
 
 ```
@@ -703,7 +790,17 @@ scale_fill_viridis(discrete = TRUE)
 ```
 
 
+```{r}
+panteon %>%
+  ggplot(aes(x = gender,
+             fill = gender)) +
+  geom_bar() +
+  #scale_fill_brewer(type = "qual",palette = "Set3") +
+  scale_fill_manual(values=wes_palette(n=2, name="GrandBudapest1")) +
+  facet_wrap(~continentName)
+```
 
+scale_fill_manual(values=wes_palette(n=3, name="GrandBudapest1"))
 
 
 ### Przykłady
@@ -929,7 +1026,12 @@ Dane:
 
 # dane dla stacji Okęcie od 1880 roku
 
-temp_okęcie <- read_csv(here("komunikowanie danych", "okecie_temp.csv"))
+temp_okęcie <- read_csv(here::here("komunikowanie danych", "okecie_temp.csv"))
+```
+https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/refs/heads/main/komunikowanie%20danych/okecie_temp.csv
+
+```{r}
+temp_okęcie <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/refs/heads/main/komunikowanie%20danych/okecie_temp.csv")
 ```
 
 ### Wykres średnich temperatur Okęcie
@@ -940,12 +1042,12 @@ ustawianie skali z wykorzystaniem RColorBrewer
 col_strip <- brewer.pal(11, "RdBu")
 ```
 
-```{r}
+```{r, width=8, height=4.5}
 
 ggplot(temp_okęcie,
-             aes(x = date, y = 1, fill = ta))+
+             aes(x = date,  y = 1, fill = ta))+
         geom_tile() +
-           scale_x_date(date_breaks = "10 years",
+           scale_x_date(date_breaks = "20 years",
                      date_labels = "%Y",
                      expand = c(0, 0))+
            scale_y_continuous(expand = c(0, 0)) +
@@ -968,7 +1070,7 @@ ggsave("ocieplenie_okęcie.png", width=8, height=4.5)
 Ustawimy motyw
 
 ```{r}
-theme_strip <- theme_minimal()+
+theme_strip <- theme_minimal() +
                  theme(axis.text.y = element_blank(),
                        axis.line.y = element_blank(),
                        axis.title = element_blank(),
@@ -985,16 +1087,16 @@ theme_strip <- theme_minimal()+
 
 ```{r}
 
-o <- ggplot(temp_okęcie,
+(o <- ggplot(temp_okęcie,
              aes(x = YEAR, y = 1, fill = ta)) +
         geom_tile() +
-           scale_x_continuous(breaks=seq(1890, 2020, 30))+
+           scale_x_continuous(breaks=seq(1890, 2020, 15))+
            scale_y_continuous(expand = c(0, 0)) +
            scale_fill_gradientn(colors = rev(col_strip)) +
              guides(fill = "none") +
             labs(title = "Okęcie 1880-2024",
                 caption = "Dane: GISS Surface Temperature Analysis") +
-              theme_strip
+              theme_strip)
 ```
 
 
@@ -1050,36 +1152,57 @@ ggplot(temp_okęcie,
 ```
 
 ```{r}
-plotly::ggplotly(o)
+plotly::ggplotly(p)
+```
+
+```{r}
+#install.packages("plotly")
+library(plotly)
 ```
 
 
+```{r}
+ggplotly(o)
+```
+
 ## Co po zajęciach?
 
-Plan minimum: 
-
-[Ściągawka ggplot](https://rstudio.github.io/cheatsheets/html/data-visualization.html) 
-
-Plan dla ambitnych:
 
 [więcej o kolorach](https://r-graph-gallery.com/ggplot2-color.html)
 
-Rozdział 10 Grafika w: Long, J. D.  (2020). Język R: Receptury: analiza danych, statystyka i przetwarzanie grafiki, (K. Sawka, Tłum.). Helion SA.
-
-[to samo online po angielsku](https://rc2e.com/graphics) 
-
-# Co przed następnymi zajęciami?
-
-Plan minimum: 
-
-[Ściągawka dplyr](https://nyu-cdsc.github.io/learningr/assets/data-transformation.pdf) 
-
-
-Plan dla ambitnych:
-
-Rozdział 3 Przekształcanie danych za pomocą pakieu dplyr w:  Wickham, H., & Grolemund, G. (2020). Język R: Kompletny zestaw narzędzi dla analityków danych (J. Zatorska, Tłum.). Wydawnictwo Helion.
-
-
-[to samo online po angielsku](https://r4ds.hadley.nz/transform) 
-
  
+## Co przed kolejnymi zajęciami
+
+[ o wykresach interaktywnych w plotly](https://plotly.com/r/)
+
+[ściągawka RMarkdown](https://rstudio.github.io/cheatsheets/html/rmarkdown.html)
+
+
+## Zadanie domowe
+
+Stwórzmy wykres podobny do tego:
+
+[pay gap](https://informationisbeautiful.net/visualizations/gender-pay-gap/)
+
+na podstawie danych:
+```{r}
+pay_gap <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/case%20studies%20/pay_gap_uk.csv")
+```
+
+
+
+Powyższy wykres jest interaktywny. W odpowiedzi na zadanie wystarczy wykres statyczny. Uporządkujmy zawody według różnicy pensji. Możemy pominąć główne kategorie a zostać przy konkretnych zawodach. Postarajmy sięzachować kolory.
+Wskazówki: 
+- użyjmy geom_segment i geom_point,
+- można zwiększyć  interaktywność wykresu, używając plotly::ggplotly i estetyki text by móc pokazywać wysokość średniej pensji w chmurce, tak jak w wykresie z linku
+- używając różnych ustawień i funkcji wewnątrz theme_ możemy zredukować liczbę linii siatki i modyfikować inne elementy, możliwie upodobniając nasz wykres do wzoru
+
+
+ P.S. 
+ 
+ #### Poniższy kod wyłącza notację naukową
+```{r}
+
+options(scipen =999)
+
+```

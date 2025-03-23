@@ -1,0 +1,135 @@
+---
+title: "Polska a Niemcy"
+author: "Tomasz Olczyk"
+output: flexdashboard::flex_dashboard
+---
+```{r}
+library(flexdashboard)
+library(tidyverse)
+library(ggrepel)
+library(plotly)
+```
+
+```{r, include=FALSE}
+panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv')
+```
+
+
+Mapy {data-icon='fa-map-marker '}
+======================================
+
+Column
+---------------------------------------
+
+### Polska
+
+```{r}
+poland = map_data('world', region = 'Poland') 
+pant_pol = filter(panteon, countryCode3=='POL')
+
+
+ggplot(poland, aes(x = long, 
+                   y = lat, 
+                   group=group)) + 
+  geom_polygon(fill = 'lightpink', 
+               colour = 'white') +
+  geom_point(data = pant_pol, aes(x= LON, 
+                                y = LAT, 
+                                 colour = gender,
+                                 size = AverageViews*10, 
+                                 group = name), alpha = 0.8) +
+    ggrepel::geom_text_repel(data = pant_pol, aes(x= LON, 
+                                               y = LAT, 
+                                               label = name, 
+                                               group = name), size =100) +
+  coord_map() +
+  theme_void()
+
+```
+
+Column
+---------------------------------------
+
+### Niemcy
+
+```{r}
+germany = map_data('world', region = 'Germany') 
+pant_ger = filter(panteon, countryCode3=='DEU')
+
+
+ggplot(germany, aes(x = long, 
+                   y = lat, 
+                   group=group)) + 
+  geom_polygon(fill = 'lightpink', 
+               colour = 'white') +
+  geom_point(data = pant_ger, aes(x= LON, 
+                                y = LAT, 
+                                 colour = gender,
+                                 size = AverageViews*10, 
+                                 group = name), alpha = 0.8) +
+    ggrepel::geom_text_repel(data = pant_ger, aes(x= LON, 
+                                               y = LAT, 
+                                               label = name, 
+                                               group = name), size =100) +
+  coord_map() +
+  theme_void()
+
+```
+
+
+Wykresy {data-icon='fa-bar-chart'}
+======================================
+
+Column
+--------------------------------------
+
+### Polska słupkowy
+
+```{r}
+ggplot(pant_pol, aes(x=gender, fill=gender)) + 
+geom_bar()
+```
+
+
+### Polska punktowy
+
+```{r}
+ggplot(pant_pol) +
+  geom_point(aes(x= HPI, y = L_star))
+```
+
+
+
+Column
+---------------------------------------
+### Niemcy słupkowy
+
+```{r}
+ggplot(pant_ger, aes(x=gender, fill=gender)) + 
+geom_bar()
+```
+
+
+### Polska punktowy
+
+```{r}
+ggplot(pant_ger) +
+  geom_point(aes(x= HPI, y = L_star))
+```
+
+Column
+---------------------------------------
+### Niemcy słupkowy
+
+```{r}
+ggplot(pant_ger, aes(x=gender, fill=gender)) + 
+geom_bar()
+```
+
+
+### Polska punktowy
+
+```{r}
+ggplot(pant_ger) +
+  geom_point(aes(x= HPI, y = L_star))
+```

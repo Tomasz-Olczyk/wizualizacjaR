@@ -1,0 +1,61 @@
+---
+title: "Zadanie domowe 6"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Jeszcze jedna wersja rozwiązania zadania 4
+
+```{r}
+library(tidyverse)
+library(plotly)
+```
+
+
+```{r}
+pay_gap <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/case%20studies%20/pay_gap_uk.csv")
+
+head(pay_gap)
+```
+
+
+```{r}
+ggplot(pay_gap, aes(y=reorder(occupation, men_average_annual_salary))) +
+  geom_segment(aes(
+                   x = women_average_annual_salary, 
+                   xend = men_average_annual_salary, 
+                   yend = occupation)) +
+  geom_point(aes( x = men_average_annual_salary), colour = "#501B3C") +
+  geom_point(aes( x = women_average_annual_salary), colour = rgb(186, 195, 106, maxColorValue = 255)) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),  # Wyłącza tytuł osi X
+    axis.title.y = element_blank(),   # Wyłącza tytuł oś y
+    axis.ticks.x = element_blank(),  # Wyłącza kreski osi X
+    panel.grid.major = element_blank(),  # Wyłącza główne linie siatki
+    panel.grid.minor = element_blank(),   # Wyłącza mniejsze linie siatki
+    axis.text.y = element_text(size= 5),
+    axis.text.x = element_text(size=8)  # Zwiększa rozmiar tekstu na osi X
+  ) +
+  facet_wrap(~category, 
+             ncol= 1, 
+             scales = "free_y"
+             ) +
+ # Druga oś X na górze
+  scale_x_continuous(breaks = c(seq(from =0 , to = 90000, by = 10000)),
+                                labels = c(seq(from = 0, to =  90, by = 10)),
+    sec.axis = sec_axis(~., name = "Salary", breaks = c(seq(from =0 , to = 90000, by = 10000)),
+                                labels = c(seq(from = 0, to =  90, by = 10)))  # Druga oś X na górze
+  )
+```
+
+
+### Zadanie 6
+
+Stwórzmy raport parametryzowany, który będzie rysował wykres zadania 4 z możliwością wyboru uporządkowania kolejności wykresu wedlug pensji mężczyzn lub pensji kobiet
+

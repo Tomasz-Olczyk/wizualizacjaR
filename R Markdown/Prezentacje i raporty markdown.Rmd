@@ -1,16 +1,315 @@
 ---
 title: "Markdown i wizualizacja - podstawy"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
-Poniższy segmnt kodu ustawia parametry globalnie dla wszystkich segmentów funkcją z biblioteki knitr `knitr::opts_chunk$set()`. Zaznaczona w naglówku opcja `include=FALSE` oznacza, że ten fragment nie pojawi się w dokumencie wygenerowanym z tego pliku markdown.
+Poniższy segment kodu ustawia parametry globalnie dla wszystkich segmentów funkcją z biblioteki knitr `knitr::opts_chunk$set()`. Zaznaczona w naglówku opcja `include=FALSE` oznacza, że ten fragment nie pojawi się w dokumencie wygenerowanym z tego pliku markdown.
 
 ```{r setup, include=FALSE}
 
-knitr::opts_chunk$set(echo = TRUE, warning = TRUE)
+knitr::opts_chunk$set(warning = TRUE, echo = TRUE)
 ```
 
-# Segmenty tekstowe - formatowanie i najważniejsze informacje
+
+## Rozwiązanie zadania domowego numer 4
+
+```{r}
+library(tidyverse)
+library(plotly)
+```
+
+
+```{r}
+pay_gap <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/case%20studies%20/pay_gap_uk.csv")
+
+head(pay_gap)
+```
+
+
+```{r}
+z5 <- ggplot(pay_gap, aes(y=reorder(occupation, pay_gap))) +
+  geom_segment(aes(y = occupation, 
+                   x = women_average_annual_salary, 
+                   xend = men_average_annual_salary, 
+                   yend = occupation)) +
+  geom_point(aes(y = occupation, x = men_average_annual_salary), colour = "#501B3C") +
+  geom_point(aes(y = occupation, x = women_average_annual_salary), colour = rgb(186, 195, 106, maxColorValue = 255)) +
+  theme_minimal()
+
+```
+
+```{r}
+z5 <- ggplot(pay_gap, aes(y=reorder(occupation, pay_gap))) +
+  geom_segment(aes(
+                   x = women_average_annual_salary, 
+                   xend = men_average_annual_salary, 
+                   yend = occupation)) +
+  geom_point(aes( x = men_average_annual_salary), colour = "#501B3C") +
+  geom_point(aes( x = women_average_annual_salary), colour = rgb(186, 195, 106, maxColorValue = 255)) +
+  theme_minimal()
+
+```
+
+```{r}
+
+ggplotly(z5)
+```
+
+
+```{r}
+w5 <- ggplot(pay_gap, aes(y=reorder(occupation, pay_gap))) +
+  geom_segment(aes(
+                   x = women_average_annual_salary, 
+                   xend = men_average_annual_salary, 
+                   yend = occupation)) +
+  geom_point(aes( x = men_average_annual_salary), colour = "#501B3C") +
+  geom_point(aes( x = women_average_annual_salary), colour = rgb(186, 195, 106, maxColorValue = 255)) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),  # Wyłącza tytuł osi X
+    axis.title.y = element_blank(),   # wyłącza tytuł oś y
+    axis.ticks.x = element_blank(),  # Wyłącza kreski osi X
+    panel.grid.major = element_blank(),  # Wyłącza główne linie siatki
+    panel.grid.minor = element_blank(),   # Wyłącza mniejsze linie siatki
+  axis.text.y = element_text(size= 5)) +
+  facet_wrap(~category, 
+             ncol= 1, 
+             scales = "free_y")
+```
+
+
+```{r, fig.height=15, fig.width= 5}
+w5
+```
+
+```{r, fig.height=15, fig.width= 5}
+ggplotly(w5)
+```
+
+
+```{r}
+x5 <- ggplot(pay_gap, aes(y=reorder(occupation, pay_gap))) +
+  geom_segment(aes(
+                   x = women_average_annual_salary, 
+                   xend = men_average_annual_salary, 
+                   yend = occupation)) +
+  geom_point(aes( x = men_average_annual_salary), colour = "#501B3C") +
+  geom_point(aes( x = women_average_annual_salary), colour = rgb(186, 195, 106, maxColorValue = 255)) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),  # Wyłącza tytuł osi X
+    axis.title.y = element_blank(),   # Wyłącza tytuł oś y
+    axis.ticks.x = element_blank(),  # Wyłącza kreski osi X
+    panel.grid.major = element_blank(),  # Wyłącza główne linie siatki
+    panel.grid.minor = element_blank(),   # Wyłącza mniejsze linie siatki
+    axis.text.y = element_text(size= 5),
+    axis.text.x = element_text(size=8)  # Zwiększa rozmiar tekstu na osi X
+  ) +
+  facet_wrap(~category, 
+             ncol= 1, 
+             scales = "free_y") +
+  scale_x_continuous(
+    sec.axis = sec_axis(~., name = "Salary")  # Druga oś X na górze
+  )
+```
+
+
+```{r}
+ ggplot(pay_gap, aes(y=reorder(occupation, pay_gap))) +
+  geom_segment(aes(
+                   x = women_average_annual_salary, 
+                   xend = men_average_annual_salary, 
+                   yend = occupation)) +
+  geom_point(aes( x = men_average_annual_salary), colour = "#501B3C") +
+  geom_point(aes( x = women_average_annual_salary), colour = rgb(186, 195, 106, maxColorValue = 255)) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),  # Wyłącza tytuł osi X
+    axis.title.y = element_blank(),   # Wyłącza tytuł osi Y
+    axis.ticks.x = element_blank(),  # Wyłącza kreski osi X
+    panel.grid.major = element_blank(),  # Wyłącza główne linie siatki
+    panel.grid.minor = element_blank(),   # Wyłącza mniejsze linie siatki
+    axis.text.y = element_text(size= 9, hjust = 0),  # Większy rozmiar czcionki i wyrównanie do lewej
+    axis.text.x = element_text(size=10),  # Większy rozmiar tekstu na osi X
+    strip.text = element_text(size = 12, face = "bold", hjust = 0)  # Etykiety paneli maksymalnie do lewej
+  ) +
+  facet_wrap(~category, 
+             ncol= 1, 
+             scales = "free_y") +
+  scale_x_continuous(breaks = c(seq(from =0 , to = 90000, by = 10000)),
+                                labels = c(seq(from = 0, to =  90, by = 10)),
+    sec.axis = sec_axis(~., name = "Salary", breaks = c(seq(from =0 , to = 90000, by = 10000)),
+                                labels = c(seq(from = 0, to =  90, by = 10)))  # Druga oś X na górze
+  )
+```
+
+```{r}
+x5
+```
+
+
+```{r}
+ggplot(pay_gap, aes(y = reorder(occupation, pay_gap))) +
+  geom_segment(aes(
+    x = women_average_annual_salary, 
+    xend = men_average_annual_salary, 
+    yend = occupation)) +
+  geom_point(aes(x = men_average_annual_salary), colour = "#501B3C") +
+  geom_point(aes(x = women_average_annual_salary), colour = rgb(186, 195, 106, maxColorValue = 255)) +
+  
+  # Dodanie pionowych linii w miejscach ticków osi X
+  geom_vline(xintercept = seq(from = 0, to = 90000, by = 10000), color = "grey70", linetype = "solid") +
+  
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),  # Wyłącza tytuł osi X
+    axis.title.y = element_blank(),  # Wyłącza tytuł osi Y
+    axis.ticks.x = element_blank(),  # Wyłącza kreski osi X (bo mamy geom_vline)
+    panel.grid.major = element_blank(),  # Wyłącza główne linie siatki
+    panel.grid.minor = element_blank(),  # Wyłącza mniejsze linie siatki
+    panel.grid.major.y = element_line(color = "grey70", linetype = "dotted"),  # Poziome kropkowane linie
+    axis.text.y = element_text(size = 9, hjust = 0),  # Większy rozmiar czcionki i wyrównanie do lewej
+    axis.text.x = element_text(size = 10),  # Większy rozmiar tekstu na osi X
+    strip.text = element_text(size = 12, face = "bold", hjust = 0)  # Etykiety paneli maksymalnie do lewej
+  ) +
+  
+  facet_wrap(~category, ncol = 1, scales = "free_y") +
+  
+  scale_x_continuous(
+    breaks = seq(from = 0, to = 90000, by = 10000),
+    labels = seq(from = 0, to = 90, by = 10),
+    sec.axis = sec_axis(
+      ~., 
+      name = "Salary", 
+      breaks = seq(from = 0, to = 90000, by = 10000),
+      labels = seq(from = 0, to = 90, by = 10)
+    )
+  )
+```
+
+
+```{r, eval = FALSE}
+ggplot(pay_gap, aes(y = reorder(occupation, pay_gap))) +
+  geom_segment(aes(
+    x = women_average_annual_salary, 
+    xend = men_average_annual_salary, 
+    yend = occupation)) +
+  geom_point(aes(x = men_average_annual_salary), colour = "#501B3C") +
+  geom_point(aes(x = women_average_annual_salary), colour = rgb(186, 195, 106, maxColorValue = 255)) +
+
+  # Dodanie pionowych linii w miejscach ticków osi X
+  geom_vline(xintercept = seq(from = 0, to = 90000, by = 10000), 
+             color = "grey70", linetype = "solid") +
+
+  # Dodanie poziomych linii oddzielających panele
+  geom_hline(yintercept = panel_borders, 
+             color = "grey50", linetype = "dotted") +
+
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),  # Wyłącza tytuł osi X
+    axis.title.y = element_blank(),  # Wyłącza tytuł osi Y
+    axis.ticks.x = element_blank(),  # Wyłącza kreski osi X (bo mamy geom_vline)
+    panel.grid.major = element_blank(),  # Wyłącza główne linie siatki
+    panel.grid.minor = element_blank(),  # Wyłącza mniejsze linie siatki
+    axis.text.y = element_text(size = 9, hjust = 0),  # Większy rozmiar czcionki i wyrównanie do lewej
+    axis.text.x = element_text(size = 10),  # Większy rozmiar tekstu na osi X
+    strip.text = element_text(size = 12, face = "bold", hjust = 0)  # Etykiety paneli maksymalnie do lewej
+  ) +
+
+  facet_wrap(~category, ncol = 1, scales = "free_y") +
+
+  scale_x_continuous(
+    breaks = seq(from = 0, to = 90000, by = 10000),
+    labels = seq(from = 0, to = 90, by = 10),
+    sec.axis = sec_axis(
+      ~., 
+      name = "Salary", 
+      breaks = seq(from = 0, to = 90000, by = 10000),
+      labels = seq(from = 0, to = 90, by = 10)
+    )
+  )
+```
+
+```{r}
+
+ggplotly(x5)
+```
+## Rozwiązanie zadania domowego numer 5
+
+```{r}
+
+library(tidyverse)
+library(plotly)
+library(DT)
+library(crosstalk)
+
+```
+
+
+Zadanie domowe  nr 5 - użyjmy wykresu z zadania 1 i połączmy go z tabelą, tak by wyświetlała nam się obok lub pod wykresem
+
+Krok 0 modyfikujemy dane
+
+```{r}
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+```
+
+
+
+
+### Zadanie 1 - wykres punktowy kobiety z Polski z nazwiskiem i liczbą wyświetleń, na osi x L_star, a na osiy HPI, wielkość punktów na AverageViews w chmurce: nazwisko, i liczba wyświetleń AverageViews
+
+
+```{r}
+pol <- panteon %>%
+  filter(gender == "Female", countryCode3 == "POL") 
+```
+
+Krok 1 zmieniamy format funkcją plotly::highlight_key
+
+```{r}
+
+m <- highlight_key(pol) # format ramki musi być zmieniony funkcją highlight_key
+
+```
+
+Krok2. Tworzymy wykres w ggplot z użyciem zmienionego formatu ramki
+
+```{r}
+
+p <- ggplot(m, aes(x= L_star, 
+                   y = HPI,
+                   size = AverageViews,
+                    text = paste("nazwisko: ", name,
+                          "<br>wyświetlania: ", AverageViews,
+                          "<br>rok urodzenia: ", birthyear))) + 
+  geom_point() # tworzymy wykres w ggplocie z tej nowej ramki
+
+```
+
+Krok 3. 
+
+```{r}
+
+gg <- highlight(ggplotly(p, tooltip = "text"), "plotly_hover") # tworzymy wykres plotly wewnątrz funkcji highlight, "plotly_hover" jest argumentem ustalającym jak wybierane będą podświetlane punkty
+
+```
+
+ 
+Krok 4. tworzymy tabelę interaktywną funkcją datatable pakietu DT i łączymy ją z wykresem funkcją bscols pakietu crosstalk
+
+```{r}
+
+crosstalk::bscols(gg, DT::datatable(m), widths = 12) # datatable tworzy tabelę, crosstalk::bscols łączy wykres z tabelą
+
+```
+
+# R Markdown
+
+## Segmenty tekstowe - formatowanie i najważniejsze informacje
 
 Tekst zwykły
 
@@ -20,7 +319,7 @@ Tekst zwykły
 
 ### nagłówek trzeciego poziomu
 
-# Formatowanie tekstu[^1]
+## Formatowanie tekstu[^1]
 
 [^1]: Przypis numer 1 [@goffman1987]
 
@@ -32,7 +331,7 @@ tekst[^2]
 
 # Nagłowek 1
 
-## Nagłówek 2
+###### Nagłówek 2
 
 listy [@girard1987]
 
@@ -95,9 +394,9 @@ Przy zapisywaniu notatnika plik HTML zawierajacy kod i jego efekty zostanie zapi
 
 Preview pokazuje wyrenderowaną kopię HTML. Inaczej niż *Knit*, *Preview* nie uruchamia kodu . W preview widać efekt ostatniego uruchomienia kodu w edytorze.
 
-[@grolemund] [@grolemund] To nie jest wersja po renderze tylko pisana, stąd cytowania w tej formie
 
 ## Segmenty kodu
+### segment kolejny
 
 Ogólne informacje
 
@@ -106,6 +405,16 @@ Kod w tekście: Dwa dodać dwa to `r 2+2`
 Kod dodajemy *Insert Chunk* na pasku narzędzi albo skrótem *Cmd+Option+I* w Widnows CtrL zamiast cmd
 
 ## Opcje segmentów kodu
+
+
+
+```{r}
+
+
+
+
+```
+
 
 Opcje segementów są zapisywane w nagłówkach segmentu
 
@@ -204,6 +513,8 @@ knitr::opts_chunk$set(echo = TRUE,
 plot(cars) #komentarz
 ```
 
+## Segmenty w innych językach
+
 ```{bash eval = FALSE}
 
 ```
@@ -212,8 +523,10 @@ plot(cars) #komentarz
 
 ```
 
-# jak umieścić kod z nagłówkiem
+## jak umieścić kod z nagłówkiem
 
 <https://bookdown.org/yihui/rmarkdown-cookbook/show-header.html>
 
 ### Bibliografia
+
+

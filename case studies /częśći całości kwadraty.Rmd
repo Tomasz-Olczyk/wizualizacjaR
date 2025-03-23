@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r }
 
 library(tidyverse)
-library(showtext) # to jest biblioteka do czcionek która mi nie działa do sprawdzenia
+#library(showtext) # to jest biblioteka do czcionek która mi nie działa do sprawdzenia
 library(janitor)
 library(MetBrewer)
 

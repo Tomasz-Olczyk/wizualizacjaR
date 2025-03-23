@@ -1,0 +1,68 @@
+---
+title: "Panteon prezentacja"
+author: "Jan Kowalski"
+date: ' `r Sys.setlocale("LC_TIME", "pl_PL.UTF-8"); format(Sys.Date(), "%A %d %B %Y")` '
+output:
+  slidy_presentation:
+    incremental: yes
+  powerpoint_presentation: default
+  html_document:
+    df_print: paged
+  revealjs::revealjs_presentation:
+    theme: solarized
+    incremental: yes
+  beamer_presentation:
+    incremental: yes
+  ioslides_presentation:
+    incremental: yes
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE,
+                      message = TRUE,
+                      warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(plotly)
+```
+
+
+```{r}
+
+panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
+```
+
+```{r}
+
+Polska <- filter(panteon, countryCode3 == "POL")
+
+```
+
+```{r, include = FALSE}
+
+Polska %>% filter(gender == "Female") %>% summarise(n())
+```
+
+# część 1 prezentacji
+
+## Dane panteon z Polski
+### sprawdzamy
+
+- w zbiorze występuje `r Polska  %>% summarise(n())` z Polski
+- w tym kobiet `r Polska %>% filter(gender == "Female") %>% summarise(n())` 
+- a mężczyzn `r Polska %>% filter(gender == "Male") %>% summarise(n())`
+
+## Wykres prezentujący te dane
+
+```{r}
+p <- ggplot(Polska) +
+  geom_bar(aes(x= gender, fill = gender)) +
+  theme_minimal()
+
+p
+```
+
+

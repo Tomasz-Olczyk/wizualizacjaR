@@ -193,6 +193,8 @@ W R działamy na obiektach.Obiektami manipulujemy pzekazując informacje o nich 
 
 np.
 
+
+
 ```{r}
 # zwraca tabelę liczności elementów
 
@@ -744,6 +746,11 @@ library(openxlsx)
 
 ```
 
+```{r}
+podatki_2 <-read.xlsx(here("podstawy",  "Chapter14TablesFigures.xlsx"),
+                      sheet = )
+```
+
 
 ```{r, eval = FALSE}
 read.xlsx(
@@ -796,9 +803,16 @@ setwd() # argumentem jest ścieżka dostępu do katalogu roboczego w cudzysłowi
 Jeśli nasz kod ma zadziałąć na dowolnym komputerze wczytując i zapisując pliki musimy stosować ścieżki relatywne
 
 ```{r}
-podatki_open <- read.xlsx("../podstawy/Chapter14TablesFigures.xlsx", #ścieżki relatywne
+podatki_open_5 <- openxlsx::read.xlsx("../podstawy/Chapter14TablesFigures.xlsx", #ścieżki relatywne
                           sheet = "TS14.1",
-                          startRow = 4)
+                          startRow = 4,
+                          rows = 1:118,
+                          cols = 1:5) %>%
+  rename(rok = "X1") 
+```
+
+```{r}
+podatki_n <- rename(podatki_open, rok = "X1")
 ```
 
 Problem ścieżek relatywnych najwygodniej rozwiązuje biblioteka here:
@@ -820,13 +834,13 @@ panteon_lokalnie <- read_csv(here("podstawy", "panteon_s.csv"))
 
 ```{r}
 plot(y =podatki_open$U.S.,
-     x = podatki_open$X1,
-     type = "l",
+     x = podatki_open$rok,
+     type = "s",
      col = "steelblue",
      ylim = c(0,1))
 
 lines(y =podatki_open$U.K.,
-     x = podatki_open$X1,
+     x = podatki_open$rok,
      col = "orange")
 ```
 

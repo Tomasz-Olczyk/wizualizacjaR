@@ -1,0 +1,43 @@
+---
+title: "Nawyki"
+author: "Jan Kowalski"
+date: ' `r format(Sys.Date(), "%A %d %B %Y")` '
+output:
+  powerpoint_presentation: default
+  slidy_presentation:
+    incremental: yes
+  html_document:
+    df_print: paged
+  revealjs::revealjs_presentation:
+    theme: solarized
+    incremental: yes
+  beamer_presentation:
+    incremental: yes
+  ioslides_presentation:
+    incremental: yes
+---
+
+# Rano
+
+## Wstawanie
+
+- wyłączanie budzika
+- wstawanie
+
+## Śniadanie
+
+- zjeść jajecznicę
+- wypić kawę
+
+# Wieczorem
+
+## Kolacja
+
+- Zjeść schabowego
+- Popić piwem
+
+## Iść spać
+
+- Kłaść się do łóżka
+- Liczyć owce
+

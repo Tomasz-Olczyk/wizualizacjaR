@@ -1,13 +1,17 @@
 ---
 title: "Wizualizacje interaktywne - plotly"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      error = TRUE)
+
 ```
 
-# Plotly
+## Plotly
 
 
 
@@ -29,7 +33,7 @@ library(gapminder)
 #install.packages("plotly")
 ```
 
-# funkcja ggplotly =  transformacja ggplot w wykres interakwyny
+### funkcja ggplotly =  transformacja ggplot w wykres interakwyny
 
 ```{r}
 w <- ggplot(mpg, aes(cty,
@@ -64,6 +68,56 @@ x
 ```
 
 
+### Dla zainteresowanych plotly podstawy składni
+
+```{r}
+
+plot_ly(diamonds, x = ~cut)
+ 
+```
+
+
+
+```{r}
+
+plot_ly(diamonds, x = ~cut, y = ~clarity)
+ 
+```
+
+
+
+```{r}
+
+plot_ly(diamonds, x = ~cut, 
+        color = ~clarity, 
+        colors = "Accent")
+```
+
+
+```{r}
+
+
+diamonds %>% 
+  plot_ly(x = ~cut) %>% 
+  add_histogram() %>% 
+  group_by(cut) %>% 
+  summarise(n = n()) %>% 
+  add_text( text = ~scales::comma(n), y = ~n,
+ textposition = "top middle",
+ cliponaxis = FALSE
+ )
+```
+
+
+
+
+
+
+
+### Kontrolowanie tekstu wyświetlanego w "dymku" (tooltip)
+
+
+- Funkcją plotly::style:
 
 ```{r}
 y <- ggplotly(wykres)
@@ -71,6 +125,21 @@ y <- ggplotly(wykres)
 style(y, 
       text = gapminder$country)
 
+```
+
+
+- Za pomocą nieoficjalnej estetyki text
+
+
+```{r}
+
+wykres <- ggplot(gapminder, aes(y = lifeExp, 
+                                x = gdpPercap,
+                                color = continent,
+                                text = country, alpha = 0.9))  +
+  geom_point()
+
+ggplotly(wykres)
 ```
 
 
@@ -86,6 +155,7 @@ wykres <- ggplot(gapminder, aes(y = lifeExp,
   geom_point()
 
 wykres
+ggplotly(wykres, tooltip = "text")
 ```
 
 ```{r}
@@ -100,35 +170,33 @@ panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 ```
 
 
-```{r}
-panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/podstawy/panteon_s.csv")
-```
 
-# zadanie z panteonem - wykres punktowy kobiety z Polski z nazwiskiem i liczbą wyświetleń, na osi x L_star, a na osiy HPI, wielkość punktów na AverageViews w chmurce: nazwisko, i liczba wyświetleń AverageViews
 
+### Zadanie 1 - wykres punktowy kobiety z Polski z nazwiskiem i liczbą wyświetleń, na osi x L_star, a na osiy HPI, wielkość punktów na AverageViews w chmurce: nazwisko, i liczba wyświetleń AverageViews
 
 
 ```{r}
-wykres2 <- panteon %>%
-  filter(gender == "Female",
-         countryCode3 == "POL") %>%
-  ggplot(aes(y = L_star, 
-                                x = HPI,
-                                color = continent,
-                                text = paste('nazwisko: ', name,
-                  '<br>wyświetlenia:', AverageViews ,
-                  "<br>rok:", year), alpha = 0.9)) +
-  geom_point
+z <- panteon %>%
+  filter(gender == "Male", countryCode3 == "RUS") %>%
+  ggplot(aes(x = L_star,
+             y = HPI,
+             text = paste("nazwisko: ", name,
+                          "<br>wyświetlania: ", AverageViews,
+                          "<br>rok urodzenia: ", birthyear))) +
+           geom_point()
+           
+ggplotly(z, tooltip = "text")
 ```
 
 
-# Połączenie z tabelką crosstalk o DT
+
+### Połączenie z tabelką crosstalk o DT
 
 Jeśli nie mamy zainstalowanych poniższych bibliotek to instalujmy je najpierw funkcją install.packages.
 
 ```{r}
 #install.packages("DT")
-#
+#install.packages(crosstalk)
 ```
 
 
@@ -161,7 +229,7 @@ Krok 3.
 
 ```{r}
 
-gg <- highlight(ggplotly(p), "plotly_click") # tworzymy wykres plotly wewnątrz funkcji highlight, "plotly_hover" jest argumentem ustalającym jak wybierane będą podświetlane punkty
+gg <- highlight(ggplotly(p), "plotly_hover") # tworzymy wykres plotly wewnątrz funkcji highlight, "plotly_hover" jest argumentem ustalającym jak wybierane będą podświetlane punkty
 
 ```
 
@@ -190,86 +258,14 @@ gg <- highlight(ggplotly(p), "plotly_hover") #mamy highlight(ggploly(tego wykres
 crosstalk::bscols(gg, DT::datatable(m), widths = 12) #i mamy zestawienie elementów
 ```
 
-## Zadanie użyjmy wykresu z zadania 1 i połączmy go z tabelą, tak by wyświetlała nam się obok lub pod wykresem
-
-## plotly podstawy
-
-```{r}
-
-plot_ly(diamonds, x = ~cut)
- 
-```
-
-
-
-```{r}
-
-plot_ly(diamonds, x = ~cut, y = ~clarity)
- 
-```
-
-
-
-```{r}
-
-plot_ly(diamonds, x = ~cut, 
-        color = ~clarity, 
-        colors = "Accent")
-```
-
-
-```{r}
-
-library(dplyr) 
-diamonds %>% 
-  plot_ly(x = ~cut) %>% 
-  add_histogram() %>% 
-  group_by(cut) %>% 
-  summarise(n = n()) %>% 
-  add_text( text = ~scales::comma(n), y = ~n,
- textposition = "top middle",
- cliponaxis = FALSE
- )
-```
 
 
 
 
-## ggplotly
-
-```{r}
-p1 <- ggplot(diamonds, aes(x = log(price),
-                           color = clarity)) +
-  geom_freqpoly() 
-
-ggplotly(p)
-```
-
-
-```{r}
-
-p2 <- ggplot(diamonds, aes(x = log(price), 
-                           color = clarity)) + 
-  geom_freqpoly(stat = "density") + 
-  facet_wrap(~cut)
-
-ggplotly(p)
-
-```
 
 
 
-
-# Aranżowanie wielu wykresów
-
-```{r}
-
-subplot(p1,p2)
-
-```
-
-
-# Animacje
+## Animacje
 
 ```{r}
 data(gapminder, 
@@ -325,6 +321,7 @@ panteon <- read_csv('https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 
 ```{r}
 library(gganimate)
+library(gapminder)
 ```
 
 
@@ -353,14 +350,16 @@ Z danymi gapminder
 
 ```{r}
 
-ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, colour = country)) +
+ggplot(gapminder, aes(x= gdpPercap, y = lifeExp, 
+                      size = pop, 
+                      colour = country)) +
   geom_point(alpha = 0.7, show.legend = FALSE) +
   scale_colour_manual(values = country_colors) +
   scale_size(range = c(2, 12)) +
   scale_x_log10() +
   facet_wrap(~continent) +
   # Here comes the gganimate specific bits
-  labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
+  labs(title = 'Rok: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
   transition_time(year) +
   ease_aes('linear')
 
@@ -406,109 +405,6 @@ base %>% add_markers(
 
 
 
-## Graphical queries
-
-
-```{r}
-
-library(plotly) 
-
-mtcars %>% 
-  highlight_key(~cyl) %>% # highliht key jako zmienna filtrująca jak w SQL SELECT * FROM mtcars WHERE cyl IN $SELECTION_VALUE
-  plot_ly(
-    x = ~wt, 
-          y = ~mpg, 
-          text = ~cyl, 
-          mode = "markers+text",
-          textposition = "top", 
-          hoverinfo = "x+y")
-```
-
-
-
-```{r}
-# load the `txhousing` dataset 
-data(txhousing, package = "ggplot2") 
-# declare `city` as the SQL 'query by' column 
-tx <- highlight_key(txhousing, ~city) 
-# initiate a plotly object 
-base <- plot_ly(tx, color = I("black")) %>% 
-  group_by(city) # create a time series of median house price 
-
-(time_series <- base %>% 
-  group_by(city) %>% 
-  add_lines(x = ~date, y = ~median))
-```
-
-
-
-
-
-```{r}
-highlight( time_series, 
-           on = "plotly_click",
-           selectize = TRUE,
-           dynamic = TRUE,
-           persistent = TRUE
- )
-```
-
-
-Poniżej powinno pozwolić mi wybierać kolory ale nie działa tak ja powinno
-
-```{r}
-dot_plot <- base %>% 
-  summarise(miss = sum(is.na(median))) %>% 
-  filter(miss > 0) %>% 
-  add_markers( x = ~miss,
- y = ~forcats::fct_reorder(city, miss),
- hoverinfo = "x+y"
- ) %>% layout(
- xaxis = list(title = "Number of months missing"),
- yaxis = list(title = "")
- ) 
-
-dot_plot
-
-```
-
-
-```{r}
-highlight(dot_plot, 
-           on = "plotly_click",
-           selectize = TRUE,
-           dynamic = TRUE,
-           persistent = TRUE)
-```
-
-
-
-
-```{r}
-subplot(dot_plot, 
-        time_series, 
-        widths = c(.2, .8), 
-        titleX = TRUE) %>% 
-  layout(showlegend = FALSE) %>%
-  highlight(on = "plotly_selected", #plotly_selected zmienia zachowanie
-            dynamic = TRUE, 
-            selectize = TRUE,
-            persistent = TRUE)
-```
-
-
-```{r}
-hist <- add_histogram(base, 
-                      x = ~median, 
-                      histnorm = "probability density" ) 
-
-subplot(time_series, hist, nrows = 2) %>% 
-  layout(barmode = "overlay", showlegend = FALSE) %>% 
-  highlight( dynamic = TRUE,
- selectize = TRUE,
- selected = attrs_selected(opacity = 0.3)
- )
-```
 
 
 # highlight versus filter
@@ -568,12 +464,20 @@ bscols(widths = c(4, 8),
 
 ```
 
+```{r}
+install.packages("leaflet")
+```
 
 ## Leaflet
 
 ```{r}
 
 library(leaflet) 
+library(crosstalk)
+
+```
+
+```{r}
 
 eqs <- highlight_key(quakes) 
 
@@ -586,11 +490,15 @@ stations <- filter_slider("station", "Number of Stations",
 ```
 
 
+
+
 ```{r}
-p	 <- plot_ly(eqs, x = ~depth, y = ~mag) %>% 
+plot_ly(eqs, x = ~depth, 
+              y = ~mag) %>% 
   add_markers(alpha = 0.5) %>% 
   highlight("plotly_selected")
 ```
+
 
 
 ```{r}
@@ -602,8 +510,40 @@ bscols( widths = c(6, 6, 3), p, map, stations )
 ```
 
 
+```{r}
+int <- highlight_key(pol)
+```
 
-# filter i highlight
+
+```{r}
+w2 <- ggplot(int, aes(x = L_star,
+                      y= HPI)) +
+  geom_point() +
+  theme_minimal()
+
+w2 <- ggplotly(w2)
+```
+
+```{r}
+w1 <- plot_ly(int, x = ~L_star, 
+              y = ~HPI) %>% 
+  add_markers(alpha = 0.5) %>% 
+  highlight("plotly_selected")
+```
+
+```{r}
+map1 <- leaflet(int) %>%
+  addTiles() %>% 
+  addCircles() %>%
+   highlight("plotly_selected")
+```
+
+```{r}
+bscols(w2, map1)
+```
+
+
+## filter i highlight
 
 
 ```{r}
@@ -687,11 +627,11 @@ plot_ly(kobiety,
 
 
 ```{r}
-plot_ly(kobiety,
+plot_ly(pol,
        x = ~AverageViews,
        y = ~HPI,
        z = ~L_star ) %>%
-  add_trace()
+  add_trace(text = ~name)
 ```
 
 
@@ -868,4 +808,13 @@ qplot(year, lifeExp, data = gapminder) +
 )
 ```
 
+
+## Co przed kolejnymi zajęciami
+
+
+[ściągawka RMarkdown](https://rstudio.github.io/cheatsheets/html/rmarkdown.html)
+
+[Dashboardy z flexdashboard](https://pkgs.rstudio.com/flexdashboard/)
+
+## Zadanie domowe  nr 5 - użyjmy wykresu z zadania 1 i połączmy go z tabelą, tak by wyświetlała nam się obok lub pod wykresem
 

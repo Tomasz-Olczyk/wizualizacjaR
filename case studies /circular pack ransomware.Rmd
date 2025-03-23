@@ -1145,6 +1145,6 @@ W pliku html R markdowna interaktywność nie działa zoomowanie. Plik z wykrese
 
 
 ```{r, eval = FALSE}
-htmlwidgets::saveWidget(w, file=paste0(getwd(), "/folder/circular_packing_ransomware.html"))
+htmlwidgets::saveWidget(w, file=paste0(getwd(), "/circular_packing_ransomware_n.html"))
 ```
 

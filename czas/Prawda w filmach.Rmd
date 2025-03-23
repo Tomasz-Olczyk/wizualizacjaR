@@ -1,0 +1,230 @@
+---
+title: "Prawda w filmach"
+author: "Tomasz Olczyk"
+date:  sys.Date()
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE, out.width = 1000, out.height = 800)
+```
+
+```{r}
+#install.packages('googlesheets4')
+#install.packages('tidyverse')
+
+```
+
+```{r}
+library(googlesheets4)
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+gs4_deauth()
+
+```
+
+```{r}
+# ściągnięcie danych
+data1 = read_sheet('https://docs.google.com/spreadsheets/d/1sJDpzYH_sMYuYHqkmZeJGIq_TEXGDjboYdSoew7UjZ8/edit#gid=1961296402',sheet="The Social Network")
+data2 = read_sheet('https://docs.google.com/spreadsheets/d/1sJDpzYH_sMYuYHqkmZeJGIq_TEXGDjboYdSoew7UjZ8/edit#gid=1961296402',sheet="Rush")
+data3 = read_sheet('https://docs.google.com/spreadsheets/d/1sJDpzYH_sMYuYHqkmZeJGIq_TEXGDjboYdSoew7UjZ8/edit#gid=1961296402',sheet="The Imitation Game")
+```
+
+```{r}
+# usunięcie ostatniego wiersza z każdego df (credits)
+data1 = data1 %>%
+  filter(row_number() <= n()-1)
+data2 = data2 %>%
+  filter(row_number() <= n()-1)
+data3 = data3 %>%
+  filter(row_number() <= n()-1)
+```
+
+
+```{r}
+# unikalny kod dla każdego df
+data1$code = 'The Social Network 2010'
+data2$code = 'Rush 2013'
+data3$code = 'The Imitation Game 2014'
+```
+
+```{r}
+# łączenie df
+data = rbind(data1, data2, data3)
+```
+
+```{r}
+# faktory
+data$'truth level' <- factor(data$'truth level', 
+                            levels = c('TRUE', 'TRUE-ISH', 'FALSE-ISH', 'FALSE', 'UNKNOWN', '-'))
+```
+
+```{r}
+# usunięcie "UNKNOWN' z danych dla potrzeb oceny prawdziwości
+data_no_unknown = data %>%
+  filter(data$'truth int' != -1)
+```
+
+```{r}
+# obliczenie procentu prawdziwych scen
+data1 = data_no_unknown %>%
+  filter(data_no_unknown$code == 'The Social Network 2010')
+data1_true = data1 %>%
+  filter(data1$`truth int` >= 2)
+trueness1 = round(nrow(data1_true)/nrow(data1)*100,1)
+
+data2 = data_no_unknown %>%
+  filter(data_no_unknown$code == 'Rush 2013')
+data2_true = data2 %>%
+  filter(data2$`truth int` >= 2)
+trueness2 = round(nrow(data2_true)/nrow(data2)*100,1)
+
+data3 = data_no_unknown %>%
+  filter(data_no_unknown$code == 'The Imitation Game 2014')
+data3_true = data3 %>%
+  filter(data3$`truth int` >= 2)
+trueness3 = round(nrow(data3_true)/nrow(data3)*100,1)
+```
+
+```{r}
+data$code = case_when(
+  data$code == 'The Social Network 2010' ~ paste0(trueness1, "% The Social Network 2010"),
+  data$code == 'Rush 2013' ~ paste0(trueness2, "% Rush 2013"),
+  data$code == 'The Imitation Game 2014' ~ paste0(trueness3, "% The Imitation Game 2014")
+)
+```
+
+
+```{r}
+# Wykres
+p <-ggplot(data, aes(x = start,
+                 xend = end, 
+                 y = 1,
+                 yend = 1,
+                 # nie usuwać data$, bez tego kolory się sypią
+                 color = data$"truth level")) +
+  geom_segment(linewidth = 20) +
+  scale_color_manual(values = c("TRUE" = "deepskyblue", "TRUE-ISH" = "lightblue", "FALSE-ISH" = "lightpink", "FALSE" = "deeppink", "UNKNOWN" = "gray")) +
+  labs(title = "Based on a True True Story?",
+       subtitle = "Scene-by-scene Breakdown of Hollywood Films",
+       caption = "Based on: https://informationisbeautiful.net/visualizations/based-on-a-true-true-story/",
+       x = "",
+       y = "",
+       color = "truth level") +
+  facet_wrap(~code, nrow = 3, ncol = 1, scales = "free", shrink = TRUE, drop = FALSE) + 
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_minimal() + 
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        legend.text.position = "right",
+        legend.text = element_text(colour = "black", size = 8, face = "bold"),
+        panel.background = element_blank(),
+        strip.text.x = element_text(size = 10, face = "bold", hjust = 0),
+        axis.text = element_blank()) +
+  guides(shape = guide_legend(override.aes = list(size = 10)), color = guide_legend(override.aes = list(size = 0.5)))
+
+
+```
+
+
+# link do przykładu: https://informationisbeautiful.net/visualizations/based-on-a-true-true-story/
+# link do zadania: https://docs.google.com/document/d/12OLVZnPdfg2_X9vA1GLUQvMBTZ1XegFPjKacq7dn2AI/edit
+
+```{r}
+library(plotly)
+```
+
+
+```{r}
+ggplotly(p)
+```
+
+### Z użyciem ggraph
+
+```{r}
+library(ggiraph)
+
+```
+
+```{r}
+
+
+p <- ggplot(data, aes(x = start,
+                      xend = end, 
+                      y = 1,
+                      yend = 1,
+                      color = data$"truth level",
+                      tooltip = paste("Truth Level:", data$"truth level"),
+                      data_id = data$"truth level")) +
+  geom_segment_interactive(linewidth = 20) +
+  scale_color_manual(values = c("TRUE" = "deepskyblue", 
+                                "TRUE-ISH" = "lightblue", 
+                                "FALSE-ISH" = "lightpink", 
+                                "FALSE" = "deeppink", 
+                                "UNKNOWN" = "gray")) +
+  labs(title = "Based on a True True Story?",
+       subtitle = "Scene-by-scene Breakdown of Hollywood Films",
+       caption = "Based on: https://informationisbeautiful.net/visualizations/based-on-a-true-true-story/",
+       x = "", y = "", color = "truth level") +
+  facet_wrap(~code, nrow = 3, ncol = 1, scales = "free", shrink = TRUE, drop = FALSE) + 
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_minimal() + 
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        legend.text = element_text(colour = "black", size = 8, face = "bold"),
+        panel.background = element_blank(),
+        strip.text.x = element_text(size = 10, face = "bold", hjust = 0),
+        axis.text = element_blank()) +
+  guides(shape = guide_legend(override.aes = list(size = 10)), 
+         color = guide_legend(override.aes = list(size = 0.5)))
+
+# Renderowanie interaktywnego wykresu
+girafe(ggobj = p)
+```
+
+
+```{r}
+# Upewnij się, że scene to character
+data$scene <- as.character(data$scene)
+
+# Zamiana apostrofów na &apos; (HTML-friendly)
+data$scene <- gsub("'", "&apos;", data$scene)
+
+q <- ggplot(data, aes(
+  x = start,
+  xend = end, 
+  y = 1,
+  yend = 1,
+  color = `truth level`,
+  tooltip = scene,  
+  data_id = scene
+)) +
+  geom_segment_interactive(linewidth = 20) +
+  scale_color_manual(values = c("TRUE" = "deepskyblue", 
+                                "TRUE-ISH" = "lightblue", 
+                                "FALSE-ISH" = "lightpink", 
+                                "FALSE" = "deeppink", 
+                                "UNKNOWN" = "gray")) +
+  labs(title = "Based on a True True Story?",
+       subtitle = "Scene-by-scene Breakdown of Hollywood Films",
+       caption = "Based on: https://informationisbeautiful.net/visualizations/based-on-a-true-true-story/",
+       x = "", y = "", color = "truth level") +
+  facet_wrap(~code, nrow = 3, ncol = 1, scales = "free", shrink = TRUE, drop = FALSE) + 
+  scale_x_continuous(expand = c(0, 0)) +
+  theme_minimal() + 
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        legend.text = element_text(colour = "black", size = 8, face = "bold"),
+        panel.background = element_blank(),
+        strip.text.x = element_text(size = 10, face = "bold", hjust = 0),
+        axis.text = element_blank()) +
+  guides(shape = guide_legend(override.aes = list(size = 10)), 
+         color = guide_legend(override.aes = list(size = 0.5)))
+
+# Renderowanie interaktywnego wykresu
+girafe(ggobj = q)
+```
+
