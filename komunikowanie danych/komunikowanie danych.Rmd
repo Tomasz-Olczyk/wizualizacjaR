@@ -44,7 +44,7 @@ pop <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/r
 ```
 
 
-## Dokończenie z zajęć o przekształcaniu danych: join i mutate
+=## Dokończenie z zajęć o przekształcaniu danych: join i mutate
 
 Stworzymy wykres na podstawie połączenia danych panteon i danych banku świadowego o gdp.percap
 
@@ -142,7 +142,7 @@ p <- ggplot(panteon_c, aes(x = reorder(continentName, sławni),
                             color = continentName)) +
   scale_y_log10() +
   geom_boxplot() +
-  geom_jitter() 
+  geom_jitter()
 
 p
 ```
@@ -151,10 +151,9 @@ p
 ```{r}
  p <- ggplot(panteon_c, aes(x = reorder(continentName, sławni, FUN = median), 
                             y = sławni, 
-                            color = continentName,
-                            fill = continentName)) +
+                            color = continentName)) +
   scale_y_log10() +
-  geom_boxplot()
+  geom_boxplot() 
 p
 ```
 
@@ -168,7 +167,7 @@ p + theme(legend.position="left", legend.title.position = "bottom")
 Usuwanie legendy 
 
 ```{r}
-p + theme(legend.position="none",
+p + theme(legend.position="bottom",
         )
 ```
 
@@ -186,8 +185,7 @@ Zmiana poprzez zmianę kolejności faktorów
 
 ```{r}
 p +
-  guides(color = guide_legend(reverse = TRUE),
-         fill = guide_legend(reverse = TRUE)) # 
+  guides(color = guide_legend(reverse = TRUE)) # 
 ```
 
 
@@ -207,7 +205,7 @@ panteon %>%
   labs(x = "płeć",
        title = "boxplot") +
   theme(plot.title = element_text(hjust = 0)) +
-  theme_wsj()
+  ggthemes::theme_economist()
 ```
 
 
@@ -232,8 +230,8 @@ p + scale_color_manual(values=c('pink','steelblue','#56B4E9', "red", "135", "gra
     reverse = TRUE, 
     title.position = "bottom", 
     label.position = "bottom",
-    keywidth = 6,
-    nrow = 3
+    keywidth = 9,
+    nrow = 4
   )
 )
 
@@ -273,7 +271,8 @@ t +
       title.position = "bottom", 
       label.position = "bottom",
       keywidth = 6,
-      nrow = 3
+      nrow = 3,
+      labels = etykiety
     )
   )
 ```
@@ -408,7 +407,7 @@ panteon %>%
   ggplot(aes(x = L_star, y = HPI, size = AverageViews)) +
   geom_point(aes(size = AverageViews)) +
   geom_point(data = polki %>% filter(name == "Doda"), color= "red") +
-  geom_label(aes(label = name), nudge_y = 5, hjust = 1.5, vjust = 1.5)
+  geom_label(data = polki %>% filter(name == "Doda"), aes(label = name), nudge_x = 5, hjust = 1.5, vjust = 1.5)
 
 
 ```
@@ -430,7 +429,7 @@ panteon %>%
   filter(countryCode3 == "POL" & gender == "Female") %>%
   ggplot(aes(x = L_star, y = HPI)) +
   geom_point(aes(size = AverageViews)) +
-  geom_text_repel(aes(label = name))
+  geom_text_repel(aes(label = name), nudge_y = 3)
 
 ```
 
@@ -447,7 +446,7 @@ panteon %>%
   annotate(geom = "text", 
            x=8, 
            y=30, 
-           label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II") #cudzysłów wewnętrz cudzysłowu musi się różnić od zewnętrznego
+           label = "Jedną z bardziej znanych \n 'Polek' okazuje się Katarzyna II") #cudzysłów wewnętrz cudzysłowu musi się różnić od zewnętrznego
 
 
 ```
@@ -497,7 +496,7 @@ polki <- panteon %>%
 
 ggplot(polki, aes(x = L_star, y = HPI)) +
   geom_point(aes(size = AverageViews)) +
-  geom_text_repel(data = polki %>% filter(AverageViews > mean(polki$AverageViews)), aes(label = name), nudge_y = 1.5) +
+  geom_text_repel(data = polki %>% filter(AverageViews > mean(polki$AverageViews)), aes(label = name), nudge_y = - 1.5) +
   annotate(geom = "text", x=8, y=30, label = "Jedną z bardziej znanych 'Polek' \n okazuje się Katarzyna II",) +
   
   annotate(geom = "rect", xmin = 7.5, xmax = 11, ymin = 27, ymax = 29, fill = "red", alpha = 0.2) +
@@ -515,7 +514,8 @@ panteon %>%
   ggplot(aes(x = L_star, y = HPI)) +
   geom_point(aes(size = AverageViews)) +
   geom_text_repel(aes(label = name)) +
-  geom_vline(xintercept = mean(panteon$L_star)) +
+  geom_vline(xintercept = mean(panteon$L_star),
+             linetype = "dotted") +
   geom_hline(yintercept = mean(panteon$HPI))
 
 ```
@@ -538,11 +538,11 @@ panteon %>%
   geom_segment(aes(x = 8, xend = 9.4 , 
                    y= 29,
                    yend = 27.9),
-    arrow = arrow(length = unit(0.1,"cm"))) +
+    arrow = arrow(length = unit(0.3,"cm"), type = "closed")) +
   geom_curve(aes(x = 8, xend = 9.4 , 
                    y= 29,
                    yend = 27.9),
-    arrow = arrow(length = unit(0.1,"cm")))
+    arrow = arrow(length = unit(1,"cm")))
 
 ```
 
@@ -573,7 +573,7 @@ więcej na ten temat na ciekawej stronie [R Graph Gallery](https://r-graph-galle
 
 ```{r}
 
-kolor1 <- rgb(86, 28, 64, maxColorValue = 255) # domyślnie jest na skali intensywności 0-1 dlatego przy skali 0-255 trzeba ustalić argument maxColorValue na 255
+kolor1 <- rgb(10, 99, 66, maxColorValue = 100) # domyślnie jest na skali intensywności 0-1 dlatego przy skali 0-255 trzeba ustalić argument maxColorValue na 255
 
 kolor2 <- rgb(185, 195, 106, maxColorValue = 255)
   
@@ -590,7 +590,7 @@ kolory <- c("#561C40", "#B9C36A")
 ```{r}
 
 ggplot(mtcars, aes(x=drat)) +
-  geom_density(color= "#561C40",
+  geom_density(color= "#FCE08F",
                fill="#B9C36A", 
                linewidth=2 ) 
 
@@ -604,7 +604,7 @@ ggplot(mtcars, aes(x=drat)) +
 
 ggplot(mtcars, aes(x=drat)) + 
   geom_density( color = "#C88354", 
-                fill="#901A28", 
+                fill="azure3", 
                 linewidth=2 )
 
 
@@ -1127,9 +1127,10 @@ ggplot(temp_okęcie,
 
 (o <- temp_okęcie %>%
   ggplot(aes(x = YEAR, y = 1, fill = td)) +
-  geom_tile(show.legend = FALSE) +
+  geom_tile(show.legend = FALSE,
+            aes(text = YEAR)) +
   scale_fill_stepsn(colors=c("#08306B", "white", "#67000D"),
-                    values = rescale(c(min(temp_okęcie$td, na.rm = TRUE), 0, max(temp_okęcie$td, na.rm = TRUE))),
+                    values = scales::rescale(c(min(temp_okęcie$td, na.rm = TRUE), 0, max(temp_okęcie$td, na.rm = TRUE))),
                     n.breaks = 12) +
   coord_cartesian(expand=FALSE) +
   scale_x_continuous(breaks=seq(1890, 2020, 30)) +
@@ -1152,7 +1153,7 @@ ggplot(temp_okęcie,
 ```
 
 ```{r}
-plotly::ggplotly(p)
+plotly::ggplotly(o, tooltip = "text")
 ```
 
 ```{r}
@@ -1189,6 +1190,27 @@ na podstawie danych:
 pay_gap <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/case%20studies%20/pay_gap_uk.csv")
 ```
 
+```{r}
+pay_gap %>%
+  ggplot() +
+  geom_segment(aes(x = women_average_annual_salary, xend = men_average_annual_salary, y = occupation, yend = occupation))
+```
+
+
+
+
+
+```{r}
+x <- pay_gap %>%
+  ggplot() +
+  geom_point(aes(x = women_average_annual_salary, y = occupation), color = "blue") +
+  geom_point(aes(x = men_average_annual_salary, y = occupation), color = "green") +
+  facet_wrap(~category, scales = "free_y", ncol =1)
+```
+
+```{r}
+plotly::ggplotly(x)
+```
 
 
 Powyższy wykres jest interaktywny. W odpowiedzi na zadanie wystarczy wykres statyczny. Uporządkujmy zawody według różnicy pensji. Możemy pominąć główne kategorie a zostać przy konkretnych zawodach. Postarajmy sięzachować kolory.

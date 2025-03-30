@@ -3,6 +3,8 @@ title: "circular packing ransomware"
 author: "Tomasz Olczyk"
 date: "3/28/2024"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -43,11 +45,16 @@ https://docs.google.com/spreadsheets/d/1wPgM8ye1AUTVxlZOFsyiKEPWp6iFt34xpp2XA5iM
 ```{r}
 library(googlesheets4)
 library(janitor)
+
+```
+
+
+```{r}
+gs4_deauth()
 ```
 
 ```{r}
-ransom_google <- read_sheet("https://docs.google.com/spreadsheets/d/1wPgM8ye1AUTVxlZOFsyiKEPWp6iFt34xpp2XA5iM6P0/edit#gid=25233212", skip =1)  %>%
-  clean_names()
+ransom_google_c <- read_sheet("https://docs.google.com/spreadsheets/d/1wPgM8ye1AUTVxlZOFsyiKEPWp6iFt34xpp2XA5iM6P0/edit#gid=25233212", skip =1)  
 ```
 
 ponieważ tabela ma tytuł trzeba uzyć skip
@@ -77,6 +84,8 @@ ransom_atak$month <- toupper(ransom_atak$month)
 ```
 
 
+Transformuję month na zmienną czynnikową żeby móc jej użyć do uporządkowania wykresu.
+
 ```{r}
 ransom_atak$month <- factor(ransom_atak$month, levels = c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"))
 
@@ -86,7 +95,6 @@ ransom_atak$month <- factor(ransom_atak$month, levels = c("JAN", "FEB", "MAR", "
 
 ```{r}
 ransom_atak %>%
-  filter(year  >= 2017) %>%
   ggplot(aes(x = year, y = month)) +
   geom_jitter(aes(size = organisation_size,
                   color = year), 
@@ -126,7 +134,7 @@ ransom_atak %>%
   geom_jitter(aes(size = organisation_size^2,
                   color = year), 
               width = 0.1,
-              height = 40,
+              height = 20,
               alpha = 0.7) +
   labs(x= "",
        y = "") +
@@ -208,11 +216,13 @@ Zmienimy atrybut year w estetyce color na factor aby można było przypisać rę
 ```{r, fig.height = 8, fig.width= 5}
 
 
-ransom_atak %>%
+p <- ransom_atak %>%
   filter(year  >= 2017) %>%
   ggplot(aes(x = year, y = month)) +
   geom_jitter(aes(size = organisation_size^2,
-                  color = factor(year)), #zmieniamy na factor bo R traktuj year jako zmienną ciągłą a n
+                  color = factor(year),
+                  text = paste("organizacja: ", target,
+                               "<br>rozmiar:", organisation_size)), #zmieniamy na factor bo R traktuj year jako zmienną ciągłą a n
               width = 0.1,
               height = 40,
               alpha = 0.7) +
@@ -232,86 +242,17 @@ ransom_atak %>%
         axis.text.y = element_blank())
 
 ```
+### Zadanie 
 
+Stwórzmy wersję interaktywną  z plotly, w tooltie nazwa organizacji.
 
-### Wersja interaktywna z plotly
-
-```{r, fig.height = 6, fig.width= 5}
-
-
-p <- ransom_atak %>%
-  filter(year  >= 2017) %>%
-  ggplot(aes(x = year, y = month)) +
-  geom_jitter(aes(size = organisation_size^2,
-                  color = factor(year)), #zmieniamy na factor bo R traktuj year jako zmienną ciągłą a n
-              width = 0.1,
-              height = 40,
-              alpha = 0.7) +
-  scale_x_continuous(breaks = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
-                     position = "top") +
-  labs(x= "",
-       y = "",
-       title = "Ransomware attacks",
-       subtitle = "size = size of organisation") +
-  scale_color_manual(values = paleta) + #zadziała ze zmienną typu faktor, stąd transformacja color = factor(year)
-  guides(color= "none",
-         size = "none") +
-  theme_minimal() +
-  theme(axis.line.x = element_line(colour = 'black', linewidth=0.1, linetype='solid'),
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_blank(),
-        axis.text.y = element_blank())
-
+```{r}
+ggplotly(p,  tooltip = "text")
 ```
 
 
 ```{r}
 library(plotly)
-```
-
-
-
-
-```{r, fig.height = 6, fig.width= 5}
-
-ggplotly(p)
-
-```
-
-Plotly zepsuł nam trochę układ wykresu ale w zamian mamy interaktywność. Zmodyfikujmy tekst wyświetlany w chmurce.
-Potrzebujemy estetyki text.
-
-```{r}
-p1 <- ransom_atak %>%
-  filter(year  >= 2017) %>%
-  ggplot(aes(x = year, y = month)) +
-  geom_jitter(aes(size = organisation_size^2,
-                  color = factor(year),
-                  text = paste('organizacja: ', target,
-                  '<br>czy opłacono okup:', ransom_paid,
-                  "<br>środek ataku: ", interesting_story)), #zmieniamy na factor bo R traktuj year jako zmienną ciągłą a n
-              width = 0.1,
-              height = 40,
-              alpha = 0.7) +
-  scale_x_continuous(breaks = c(2017, 2018, 2019, 2020, 2021, 2022, 2023),
-                     position = "top") +
-  labs(x= "",
-       y = "",
-       title = "Ransomware attacks",
-       subtitle = "size = size of organisation") +
-  scale_color_manual(values = paleta) + #zadziała ze zmienną typu faktor, stąd transformacja color = factor(year)
-  guides(color= "none",
-         size = "none") +
-  theme_minimal() +
-  theme(axis.line.x = element_line(colour = 'black', linewidth=0.1, linetype='solid'),
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_blank(),
-        axis.text.y = element_blank())
-```
-
-
-```{r}
-ggplotly(p1, tooltip = "text")
 ```
 
 
@@ -330,10 +271,11 @@ library(ggiraph)
 
 p2 <- ransom_atak %>%
   filter(year  >= 2017) %>%
-  ggplot(aes(x = year, y = month)) +
+  ggplot(aes(x = year, y = fct_rev(month))) +
   geom_jitter_interactive(aes(size = organisation_size^2, # geometria biblioteki ggiraph
                   color = factor(year),
-                  tooltip = organisation_size),
+                  tooltip = target,
+                  tooltip_fill =factor(year)),
               width = 0.1,
               height = 40,
               alpha = 0.7) +
@@ -351,6 +293,10 @@ p2 <- ransom_atak %>%
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
         axis.text.y = element_blank())
+```
+
+
+```{r}
 
   
 
@@ -533,7 +479,9 @@ a17 <- ggplot() +
   coord_equal() +
   ggtitle("2017")
 
+```
 
+```{r}
 
 a18 <- ggplot() +
   geom_polygon(data = dat18, aes(x, y, group = id, fill=as.factor(id)), colour = "black", alpha = 0.6) +
@@ -1051,6 +999,33 @@ ggraph(mygraph, layout = 'circlepack', weight=size) +
 Dodajemy tytuł wykresu i etykiety dla "gałęzi" czyli zmiennej sektor
 
 
+
+```{r}
+V(mygraph)$root <- degree(mygraph, mode = "in") == 0
+
+```
+
+```{r}
+# Tworzymy wykres z odpowiednimi etykietami
+ggraph(mygraph, layout = 'circlepack', weight = size) + 
+  geom_node_circle(aes(fill = sektor), alpha = 0.7) +
+  
+  # Etykiety tylko dla liści
+  geom_node_text(aes(label = ifelse(size > 80, label, NA), filter = leaf), 
+                 size = 2.6, color = "white") +
+  
+  # Etykiety tylko dla korzeni
+  geom_node_label(aes(label = name, filter = root), 
+                 size = 3.5, fontface = "bold") +
+  
+  theme_void() +
+  guides(fill = "none", size = "none") +
+  scale_fill_manual(values = rev(met.brewer("Pillement", 18))) +
+  coord_equal() +
+  ggtitle("Tytuł wykresu")
+```
+
+
 ### Interaktywny wykres z biblioteką circlepackeR
 
 Dodatkowo potrzebujemy biblioteki data.tree
@@ -1141,10 +1116,18 @@ w <- circlepackeR(nested_data,
 w
 ```
 
-W pliku html R markdowna interaktywność nie działa zoomowanie. Plik z wykresem trzeba zapisać oddzielnie i otwrzyc kilkając na link, np. tak, jak poniżej (trzeba oczywiście podsawić własną nazwę folder)
+W pliku html R markdowna ć nie działa zoomowanie. Plik z wykresem trzeba zapisać oddzielnie i otwrzyc kilkając na link, np. tak, jak poniżej (trzeba oczywiście podsawić własną nazwę folderu)
 
 
 ```{r, eval = FALSE}
 htmlwidgets::saveWidget(w, file=paste0(getwd(), "/circular_packing_ransomware_n.html"))
 ```
+
+
+# Zadanie końcowe dla chętnych:
+
+Do wyborujedno zadanie listy z poniższego pliku:
+
+[Zadania końcowe](https://docs.google.com/document/d/13zD7IhZFSNQfRR1oXwRVZOU-V6JZvNo0k0z_R1MFUh8/edit?tab=t.0)
+
 

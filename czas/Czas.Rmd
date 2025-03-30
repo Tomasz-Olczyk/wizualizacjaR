@@ -598,17 +598,12 @@ Następnie zmienimy jego format na date
 
 ```{r}
 
-kadencje2 <- lubridate::ymd(kadencje)
+kadencje <- lubridate::ymd(kadencje)
 
 ```
 
 
 
-```{r}
-
-class(kadencje)
-
-```
 
 
 ```{r}
@@ -619,7 +614,7 @@ plotly::ggplotly(ggplot(premierzyIIIRP) +
                    x= start,
                    yend = stronnictwo, 
                    colour = stronnictwo)) +
-  scale_x_date(breaks = kadencje2, 
+  scale_x_date(breaks = kadencje, 
                date_labels = "%y") +
   theme_bw() +
     guides(colour = "none") 
@@ -822,10 +817,6 @@ Stworzymy kalendarz wzorowany na kalendarzu aktywności na [githubie](https://ww
 
 Dane dotyczące ataków powietrznych na Ukrainę z [Kaggle](https://www.kaggle.com/datasets/piterfm/massive-missile-attacks-on-ukraine). Według opisu automatycznie ekstraktowane z komunikatów ukraińskich.
 
-klikalne:
-
-labs(title = "Rosyjskie ataki pociskami manewrującymi od 28 września 2022",
-     caption = "źródło: [Kaggle](https://www.kaggle.com/datasets/piterfm/massive-missile-attacks-on-ukraine)")
 
 
 
@@ -843,10 +834,17 @@ ataki_rakietowe <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wiz
 
 ```
 
+
+W jakim formacie będą dane z informacjami o dacie i czasie jeśli użyjemy funkcji read.csv?
+
 ```{r}
 test <- read.csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacjaR/main/czas/missile_attacks_daily.csv")
 ```
 
+
+```{r}
+glimpse(test)
+```
 
 
 Łączymy ramkę danych z ramką opisującą typy środków napadu powietrznego żeby wyselekcjonować ataki z użyciem wybranego typu.
@@ -905,18 +903,20 @@ ataki_środki <- ataki_środki %>%
 Sumy ataków według kategorii
 
 ```{r}
+
 ataki_cat <- ataki_środki %>%
   group_by(date, category) %>%
   summarise(wystrzelone = sum(launched)) %>%
   ungroup()
+
 ```
 
 
 
 ```{r}
 
-manewrujące <- ataki_cat %>%
-  filter(category == "cruise missile") %>%
+UAV <- ataki_cat %>%
+  filter(category == "UAV") %>%
   select(date, wystrzelone)
 
 
@@ -926,7 +926,7 @@ manewrujące <- ataki_cat %>%
 
 ```{r}
 
-df7 <- manewrujące %>%
+df7 <- UAV %>%
    complete(date = seq.Date(as.Date("2022-09-28"), as.Date("2025-03-16"), by="day")) %>% 
   mutate(year = year(date),
          month = month(date, label = TRUE),
@@ -1083,14 +1083,14 @@ balistyczne <- ataki_cat %>%
 
 ```{r}
 
-balistyczne %>%
+bdf <- balistyczne %>%
    complete(date = seq.Date(as.Date("2022-09-28"), as.Date("2025-03-16"), by="day")) %>% 
   mutate(year = year(date),
          month = month(date, label = TRUE),
          months = month(date, label = FALSE),
          wday = wday(date, label = TRUE),
          day = day(date), 
-         week = lubridate::epiweek(date))  -> bdf 
+         week = lubridate::epiweek(date))  
 
 ```
 
@@ -1163,6 +1163,10 @@ b <- ggplot(bdf, aes(y = fct_rev(wday),
 b
 ```
 
+```{r}
+library(plotly)
+```
+
 
 ```{r}
 ggplotly(b)
@@ -1172,7 +1176,7 @@ ggplotly(b)
 # Kalendarz z danych o rakietach
 
 
-### Kalendarz
+### Standadowy kalendarz
 
 ```{r}
 kalendarz <- data.frame(date = seq(as.Date("2025-01-01"), 
@@ -1212,7 +1216,7 @@ ggplot(aes(x = wday, y = week)) +
 
 
 bdf_iso <- balistyczne %>%
-   complete(date = seq.Date(as.Date("2022-09-28"), as.Date("2025-03-16"), by="day")) %>% 
+   complete(date = seq.Date(as.Date("2022-09-28"), as.Date("2025-03-24"), by="day")) %>% 
   mutate(year = year(date),
          month = month(date, label = TRUE),
          months = month(date, label = FALSE),
@@ -1252,9 +1256,133 @@ bdf %>%
 ```
 
 
+źró∂ło problemu?
+
+```{r}
+problem <- bdf %>% 
+  filter(year == 2023)
+```
+
+Rozwiązanie: trzeba zamienić tydzień ostatniego dnia grudnia na 53
+
+```{r}
+problem <- problem %>%
+  mutate(week = if_else(month == "gru" & day == 31, 53, week))
+```
+
+
+```{r}
+
+problem %>% 
+  filter(year == 2023) %>%
+  ggplot(aes(x = wday, y = week)) + 
+  geom_tile(aes(fill = wystrzelone), color = "black", size = .5) +
+  geom_text(aes(label = day)) + 
+  labs(title = "Rakiety balistyczne wystrzelone przez Rosję", 
+       x = "", 
+       y = "") + 
+  scale_fill_continuous(low = "yellow", 
+                       high = "red4", 
+                     name = "liczba rakiet", 
+                     na.value = 'white') +
+  scale_x_discrete(position = "top") +
+  scale_y_continuous(trans = "reverse") + 
+  scale_color_manual(values = c("black", "grey")) + 
+  facet_wrap(~month, scales="free_y") +
+     theme_grey() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank()) +
+    guides(color = "none") 
+```
+
+
+### To samo tylko tydzień zaczyna się w poniedziałek
+
+
+Pierwszy problem:
+
+```{r}
+
+
+bdf_iso %>% 
+  filter(year == 2023) %>%
+  ggplot(aes(x = wday, y = week)) + 
+  geom_tile(aes(fill = wystrzelone), color = "black", size = .5) +
+  geom_text(aes(label = day)) + 
+  labs(title = "Rakiety balistyczne wystrzelone przez Rosję", 
+       x = "", 
+       y = "") + 
+  scale_fill_continuous(low = "yellow", 
+                       high = "red4", 
+                     name = "wystrzelone", 
+                     na.value = 'white') +
+  scale_x_discrete(position = "top") +
+  scale_y_continuous(trans = "reverse") + 
+  scale_color_manual(values = c("black", "grey")) + 
+  facet_wrap(~month, scales="free_y") +
+     theme_grey() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank()) 
+```
+
+
+```{r}
+glimpse(bdf_iso)
+```
+
+```{r}
+class(bdf_iso$wday)
+```
+
+```{r}
+levels(bdf_iso$wday)
+
+```
+
+
 ```{r}
 
 bdf_iso$wday <- factor(bdf_iso$wday, levels = c("pon", "wto", "śro", "czw", "ptk", "sob", "ndz"))
+```
+
+Drugi problem
+
+```{r}
+
+
+bdf_iso %>% 
+  filter(year == 2023) %>%
+  ggplot(aes(x = wday, y = week)) + 
+  geom_tile(aes(fill = wystrzelone), color = "black", size = .5) +
+  geom_text(aes(label = day)) + 
+  labs(title = "Rakiety balistyczne wystrzelone przez Rosję", 
+       x = "", 
+       y = "") + 
+  scale_fill_continuous(low = "yellow", 
+                       high = "red4", 
+                     name = "wystrzelone", 
+                     na.value = 'white') +
+  scale_x_discrete(position = "top") +
+  scale_y_continuous(trans = "reverse") + 
+  scale_color_manual(values = c("black", "grey")) + 
+  facet_wrap(~month, scales="free_y") +
+     theme_grey() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank()) 
+```
+
+```{r}
+drugi_problem <- bdf_iso %>% 
+  filter(year == 2023) 
 ```
 
 

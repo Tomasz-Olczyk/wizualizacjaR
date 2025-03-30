@@ -1,0 +1,338 @@
+---
+title: "Mapy wyborów w Niemczech"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+
+#install.packages("geojsonio")
+#install.packages("sf")
+library(sf)
+library(geojsonio)
+library(tidyverse)
+
+```
+
+
+## Mapa na poziomie landów
+
+
+Niemcy w podziale na jednostki terytorialne poniżejj landu (powiaty)
+```{r}
+niemcy_m <- geojson_sf("gadm41_DEU_2.json")
+```
+
+
+
+```{r}
+ggplot(niemcy_m) +
+  geom_sf()
+```
+
+```{r}
+dane_wyborcze
+```
+
+### Niemcy podział na okręgi wyborcze
+
+```{r}
+my_sf <- read_sf(here::here("case studies ", "Geometrie_Wahlkreise_19DBT_VG250_geo.shp"))
+```
+Żeby to zadziałało trzeba mieć w tym samym folderze pliki w forimacie 
+.shp, .shx, .dbf, .prj (wszystkie muszą być w tym samym folderze)
+
+```{r}
+ggplot(my_sf) +
+  geom_sf()
+```
+
+#### Dane wyborcze: 
+
+
+https://bundeswahlleiterin.de/en/bundestagswahlen/2025/ergebnisse.html
+
+
+```{r}
+testuję <- my_sf %>%
+  filter(str_detect(WKR_NAME, "Isny-Ost"))
+```
+
+
+W kolumnie "Stimmenart" litery "Z" i "E" oznaczają różne sposoby liczenia głosów w niemieckich wyborach:
+
+"E" (Erststimme) – oznacza głosy oddane w głosowaniu pierwszym, czyli na konkretnego kandydata w jednomandatowym okręgu wyborczym (system większościowy).
+
+"Z" (Zweitstimme) – oznacza głosy oddane w głosowaniu drugim, czyli na listę partyjną (system proporcjonalny), które mają kluczowe znaczenie dla podziału mandatów w Bundestagu.
+
+Dodatkowo, w kolumnie "Bezirksart":
+
+"Zusammen" – oznacza sumę głosów (łącznie).
+
+"Urne" – oznacza głosy oddane w lokalach wyborczych.
+
+"Brief" – oznacza głosy oddane korespondencyjnie.
+
+tłumaczenie: Wählende suma oddanych głosów
+gültig - ważne głosy
+
+Wahlberechtigte" oznacza "osoby uprawnione do głosowania" lub "wyborcy"
+```{r}
+wyniki <- read_csv2(here::here("case studies ", "btw25_ergebnisse_bezirksart_pop.csv"))
+```
+Przekształcam
+
+```{r}
+wyniki_p <- wyniki %>%
+  filter(Stimmenart == "Z") %>%
+  filter(Bezirksart == "Zusammen") %>%
+  mutate(CDU_CSU = CDU + CSU) %>%
+  select(2, gültig, 9:16) %>%
+  pivot_longer(cols = c(3:10), names_to = "partia") %>%
+  mutate(procent = value/gültig) %>%
+  filter(partia != "CSU", partia != "CDU")
+```
+
+```{r}
+write_csv(wyniki_p, here::here("case studies ", "wybory_niem_pr.csv"))
+```
+
+
+```{r}
+zwycięzcy <- wyniki_p %>%
+  group_by(Land) %>%             # Grupowanie po Land
+  slice_max(order_by = procent) 
+```
+
+### Kształty landów
+
+
+```{r}
+landy<- geojson_sf(here::here("case studies ", "gadm41_DEU_1.json"))
+```
+
+
+```{r}
+ggplot(landy) +
+  geom_sf()
+```
+Sklejam ramkę z kształtami z ramką z danymi
+
+
+```{r}
+wyniki_mapa <- landy %>%
+  select(Land = NAME_1, geometry) %>%
+  left_join(wyniki_p, by = "Land")
+```
+
+```{r}
+m <- wyniki_mapa %>%
+  group_by(Land) %>%             # Grupowanie po Land
+  slice_max(order_by = procent) %>%
+  ggplot() +
+   geom_sf(aes(fill = partia, geometry = geometry)) + 
+  coord_sf()  +
+  theme_void()
+```
+
+
+
+Kolory partii
+
+AFD black
+
+SPD
+
+```{r}
+afd1 <- rgb(51, 146, 199, maxColorValue = 255)
+spd1 <- rgb(229,0,27, maxColorValue = 255)
+linke1 <- rgb(81,	19,	113,	maxColorValue = 255)
+grune1 <- rgb(20,	153,	64,		maxColorValue = 255)
+cdu1 <- rgb(25,	24,	24,			maxColorValue = 255)
+fdp1 <- rgb(253,	196,	11,				maxColorValue = 255)
+```
+
+
+
+```{r}
+m +
+  scale_fill_manual(values = c("AfD" = "#3392C7", "CDU_CSU" = "#191818", "Die Linke" = "#511371", "SPD" = "#E5001B"))
+```
+
+
+
+```{r}
+wyniki_mapa %>%
+  ggplot() +
+   geom_sf(aes(fill = procent, geometry = geometry)) + 
+  coord_sf()  +
+  theme_void() +
+  facet_wrap(~partia)
+```
+
+```{r}
+#install.packages("colorspace")
+```
+
+
+
+```{r}
+library(colorspace)
+
+# Definiujemy bazowe kolory dla partii
+kolory_partii <- c("AfD" = "#3392C7", "CDU_CSU" = "#191818", "Die Linke" = "#511371", "SPD" = "#E5001B",
+  "GRÜNE" = "#149940", "FDP" = "#FDC40B")
+
+```
+
+"#149940"
+
+```{r}
+wyniki_mapa %>%
+  mutate(fill_color = lighten(kolory_partii[partia], amount = 0.85 - procent)) %>%
+ggplot() +
+  geom_sf(aes(fill = fill_color, geometry = geometry), color = "white") + 
+  coord_sf() +
+  theme_void() +
+  facet_wrap(~partia) +
+  scale_fill_identity()  # Pozwala użyć niestandardowych wartości HEX
+```
+
+
+```{r}
+wyniki_mapa_2 <- wyniki_mapa %>%
+  mutate(
+    fill_color = kolory_partii[partia],  # Kolor bazowy dla partii
+    procent_scaled = scales::rescale(procent)  # Skala od 0 do 1 na podstawie procentu
+  )
+
+# Tworzymy wykres
+ggplot(wyniki_mapa_2) +
+  geom_sf(aes(fill = fill_color, geometry = geometry, alpha = procent_scaled), color = "white") + 
+  coord_sf() +
+  theme_void() +
+  facet_wrap(~partia) +
+  scale_fill_manual(values = kolory_partii) +  # Kolory partii
+  scale_alpha_continuous(name = "Procent", low = 0.3, high = 1) +  # Skala intensywności
+  theme(legend.position = "right")  # Pozycja legendy
+```
+
+
+
+NA poziomie okręgów wyborczych
+
+```{r}
+data = read_csv2("https://bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/opendata/btw25/csv/kerg2.csv", skip = 9) %>% 
+    filter(Gebietsart == "Wahlkreis") %>% 
+    filter(Stimme == 2) %>% 
+    select(name = Gebietsname, party = Gruppenname, share = Prozent) %>%
+    mutate(party = if_else(party %in% c("CDU", "CSU"), "Union", party)) %>%
+    mutate(party = if_else(party == "GRÜNE", "Grüne", party)) %>%
+    mutate(party = if_else(party == "Die Linke", "Linke", party)) %>%
+    pivot_wider(names_from = party, values_from = share) %>% 
+    print()
+```
+
+
+## Mapa według okręgów wyborczych
+
+```{r}
+okręgi <- niemcy_m <- geojson_sf(here::here("case studies ", "Geometrie_Wahlkreise_19DBT_VG250_geo.shp"))
+```
+
+
+```{r}
+geo_wk = st_read(here::here("case studies ","btw25_geo_wk.geojson")) %>% 
+  mutate(WKR_NR = formatC(WKR_NR, width = 3, flag = "0")) %>% 
+  st_transform(3035)
+
+
+```
+
+
+
+testuję mapę
+
+```{r}
+ggplot(geo_wk) +
+  geom_sf()
+```
+
+sklejam
+
+```{r}
+wybory_okr_map <- geo_wk %>%
+  select(name = WKR_NAME, geometry) %>%
+  left_join(data %>% select(name, SPD, Union, Grüne, FDP, AfD, Linke), by = "name")
+```
+
+
+```{r}
+ wybory_okr_map %>%
+  pivot_longer(cols = c(2:7), names_to = "partia") %>%
+  group_by(name) %>%             # Grupowanie po Land
+  slice_max(order_by = value) %>%
+  ggplot() +
+   geom_sf(aes(fill = partia, geometry = geometry)) + 
+  coord_sf()  +
+  theme_void()
+```
+
+
+
+```{r}
+kolory_partii_2 <- c("AfD" = "#3392C7", "Union" = "#191818", "Linke" = "#511371", "SPD" = "#E5001B",
+  "Grüne" = "#149940", "FDP" = "#FDC40B")
+```
+
+
+```{r}
+ wybory_okr_map %>%
+  pivot_longer(cols = c(2:7), names_to = "partia") %>%
+  group_by(name) %>%             # Grupowanie po Land
+  slice_max(order_by = value) %>%
+  ggplot() +
+   geom_sf(aes(fill = partia, geometry = geometry)) + 
+  coord_sf()  +
+  theme_void() +
+  scale_fill_manual(values = c("AfD" = "#3392C7", "Union" = "#191818", "Linke" = "#511371", "SPD" = "#E5001B",
+  "Grüne" = "#149940", "FDP" = "#FDC40B"))
+```
+
+
+```{r}
+okr <- wybory_okr_map %>%
+  pivot_longer(cols = c(2:7), names_to = "partia")
+```
+
+
+
+```{r}
+okr %>%
+  mutate(fill_color = lighten(kolory_partii_2[partia], amount = (90- value)/100)) %>%
+ggplot() +
+  geom_sf(aes(fill = fill_color, geometry = geometry), color = "white", linewidth = 0.01) + 
+  coord_sf() +
+theme_void() +
+  facet_wrap(~partia) +
+  scale_fill_identity() 
+```
+
+
+```{r}
+ wybory_okr_map %>%
+  pivot_longer(cols = c(2:7), names_to = "partia") %>%
+  mutate(fill_color = lighten(kolory_partii_2[partia], amount = (90- value)/100, method = "relative")) %>%
+ggplot() +
+  geom_sf(aes(fill = fill_color, geometry = geometry), color = "white", linewidth = 0.02) + 
+  coord_sf() +
+  theme_void() +
+  facet_wrap(~partia) +
+  scale_fill_identity() 
+```
