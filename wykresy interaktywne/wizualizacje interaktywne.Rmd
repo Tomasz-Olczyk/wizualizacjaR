@@ -172,21 +172,9 @@ panteon <- read_csv("https://raw.githubusercontent.com/Tomasz-Olczyk/wizualizacj
 
 
 
-### Zadanie 1 - wykres punktowy kobiety z Polski z nazwiskiem i liczbą wyświetleń, na osi x L_star, a na osiy HPI, wielkość punktów na AverageViews w chmurce: nazwisko, i liczba wyświetleń AverageViews
+### Zadanie  - wykres punktowy kobiety z Polski z nazwiskiem i liczbą wyświetleń, na osi x L_star, a na osiy HPI, wielkość punktów na AverageViews w chmurce: nazwisko, i liczba wyświetleń AverageViews
 
 
-```{r}
-z <- panteon %>%
-  filter(gender == "Male", countryCode3 == "RUS") %>%
-  ggplot(aes(x = L_star,
-             y = HPI,
-             text = paste("nazwisko: ", name,
-                          "<br>wyświetlania: ", AverageViews,
-                          "<br>rok urodzenia: ", birthyear))) +
-           geom_point()
-           
-ggplotly(z, tooltip = "text")
-```
 
 
 
@@ -816,5 +804,5 @@ qplot(year, lifeExp, data = gapminder) +
 
 [Dashboardy z flexdashboard](https://pkgs.rstudio.com/flexdashboard/)
 
-## Zadanie domowe  nr 5 - użyjmy wykresu z zadania 1 i połączmy go z tabelą, tak by wyświetlała nam się obok lub pod wykresem
+## Zadanie użyjmy wykresu z  zadania  6 i połączmy go z tabelą, tak by wyświetlała nam się obok lub pod wykresem
 

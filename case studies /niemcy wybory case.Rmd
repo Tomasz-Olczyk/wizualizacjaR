@@ -251,7 +251,7 @@ okręgi <- niemcy_m <- geojson_sf(here::here("case studies ", "Geometrie_Wahlkre
 geo_wk = st_read(here::here("case studies ","btw25_geo_wk.geojson")) %>% 
   mutate(WKR_NR = formatC(WKR_NR, width = 3, flag = "0")) %>% 
   st_transform(3035)
-
+#st_transform(3035)konwertuje dane przestrzenne do układu odniesienia EPSG:3035 (Europejski układ współrzędnych LAEA, powszechnie stosowany w analizach przestrzennych dla Europy).
 
 ```
 
@@ -274,17 +274,54 @@ wybory_okr_map <- geo_wk %>%
 
 
 ```{r}
- wybory_okr_map %>%
+m <-  wybory_okr_map %>%
   pivot_longer(cols = c(2:7), names_to = "partia") %>%
   group_by(name) %>%             # Grupowanie po Land
   slice_max(order_by = value) %>%
   ggplot() +
-   geom_sf(aes(fill = partia, geometry = geometry)) + 
+   geom_sf(aes(fill = partia, geometry = geometry,
+               text = paste0("okręg:", name,
+                           "<br> partia", partia))) + 
   coord_sf()  +
   theme_void()
 ```
 
 
+
+```{r}
+plotly::ggplotly(m, tooltip = "text")
+```
+
+```{r}
+test <- wybory_okr_map %>%
+  pivot_longer(cols = c(2:7), names_to = "partia") %>%
+  group_by(name) %>%             # Grupowanie po Land
+  slice_max(order_by = value) %>%
+  filter(partia == "AfD")
+```
+
+```{r}
+x<-test %>%
+  ggplot() +
+   geom_sf(aes(fill = partia, geometry = geometry,
+               text = paste0("okręg:", name,
+                           "<br> partia", partia))) + 
+  coord_sf()  +
+  theme_void()
+```
+
+
+```{r}
+plotly::ggplotly(x, tooltip = "text")
+```
+
+
+```{r}
+test_afd <- data %>%
+  filter(name == "Kaiserslautern")
+```
+Do sprawdzenia Kaiserslautern i Gelsenkirchen czy tam reczywiście wygrało AfD?
+Kaiserslautern się zgadza AfD ma tam najwięcej głosów
 
 ```{r}
 kolory_partii_2 <- c("AfD" = "#3392C7", "Union" = "#191818", "Linke" = "#511371", "SPD" = "#E5001B",
@@ -336,3 +373,71 @@ ggplot() +
   facet_wrap(~partia) +
   scale_fill_identity() 
 ```
+
+
+### Prościej
+
+```{r}
+okręgi = st_read(here::here("case studies ","btw25_geo_wk.geojson")) 
+```
+
+
+testuję mapę
+
+```{r}
+ggplot(okręgi) +
+  geom_sf()
+```
+
+```{r}
+wybory_long <- read_csv2("https://bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/opendata/btw25/csv/kerg2.csv", skip = 9) %>% #wczytuje plik CSV z danymi o wynikach wyborów, przy czym separator to średnik (;), co jest standardem w niemieckich plikach CSV, skip = 9 – pomija pierwsze 9 wierszy (zapewne nagłówki lub meta-informacje).
+    filter(Gebietsart == "Wahlkreis") %>%  #pozostawia tylko okręgi wyborcze (Wahlkreis), Gebietsart – kolumna określająca typ obszaru wyborczego.
+    filter(Stimme == 2) %>% #wybiera tylko wyniki drugiego głosu (Zweitstimme), który decyduje o podziale mandatów w Bundestagu.
+    select(name = Gebietsname, party = Gruppenname, share = Prozent) %>%# name = Gebietsname → nazwa okręgu wyborczego, party = Gruppenname → nazwa partii, share = Prozent → procent głosów uzyskanych przez daną partię
+    mutate(party = if_else(party %in% c("CDU", "CSU"), "Union", party)) %>%
+    mutate(party = if_else(party == "GRÜNE", "Grüne", party)) %>%
+    mutate(party = if_else(party == "Die Linke", "Linke", party)) %>%
+    pivot_wider(names_from = party, values_from = share) #zmiana na szerokie pozwoli na łatwiejszą selekcję partii przy ponownej zmianie na długie
+```
+
+
+sklejam
+
+```{r}
+wybory_prostsze <- okręgi %>%
+  select(name = WKR_NAME, geometry) %>%
+  left_join(data %>% select(name, SPD, Union, Grüne, FDP, AfD, Linke), by = "name")
+```
+
+```{r}
+prostsze <- wybory_prostsze %>%
+  pivot_longer(cols = c(2:7), names_to = "partia")
+```
+
+
+
+```{r}
+prostsze %>%
+  mutate(fill_color = lighten(kolory_partii_2[partia], amount = (90- value)/100)) %>%
+ggplot() +
+  geom_sf(aes(fill = fill_color, geometry = geometry), color = "white", linewidth = 0.01) + 
+  coord_sf() +
+theme_void() +
+  facet_wrap(~partia) +
+  scale_fill_identity() 
+```
+
+
+## Sprawdzam czy 
+
+```{r}
+wybory_2 <- read_csv2(here::here("case studies ", "kerg2.csv"), skip = 9) %>% #wczytuje plik CSV z danymi o wynikach wyborów, przy czym separator to średnik (;), co jest standardem w niemieckich plikach CSV, skip = 9 – pomija pierwsze 9 wierszy (zapewne nagłówki lub meta-informacje).
+    filter(Gebietsart == "Wahlkreis") %>%  #pozostawia tylko okręgi wyborcze (Wahlkreis), Gebietsart – kolumna określająca typ obszaru wyborczego.
+    filter(Stimme == 2) %>% #wybiera tylko wyniki drugiego głosu (Zweitstimme), który decyduje o podziale mandatów w Bundestagu.
+    select(name = Gebietsname, party = Gruppenname, share = Prozent) %>%# name = Gebietsname → nazwa okręgu wyborczego, party = Gruppenname → nazwa partii, share = Prozent → procent głosów uzyskanych przez daną partię
+    mutate(party = if_else(party %in% c("CDU", "CSU"), "Union", party)) %>%
+    mutate(party = if_else(party == "GRÜNE", "Grüne", party)) %>%
+    mutate(party = if_else(party == "Die Linke", "Linke", party)) %>%
+    pivot_wider(names_from = party, values_from = share) #zmiana na szerokie pozwoli na łatwiejszą selekcję partii przy ponownej zmianie na długie
+```
+

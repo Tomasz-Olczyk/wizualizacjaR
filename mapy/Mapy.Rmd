@@ -674,3 +674,26 @@ geom_point(data = Polska, aes(x= LON, y = LAT, colour = gender, size = AverageVi
 
 
 
+
+
+## Co po zajęciach?
+Wickham, H. (2016). Ggplot2 Elegant  graphics for data analysis. Springer International Publishing. r. 6 Maps
+
+[Wickham, H. (2016). Ggplot2 Elegant  graphics for data analysis. Springer International Publishing. r. 6 Maps](https://ggplot2-book.org/maps.html)
+
+ 
+
+
+
+
+[Hahn, N. (2021). Making Maps with R.](https://bookdown.org/nicohahn/making_maps_with_r5/docs/introduction.html)
+
+
+## Zadanie domowe
+
+Stworzyć mapę wyników wyborów w niemczech podobną do tej ze strony https://www.bbc.com/news/articles/cx29wlje6dno
+
+[wybory](https://www.bbc.com/news/articles/cx29wlje6dno)
+
+
+
