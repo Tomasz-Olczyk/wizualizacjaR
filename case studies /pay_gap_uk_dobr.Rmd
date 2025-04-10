@@ -1,0 +1,234 @@
+---
+title: "Zaliczenie - modyfikacja i komentarz"
+author: 
+  - Tomasz Olczyk
+output: html_document
+date: "`r Sys.Date()`"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(plotly)
+library(ggplot2)
+library(dplyr)
+library(googlesheets4)
+library(janitor)
+library(scales)
+gs4_deauth()
+```
+
+```{r}
+#wczytuję dane z Google docs, z arkusza UK short version
+pay_gap <- read_sheet("https://docs.google.com/spreadsheets/d/1Qih5qBcuTntLbx7G7BzunRSOgGD0b_zc07sTzqiKGn4/edit?gid=1170221181#gid=1170221181", sheet='UK short version')  %>%
+  clean_names()
+```
+
+
+
+```{r}
+
+pay_gap_wykres <- pay_gap %>%
+  
+#usuwam wiersze z kategoriami zawodów, żeby nie mieszały się z zawodami przy sortowaniu po wartości pay_gap
+  
+  filter(occupation != "Admin & organisation" & occupation != "Care & education" & occupation != "Creative & media" & occupation != "Law & justice" & occupation != "Manual work" & occupation != "Sales & serving others" & occupation != "Science, tech & engineering" & occupation != "Senior managers & execs" & occupation != "All occupations average") %>%
+
+#rysuję wykres składający się z punktów oznaczających średnią roczną pensję w tysiącach w poszczególnych zawodach dla kobiet i mężczyzn, dodaję funkcję geom_segment, aby połączyć je liniami; sortuję po wartości pay_gap - używam wartości absolutnej pay_gap, bo bywa ona ujemna, kiedy to kobiety zarabiają więcej
+
+ ggplot() +
+  geom_point (aes(x=women_average_annual_salary/1000, y=reorder(occupation,abs(pay_gap)), color="women_average_annual_salary")) +
+  geom_point (aes(x=men_average_annual_salary/1000, y=reorder(occupation,abs(pay_gap)), color="men_average_annual_salary")) +
+  geom_segment (aes(x = women_average_annual_salary/1000, xend = men_average_annual_salary/1000, y=reorder(occupation,abs(pay_gap)))) +
+ 
+#ustawiam oznaczenia legendy tak jak w oryginalnym wykresie Information is beautiful i umieszczam legendę nad wykresem 
+   
+  scale_color_manual(name = "Legend",
+    values = c( "women_average_annual_salary" = "deeppink4", "men_average_annual_salary" = "darkolivegreen2"),
+    labels = c("male", "female")) +
+  
+  theme(legend.position = "top") +
+  
+#duplikuję oś x, tak aby była i na górze i na dole wykresu, tak jak w oryginale i ustawiam jej oznaczenia
+  
+  scale_x_continuous(breaks = c(10, 20, 30, 40, 50, 60, 70, 80, 90), sec.axis = dup_axis()) +
+  
+  
+#ustawiam nazwy osi i tytuł, wyśrodkowuję tytuł, odsuwam nazwę osi y
+  
+  labs(x = "yearly salary (thousands £)", y = "job",
+       title = "Gender pay gap in UK") +
+  
+  theme(plot.title = element_text(hjust = 0.5)) +
+  
+  theme(axis.text.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) +
+  
+  
+#zmieniam tło wykresu na białe i dodaję delikatniejsze linie grid
+  
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "azure3"))
+
+
+pay_gap_wykres
+
+#wnioski:
+#- mamy do czynienia z dużymi różnicami w płacach kobiet i mężczyzn; zawody, w których różnica jest niewielka lub na korzyść kobiet są w zdecydowanej mniejszości
+#- wykres dobrze ilustruje ten zestaw danych, szczególnie jeśli jest w wersji interaktywnej i umożliwia sortowanie zarówno po pensjach, po pay gap, po kategoriach zawodów;  niestety napotkałam problemy przy konwersji na ggplotly (problem z definicją yend?) i pozostałam przy wykresie statycznym
+#- jest to lepszy wybór niż wykres słupkowy, który ilustrowałby jedynie pay gap, bez średnich zarobków obu płci
+#- w wyrenderowanym pliku html wykres jest mocno spłaszczony w pionie, nie udało mi się tego poprawić; jednak w RStudio i wygenerowanym PDF wykres wygląda dobrze
+```
+
+
+### Rozwinięcie - komentarz modyfikacje
+
+Bardzo fajnie.
+
+Można dodać kilka modyfikacji by upodobnić wykres do oryginału: 
+-usunąć linii poziome siatki, 
+-zmienić kolejność geom point i geom segment tak żeby punkty wyświetlały się na liniach a nie linie na punktacji,
+-dodać linię pionową i znaznik na zerze na osi y
+
+
+```{r}
+pay_gap_wykres_mod <- pay_gap %>%
+ filter(occupation != "Admin & organisation" & occupation != "Care & education" & occupation != "Creative & media" & occupation != "Law & justice" & occupation != "Manual work" & occupation != "Sales & serving others" & occupation != "Science, tech & engineering" & occupation != "Senior managers & execs" & occupation != "All occupations average") %>%
+ ggplot() + #zamieniam kolejność geometrii żeby punkty wyświetliły się na segmencie
+  geom_segment (aes(x = women_average_annual_salary/1000, xend = men_average_annual_salary/1000, y=reorder(occupation,abs(pay_gap)))) +
+geom_point (aes(x=women_average_annual_salary/1000, y=reorder(occupation,abs(pay_gap)), color="women_average_annual_salary")) +
+  geom_point (aes(x=men_average_annual_salary/1000, y=reorder(occupation,abs(pay_gap)), color="men_average_annual_salary")) +
+  scale_color_manual(name = "Legend",
+    values = c( "women_average_annual_salary" = "deeppink4", "men_average_annual_salary" = "darkolivegreen2"),
+    labels = c("male", "female")) +
+  
+  theme(legend.position = "top") +
+  
+#duplikuję oś x, tak aby była i na górze i na dole wykresu, tak jak w oryginale i ustawiam jej oznaczenia
+  
+  scale_x_continuous(breaks = c(0 ,10, 20, 30, 40, 50, 60, 70, 80, 90),
+                     labels= c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90),  sec.axis = dup_axis(name = "yearly salary (thousands £)")) + #zmieniam podpis pod górną osią x
+  labs(x = "hourly rate", y = "job", #zmieniam podpis pod dolną osią x
+       title = "Gender pay gap in UK") +
+  
+  theme(plot.title = element_text(hjust = 0.5)) +
+  
+  theme(axis.text.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "azure3"),
+                                  axis.ticks = element_blank(),
+        panel.grid.major.y = element_blank(), #usuwam poziomelinie główne siatki
+        panel.grid.minor.y = element_blank(),#usuwam poziomelinie główne siatki
+        panel.grid.minor.x = element_blank()) #usuwam pionowe linie pomocnicze siatki
+
+
+```
+
+
+
+```{r}
+
+pay_gap_wykres_mod 
+```
+
+
+### Zwiększenie interaktywności
+
+Oprócz plotly jest conajmniej jedna biblioteka która pozwala na tworzenie interaktywnych wykresów: ggiraph
+
+```{r}
+#install.packages("ggiraph")
+```
+
+
+```{r}
+library(ggiraph)
+
+```
+
+```{r}
+
+pay_gap_wykres_int <- pay_gap %>%
+  filter(!occupation %in% c(
+    "Admin & organisation", "Care & education", "Creative & media",
+    "Law & justice", "Manual work", "Sales & serving others",
+    "Science, tech & engineering", "Senior managers & execs",
+    "All occupations average"
+  )) %>%
+  ggplot() +
+  
+  # Segment między zarobkami kobiet i mężczyzn
+  geom_segment(
+    aes(
+      x = women_average_annual_salary / 1000,
+      xend = men_average_annual_salary / 1000,
+      y = reorder(occupation, abs(pay_gap))
+    )
+  ) +
+
+  # Punkt - pensja kobiet z tooltipem
+  geom_point_interactive(
+    aes(
+      x = women_average_annual_salary / 1000,
+      y = reorder(occupation, abs(pay_gap)),
+      color = "women_average_annual_salary",
+      tooltip = (women_average_annual_salary/1000)
+    ),
+    size = 3
+  ) +
+
+  # Punkt - pensja mężczyzn z tooltipem
+  geom_point_interactive(
+    aes(
+      x = men_average_annual_salary / 1000,
+      y = reorder(occupation, abs(pay_gap)),
+      color = "men_average_annual_salary",
+      tooltip = (men_average_annual_salary/1000)
+    ),
+    size = 3
+  ) +
+
+  scale_color_manual(name = "",
+    values = c( "women_average_annual_salary" = "deeppink4", "men_average_annual_salary" = "darkolivegreen2"),
+    labels = c("Male", "Female")) +
+
+  theme(legend.position = "top") +
+
+  scale_x_continuous(
+    breaks = seq(0, 90, 10),
+    labels = seq(0, 90, 10),
+    sec.axis = dup_axis(name = "yearly salary (thousands £)")
+  ) +
+
+  labs(
+    x = "hourly rate",
+    y = "job",
+    title = "Gender pay gap in UK"
+  ) +
+
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.y = element_text(margin = margin(r = 10)),
+    panel.background = element_rect(fill = "white"),
+    panel.grid = element_line(color = "azure3"),
+    axis.ticks = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.minor.x = element_blank()
+  ) +
+  guides(color = guide_legend(reverse = TRUE)) # zmienim kolejnosć w legendzie tak by najpier było Female jak w oryginale
+
+# Renderowanie interaktywnego wykresu
+girafe(ggobj = pay_gap_wykres_int)
+```
+
+### jeśli chcemy żeby kolory tooltipa były takie jak punktu:
+
+Poniżej także modyfikacja rozmiau wykresu
+```{r, fig.height=20, fig.width=9}
+girafe_options(girafe(ggobj = pay_gap_wykres_int), opts_tooltip(use_fill = TRUE))
+```
